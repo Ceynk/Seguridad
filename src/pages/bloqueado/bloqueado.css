@@ -1,0 +1,226 @@
+:root {
+  --color-fondo: #0b0f19;
+  --color-tarjeta: #111827;
+  --color-tarjeta-interna: #1f2937;
+  --color-borde: #374151;
+  --color-texto-principal: #f9fafb;
+  --color-texto-secundario: #9ca3af;
+  --color-rojo: #ef4444;
+  --color-rojo-fondo: rgba(239, 68, 68, 0.12);
+  --color-rojo-borde: rgba(239, 68, 68, 0.3);
+  --color-azul: #3b82f6;
+  --color-verde: #10b981;
+  --fuente: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-fondo);
+  color: var(--color-texto-principal);
+  font-family: var(--fuente);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.contenedor-bloqueo {
+  max-width: 640px;
+  width: 100%;
+  background-color: var(--color-tarjeta);
+  border: 1px solid var(--color-rojo-borde);
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.franja-alerta {
+  background-color: var(--color-rojo-fondo);
+  border-bottom: 1px solid var(--color-rojo-borde);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icono-alerta-grande {
+  color: var(--color-rojo);
+  flex-shrink: 0;
+}
+
+.titulos-alerta h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fca5a5;
+  letter-spacing: -0.5px;
+}
+
+.titulos-alerta p {
+  font-size: 14px;
+  color: #f87171;
+  margin-top: 4px;
+}
+
+.cuerpo-bloqueo {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.seccion-dato {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.etiqueta-dato {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-texto-secundario);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.caja-url {
+  background-color: var(--color-tarjeta-interna);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  color: #fbbf24;
+  word-break: break-all;
+}
+
+.fila-metricas-riesgo {
+  display: flex;
+  gap: 16px;
+}
+
+.tarjeta-metrica {
+  flex: 1;
+  background-color: var(--color-tarjeta-interna);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.valor-metrica {
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.valor-rojo {
+  color: var(--color-rojo);
+}
+
+.lista-motivos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item-motivo {
+  background-color: var(--color-tarjeta-interna);
+  border: 1px solid var(--color-borde);
+  border-left: 4px solid var(--color-rojo);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.titulo-motivo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-texto-principal);
+  display: flex;
+  justify-content: space-between;
+}
+
+.descripcion-motivo {
+  font-size: 12px;
+  color: var(--color-texto-secundario);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.aviso-educativo {
+  background-color: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 12px;
+  color: #93c5fd;
+  line-height: 1.5;
+}
+
+.acciones-bloqueo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-borde);
+  gap: 12px;
+}
+
+.boton-principal {
+  background-color: var(--color-azul);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+
+.boton-principal:hover {
+  opacity: 0.9;
+}
+
+.boton-enlace {
+  background: transparent;
+  border: none;
+  color: var(--color-texto-secundario);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 6px;
+}
+
+.boton-enlace:hover {
+  color: var(--color-texto-principal);
+}
+
+.formulario-reporte {
+  background-color: var(--color-tarjeta-interna);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.textarea-reporte {
+  width: 100%;
+  background-color: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  color: var(--color-texto-principal);
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  resize: vertical;
+}
