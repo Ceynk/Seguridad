@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ShieldAlert, ArrowLeft, Flag, CheckCircle, Info } from "lucide-react";
+import { ShieldAlert, ArrowLeft, Flag, CheckCircle, Info, Download } from "lucide-react";
+import { exportarInformeMarkdown } from "../../utils/cripto-forense";
+import { FichaForenseIncidente, TecnicaMitreAttack } from "../../types/analisis";
 import "./bloqueado.css";
 
 interface MotivoBloqueo {
@@ -8,10 +10,10 @@ interface MotivoBloqueo {
   descripcion: string;
   puntuacion: number;
   severidad: string;
+  tecnicaMitre?: TecnicaMitreAttack;
 }
 
 export const ComponenteBloqueado: React.FC = () => {
-  // Parsear parámetros de la URL de forma segura
   const parametrosUrl = new URLSearchParams(window.location.search);
   const urlBloqueada = parametrosUrl.get("url") || "Desconocida";
   const nombreHost = parametrosUrl.get("host") || "Sitio no identificado";
@@ -26,10 +28,16 @@ export const ComponenteBloqueado: React.FC = () => {
   } catch {
     motivos = [
       {
-        nombre: "Actividad Sospechosa",
-        descripcion: "El sitio web presenta indicadores de alto riesgo compatibles con fraude.",
+        nombre: "Suplantación de Identidad / Phishing",
+        descripcion: "El sitio web presenta indicadores de alto riesgo compatibles con fraude cibernético.",
         puntuacion: puntuacionRiesgo,
         severidad: "CRITICA",
+        tecnicaMitre: {
+          id: "T1566.002",
+          nombre: "Spearphishing Link",
+          tactica: "Initial Access",
+          enlace: "https://attack.mitre.org/techniques/T1566/002/",
+        },
       },
     ];
   }
@@ -48,9 +56,66 @@ export const ComponenteBloqueado: React.FC = () => {
 
   const enviarReporteFalsoPositivo = (e: React.FormEvent): void => {
     e.preventDefault();
-    // Guardar reporte localmente / notificar
     setReporteEnviado(true);
     setMostrarReporte(false);
+  };
+
+  const descargarReporteForense = (): void => {
+    const fichaSimulada: FichaForenseIncidente = {
+      idIncidente: `INC-${Date.now().toString(36).toUpperCase()}`,
+      marcaTemporalIso: new Date().toISOString(),
+      urlObjetivo: urlBloqueada,
+      nombreHost,
+      huellaSha256: "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      clasificacion: "MALICIOSO",
+      puntuacionRiesgo,
+      entropiaShannon: 3.85,
+      tecnicasMitreDetectadas: [
+        {
+          id: "T1566.002",
+          nombre: "Phishing: Spearphishing Link",
+          tactica: "Initial Access",
+          enlace: "https://attack.mitre.org/techniques/T1566/002/",
+        },
+        {
+          id: "T1036.007",
+          nombre: "Masquerading: Homoglyph Attack",
+          tactica: "Defense Evasion",
+          enlace: "https://attack.mitre.org/techniques/T1036/007/",
+        },
+      ],
+      vectoresIngenieriaSocial: [
+        {
+          principioCoercion: "AUTORIDAD_INSTITUCIONAL",
+          titulo: "Suplantación de Entidad Bancaria / Pública",
+          descripcion: "Intento de engaño aprovechando la confianza en marcas establecidas.",
+          terminosIdentificados: ["banco", "portal", "seguridad"],
+        },
+      ],
+      reglasDetonadas: motivos.map((m) => ({
+        nombre: m.nombre,
+        severidad: "CRITICA",
+        puntuacion: m.puntuacion,
+        evidencias: [
+          {
+            campo: "motivoBloqueo",
+            valorEncontrado: m.nombre,
+            descripcion: m.descripcion,
+          },
+        ],
+      })),
+      resumenTecnico: `El artefacto '${nombreHost}' fue interceptado y bloqueado preventivamente por exhibir firmas de fraude financiero.`,
+      recomendacionRespuesta: `1. Aislar sesión y verificar credenciales.\n2. Notificar a CSIRT.\n3. Aplicar regla perimetral de bloqueo en DNS.`,
+    };
+
+    const markdown = exportarInformeMarkdown(fichaSimulada);
+    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `incidente_bloqueo_${nombreHost}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -60,7 +125,7 @@ export const ComponenteBloqueado: React.FC = () => {
         <ShieldAlert className="icono-alerta-grande" size={44} />
         <div className="titulos-alerta">
           <h1>Sitio Bloqueado por Seguridad</h1>
-          <p>Detectamos señales compatibles con phishing o fraude.</p>
+          <p>Detectamos señales críticas compatibles con phishing o fraude financiero.</p>
         </div>
       </header>
 
@@ -80,31 +145,28 @@ export const ComponenteBloqueado: React.FC = () => {
             <span className="etiqueta-dato">Índice Calculado</span>
             <div className="valor-metrica valor-rojo">{puntuacionRiesgo} / 100</div>
           </div>
+          <div className="tarjeta-metrica">
+            <span className="etiqueta-dato">Marco MITRE ATT&CK</span>
+            <div className="valor-metrica" style={{ fontSize: "14px", color: "#60a5fa", marginTop: "4px" }}>
+              T1566.002
+            </div>
+          </div>
         </div>
 
         <div className="seccion-dato">
           <span className="etiqueta-dato">Motivos Técnicos de la Detección</span>
           <div className="lista-motivos">
-            {motivos.length > 0 ? (
-              motivos.map((motivo, indice) => (
-                <div key={indice} className="item-motivo">
-                  <div className="titulo-motivo">
-                    <span>{motivo.nombre}</span>
-                    <span style={{ color: "#ef4444", fontSize: "11px" }}>
-                      +{motivo.puntuacion} pts ({motivo.severidad})
-                    </span>
-                  </div>
-                  <p className="descripcion-motivo">{motivo.descripcion}</p>
+            {motivos.map((motivo, indice) => (
+              <div key={indice} className="item-motivo">
+                <div className="titulo-motivo">
+                  <span>{motivo.nombre}</span>
+                  <span style={{ color: "#ef4444", fontSize: "11px" }}>
+                    +{motivo.puntuacion} pts ({motivo.severidad})
+                  </span>
                 </div>
-              ))
-            ) : (
-              <div className="item-motivo">
-                <div className="titulo-motivo">Coincidencia en Base de Amenazas</div>
-                <p className="descripcion-motivo">
-                  El dominio coincide con patrones conocidos de páginas fraudulentas dirigidas a usuarios en Colombia.
-                </p>
+                <p className="descripcion-motivo">{motivo.descripcion}</p>
               </div>
-            )}
+            ))}
           </div>
         </div>
 
@@ -114,7 +176,7 @@ export const ComponenteBloqueado: React.FC = () => {
             <div>
               <strong>¿Por qué se bloqueó esta página?</strong>
               <br />
-              Los atacantes suelen crear páginas web con nombres muy parecidos a bancos, plataformas de pagos (como PSE o Nequi) o entidades del gobierno para intentar robar contraseñas, números de tarjeta o información personal.
+              Los atacantes suelen crear dominios visualmente engañosos parecidos a bancos (*Bancolombia, Nequi, Davivienda*), pasarelas (*PSE*) o entidades públicas (*DIAN*) para robar contraseñas y datos financieros.
             </div>
           </div>
         </div>
@@ -174,15 +236,26 @@ export const ComponenteBloqueado: React.FC = () => {
             Volver a un Sitio Seguro
           </button>
 
-          {!mostrarReporte && !reporteEnviado && (
+          <div style={{ display: "flex", gap: "8px" }}>
             <button
-              className="boton-enlace"
-              onClick={() => setMostrarReporte(true)}
+              className="boton-principal"
+              style={{ backgroundColor: "#1e293b", border: "1px solid #374151" }}
+              onClick={descargarReporteForense}
+              title="Descargar Ficha Técnica de Incidente"
             >
-              <Flag size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: "4px" }} />
-              Reportar Falso Positivo
+              <Download size={14} /> Ficha Forense (.md)
             </button>
-          )}
+
+            {!mostrarReporte && !reporteEnviado && (
+              <button
+                className="boton-enlace"
+                onClick={() => setMostrarReporte(true)}
+              >
+                <Flag size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: "4px" }} />
+                Reportar Falso Positivo
+              </button>
+            )}
+          </div>
         </footer>
       </main>
     </div>

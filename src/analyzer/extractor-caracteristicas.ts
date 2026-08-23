@@ -1,5 +1,6 @@
-import { CaracteristicasUrl } from "../types/analisis";
+import { CaracteristicasUrl, VectorIngenieriaSocial } from "../types/analisis";
 import { normalizarYAnalizarUrl } from "../utils/normalizador-url";
+import { calcularEntropiaShannon } from "../utils/cripto-forense";
 import { detectarSimilitudMarcas } from "./homoglifos";
 
 /**
@@ -138,13 +139,93 @@ export function extraerExtensionTld(dominioPrincipal: string): string {
 export function buscarPalabrasClave(texto: string, listaPalabras: string[]): string[] {
   const textoLimpio = texto.toLowerCase();
   return listaPalabras.filter((palabra) => {
-    // Coincidencia exacta de substring o separada por guiones/puntos
     return textoLimpio.includes(palabra);
   });
 }
 
 /**
- * Extrae todas las características estáticas y léxicas de una URL dada.
+ * Analiza el contexto de la URL para identificar los vectores psicológicos de ingeniería social (Cialdini).
+ */
+export function clasificarVectoresIngenieriaSocial(
+  contieneAutenticacion: string[],
+  contieneBancarias: string[],
+  contieneUrgencia: string[]
+): VectorIngenieriaSocial[] {
+  const vectores: VectorIngenieriaSocial[] = [];
+
+  if (
+    contieneUrgencia.some((t) =>
+      ["multa", "fotomulta", "comparendo", "simit", "embargo", "dian", "suspension", "suspendida"].includes(t)
+    )
+  ) {
+    vectores.push({
+      principioCoercion: "MIEDO_SANCION",
+      titulo: "Miedo a Sanciones / Coerción Legal",
+      descripcion:
+        "El atacante induce miedo mediante supuestos embargos, multas o suspensiones judiciales para forzar una acción apresurada.",
+      terminosIdentificados: contieneUrgencia.filter((t) =>
+        ["multa", "fotomulta", "comparendo", "simit", "embargo", "dian", "suspension", "suspendida"].includes(t)
+      ),
+    });
+  }
+
+  if (
+    contieneUrgencia.some((t) =>
+      ["urgente", "inmediato", "alerta", "bloqueo", "desbloquear"].includes(t)
+    )
+  ) {
+    vectores.push({
+      principioCoercion: "URGENCIA_TEMPORAL",
+      titulo: "Presión de Urgencia Temporal",
+      descripcion:
+        "Intenta reducir la capacidad crítica de la víctima imponiendo una sensación de límite temporal inmediato.",
+      terminosIdentificados: contieneUrgencia.filter((t) =>
+        ["urgente", "inmediato", "alerta", "bloqueo", "desbloquear"].includes(t)
+      ),
+    });
+  }
+
+  if (contieneBancarias.length > 0) {
+    vectores.push({
+      principioCoercion: "AUTORIDAD_INSTITUCIONAL",
+      titulo: "Suplantación de Autoridad Financiera",
+      descripcion:
+        "Se aprovecha de la confianza del usuario hacia entidades bancarias o pasarelas de pago consolidadas.",
+      terminosIdentificados: contieneBancarias,
+    });
+  }
+
+  if (
+    contieneUrgencia.some((t) =>
+      ["premio", "ganador", "sorteo", "reembolso", "devolucion", "cupon"].includes(t)
+    )
+  ) {
+    vectores.push({
+      principioCoercion: "RECOMPENSA_FINANCIERA",
+      titulo: "Cebo de Recompensa Financiera (Baiting)",
+      descripcion:
+        "Atrae a la víctima con falsas promesas de dinero, premios o devoluciones pendientes.",
+      terminosIdentificados: contieneUrgencia.filter((t) =>
+        ["premio", "ganador", "sorteo", "reembolso", "devolucion", "cupon"].includes(t)
+      ),
+    });
+  }
+
+  if (contieneAutenticacion.length > 0) {
+    vectores.push({
+      principioCoercion: "ACCESO_CRITICO",
+      titulo: "Captura de Credenciales y Factores de Autenticación",
+      descripcion:
+        "Punto de recolección de credenciales sensibles, contraseñas, claves dinámicas o tokens.",
+      terminosIdentificados: contieneAutenticacion,
+    });
+  }
+
+  return vectores;
+}
+
+/**
+ * Extrae todas las características estáticas, léxicas y forenses de una URL dada.
  */
 export function extraerCaracteristicasUrl(urlEntrada: string): CaracteristicasUrl {
   const urlNormalizada = normalizarYAnalizarUrl(urlEntrada);
@@ -166,6 +247,12 @@ export function extraerCaracteristicasUrl(urlEntrada: string): CaracteristicasUr
   const contienePalabrasUrgencia = buscarPalabrasClave(textoParaBuscarPalabras, PALABRAS_URGENCIA_Y_ENGANO);
 
   const similitudMarcas = detectarSimilitudMarcas(nombreHost, dominioPrincipal);
+  const entropiaShannon = calcularEntropiaShannon(nombreHost);
+  const vectoresIngenieriaSocial = clasificarVectoresIngenieriaSocial(
+    contienePalabrasAutenticacion,
+    contienePalabrasBancarias,
+    contienePalabrasUrgencia
+  );
 
   return {
     urlCompleta,
@@ -194,5 +281,7 @@ export function extraerCaracteristicasUrl(urlEntrada: string): CaracteristicasUr
     contienePalabrasBancarias,
     contienePalabrasUrgencia,
     similitudMarcas,
+    entropiaShannon,
+    vectoresIngenieriaSocial,
   };
 }

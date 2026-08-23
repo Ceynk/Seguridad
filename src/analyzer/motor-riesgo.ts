@@ -10,6 +10,7 @@ import { ProveedorReputacion } from "../types/reputacion";
 import { RegistroReglas } from "../rules/registro-reglas";
 import { ProveedorReputacionLocal } from "../reputation/reputacion-local";
 import { extraerCaracteristicasUrl } from "./extractor-caracteristicas";
+import { calcularHashSha256Simple, generarFichaForense } from "../utils/cripto-forense";
 
 /**
  * Opciones para instanciar o configurar el Motor de Riesgo.
@@ -22,7 +23,7 @@ export interface OpcionesMotorRiesgo {
 }
 
 /**
- * Motor central de análisis de riesgo, evaluación de reglas heurísticas y reputación.
+ * Motor central de análisis de riesgo, evaluación de reglas heurísticas, reputación y análisis forense.
  */
 export class MotorRiesgo {
   private registroReglas: RegistroReglas;
@@ -48,9 +49,6 @@ export class MotorRiesgo {
     }
   }
 
-  /**
-   * Clasifica una puntuación numérica (0-100) en el estado de riesgo correspondiente.
-   */
   public clasificarPuntuacion(puntuacion: number): ClasificacionRiesgo {
     if (puntuacion >= this.umbralMalicioso) {
       return "MALICIOSO";
@@ -61,9 +59,6 @@ export class MotorRiesgo {
     return "SEGURO";
   }
 
-  /**
-   * Determina el nivel de confianza de la clasificación en función del volumen de evidencias.
-   */
   private determinarNivelConfianza(
     reglasCoincidentes: ReglaCoincidente[],
     esDominioConocido: boolean
@@ -78,16 +73,14 @@ export class MotorRiesgo {
       const regla = reglasCoincidentes[0];
       return regla.severidad === "CRITICA" || regla.severidad === "ALTA" ? "MEDIO" : "BAJO";
     }
-    return "ALTO"; // Alta confianza en que un sitio sin ninguna anomalía es seguro
+    return "ALTO";
   }
 
-  /**
-   * Realiza el análisis completo de una URL de manera sincrónica/asincrónica y devuelve el veredicto.
-   */
   public async analizarUrl(urlEntrada: string): Promise<ResultadoAnalisisUrl> {
     const tiempoInicio = performance.now();
     const caracteristicas: CaracteristicasUrl = extraerCaracteristicasUrl(urlEntrada);
     const nombreHost = caracteristicas.nombreHost;
+    const huellaSha256 = calcularHashSha256Simple(urlEntrada);
 
     // 1. Consultar reputación del dominio
     const resultadoReputacion = await this.proveedorReputacion.consultarDominio(nombreHost);
@@ -97,7 +90,7 @@ export class MotorRiesgo {
       const tiempoFin = performance.now();
       const reglaReputacion: ReglaCoincidente = {
         id: "REPUTACION_LISTA_NEGRA",
-        nombre: "Dominio en Lista de Amenazas",
+        nombre: "Dominio en Lista de Amenazas / Threat Feed",
         descripcion: resultadoReputacion.descripcion || "Dominio identificado previamente como malicioso.",
         severidad: "CRITICA",
         puntuacion: 95,
@@ -108,9 +101,15 @@ export class MotorRiesgo {
             descripcion: resultadoReputacion.descripcion || "Coincidencia directa con amenaza conocida.",
           },
         ],
+        tecnicaMitre: {
+          id: "T1583.001",
+          nombre: "Resource Development: Acquire Domains",
+          tactica: "Resource Development",
+          enlace: "https://attack.mitre.org/techniques/T1583/001/",
+        },
       };
 
-      return {
+      const resultadoParcial: ResultadoAnalisisUrl = {
         url: urlEntrada,
         nombreHost,
         marcaTemporal: Date.now(),
@@ -122,7 +121,11 @@ export class MotorRiesgo {
         esDominioConocidoSeguro: false,
         esDominioConocidoMalicioso: true,
         tiempoProcesamientoMs: Math.round(tiempoFin - tiempoInicio),
+        huellaSha256,
       };
+
+      resultadoParcial.fichaForense = generarFichaForense(resultadoParcial);
+      return resultadoParcial;
     }
 
     // Caso B: Dominio en lista blanca confiable y sin carácter '@' engañoso
@@ -132,7 +135,7 @@ export class MotorRiesgo {
       !caracteristicas.tieneArroba
     ) {
       const tiempoFin = performance.now();
-      return {
+      const resultadoParcial: ResultadoAnalisisUrl = {
         url: urlEntrada,
         nombreHost,
         marcaTemporal: Date.now(),
@@ -144,7 +147,11 @@ export class MotorRiesgo {
         esDominioConocidoSeguro: true,
         esDominioConocidoMalicioso: false,
         tiempoProcesamientoMs: Math.round(tiempoFin - tiempoInicio),
+        huellaSha256,
       };
+
+      resultadoParcial.fichaForense = generarFichaForense(resultadoParcial);
+      return resultadoParcial;
     }
 
     // Caso C: Evaluación heurística mediante el registro de reglas
@@ -162,19 +169,19 @@ export class MotorRiesgo {
           severidad: resultado.severidad,
           puntuacion: resultado.puntuacion,
           evidencias: resultado.evidencias,
+          tecnicaMitre: resultado.tecnicaMitre,
         });
         sumaPuntuacion += resultado.puntuacion;
       }
     }
 
-    // Factor de amplificación si se activan múltiples reglas simultáneas (sinergia de señales de ataque)
+    // Factor de amplificación si se activan múltiples reglas simultáneas
     if (reglasCoincidentes.length >= 3) {
       sumaPuntuacion = Math.round(sumaPuntuacion * 1.25);
     } else if (reglasCoincidentes.length === 2) {
       sumaPuntuacion = Math.round(sumaPuntuacion * 1.1);
     }
 
-    // Limitar la puntuación entre 0 y 100
     const puntuacionRiesgo = Math.min(100, Math.max(0, sumaPuntuacion));
     const clasificacion = this.clasificarPuntuacion(puntuacionRiesgo);
     const nivelConfianza = this.determinarNivelConfianza(
@@ -183,7 +190,7 @@ export class MotorRiesgo {
     );
     const tiempoFin = performance.now();
 
-    return {
+    const resultadoFinal: ResultadoAnalisisUrl = {
       url: urlEntrada,
       nombreHost,
       marcaTemporal: Date.now(),
@@ -195,6 +202,10 @@ export class MotorRiesgo {
       esDominioConocidoSeguro: false,
       esDominioConocidoMalicioso: false,
       tiempoProcesamientoMs: Math.round(tiempoFin - tiempoInicio),
+      huellaSha256,
     };
+
+    resultadoFinal.fichaForense = generarFichaForense(resultadoFinal);
+    return resultadoFinal;
   }
 }

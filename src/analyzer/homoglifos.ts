@@ -1,4 +1,4 @@
-import { ResultadoSimilitudMarca } from "../types/analisis";
+import { ResultadoSimilitudMarca, SustitucionCaracterVisual } from "../types/analisis";
 
 /**
  * Marcas objetivo monitoreadas comúnmente suplantadas en ataques de phishing en Colombia y globales.
@@ -56,7 +56,7 @@ export const MARCAS_OBJETIVO: MarcaObjetivo[] = [
 /**
  * Tabla de sustituciones comunes de homoglifos / caracteres visualmente engañosos.
  */
-const MAPA_HOMOGLIFOS: Record<string, string> = {
+export const MAPA_HOMOGLIFOS: Record<string, string> = {
   "0": "o",
   "1": "l",
   "|": "l",
@@ -98,9 +98,9 @@ export function calcularDistanciaLevenshtein(cadenaA: string, cadenaB: string): 
     for (let columna = 1; columna <= longitudB; columna++) {
       const costo = cadenaA[fila - 1] === cadenaB[columna - 1] ? 0 : 1;
       matriz[fila][columna] = Math.min(
-        matriz[fila - 1][columna] + 1, // Eliminación
-        matriz[fila][columna - 1] + 1, // Inserción
-        matriz[fila - 1][columna - 1] + costo // Sustitución
+        matriz[fila - 1][columna] + 1,
+        matriz[fila][columna - 1] + 1,
+        matriz[fila - 1][columna - 1] + costo
       );
     }
   }
@@ -109,27 +109,67 @@ export function calcularDistanciaLevenshtein(cadenaA: string, cadenaB: string): 
 }
 
 /**
- * Reemplaza homoglifos conocidos en un texto para revelar la palabra oculta.
+ * Reemplaza homoglifos conocidos en un texto para revelar la palabra oculta
+ * y genera el desglose de posiciones exactas para visualización en modo Rayos X.
  */
-export function desofuscarHomoglifos(texto: string): { textoDesofuscado: string; sustitucionesDetectadas: string[] } {
+export function desofuscarHomoglifos(texto: string): {
+  textoDesofuscado: string;
+  sustitucionesDetectadas: string[];
+  desgloseCaracteres: SustitucionCaracterVisual[];
+} {
   let textoResultado = texto.toLowerCase();
   const sustitucionesDetectadas: string[] = [];
+  const desgloseCaracteres: SustitucionCaracterVisual[] = [];
 
-  // Reemplazar patrones de múltiples caracteres primero
+  // Mapear sustituciones multi-carácter
   if (textoResultado.includes("vv")) {
+    const pos = textoResultado.indexOf("vv");
     textoResultado = textoResultado.replace(/vv/g, "w");
     sustitucionesDetectadas.push("vv -> w");
+    desgloseCaracteres.push({
+      posicion: pos,
+      caracterSospechoso: "vv",
+      caracterLegitimo: "w",
+      tipo: "Doble carácter por consonante",
+    });
   }
   if (textoResultado.includes("rn")) {
+    const pos = textoResultado.indexOf("rn");
     textoResultado = textoResultado.replace(/rn/g, "m");
     sustitucionesDetectadas.push("rn -> m");
+    desgloseCaracteres.push({
+      posicion: pos,
+      caracterSospechoso: "rn",
+      caracterLegitimo: "m",
+      tipo: "Doble carácter por consonante",
+    });
   }
   if (textoResultado.includes("cl")) {
+    const pos = textoResultado.indexOf("cl");
     textoResultado = textoResultado.replace(/cl/g, "d");
     sustitucionesDetectadas.push("cl -> d");
+    desgloseCaracteres.push({
+      posicion: pos,
+      caracterSospechoso: "cl",
+      caracterLegitimo: "d",
+      tipo: "Doble carácter por consonante",
+    });
   }
 
-  // Reemplazar caracteres individuales
+  // Mapear caracteres individuales
+  for (let i = 0; i < texto.length; i++) {
+    const char = texto[i].toLowerCase();
+    if (MAPA_HOMOGLIFOS[char]) {
+      const charLegitimo = MAPA_HOMOGLIFOS[char];
+      desgloseCaracteres.push({
+        posicion: i,
+        caracterSospechoso: char,
+        caracterLegitimo: charLegitimo,
+        tipo: `Homoglifo Numérico/Visual (${char} por ${charLegitimo})`,
+      });
+    }
+  }
+
   for (const [caracterVisual, caracterReal] of Object.entries(MAPA_HOMOGLIFOS)) {
     if (caracterVisual.length === 1 && textoResultado.includes(caracterVisual)) {
       const regex = new RegExp(caracterVisual.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), "g");
@@ -138,14 +178,13 @@ export function desofuscarHomoglifos(texto: string): { textoDesofuscado: string;
     }
   }
 
-  return { textoDesofuscado: textoResultado, sustitucionesDetectadas };
+  return { textoDesofuscado: textoResultado, sustitucionesDetectadas, desgloseCaracteres };
 }
 
 /**
  * Extrae las etiquetas o palabras constitutivas de un nombre de host.
  */
 export function extraerTokensDeHost(nombreHost: string): string[] {
-  // Dividir por puntos, guiones y números para obtener piezas
   return nombreHost
     .toLowerCase()
     .split(/[.\-_]/)
@@ -163,7 +202,7 @@ export function detectarSimilitudMarcas(
   const dominioMinusculas = dominioPrincipal.toLowerCase();
   const resultados: ResultadoSimilitudMarca[] = [];
 
-  const { textoDesofuscado, sustitucionesDetectadas } = desofuscarHomoglifos(hostMinusculas);
+  const { textoDesofuscado, sustitucionesDetectadas, desgloseCaracteres } = desofuscarHomoglifos(hostMinusculas);
   const tokensHost = extraerTokensDeHost(hostMinusculas);
   const tokensDesofuscados = extraerTokensDeHost(textoDesofuscado);
 
@@ -190,6 +229,7 @@ export function detectarSimilitudMarcas(
           distancia: 0,
           similitudPorcentaje: 100,
           tipoSustitucion: ["Nombre de marca incrustado en dominio no oficial"],
+          desgloseCaracteres,
         });
         break;
       }
@@ -207,6 +247,7 @@ export function detectarSimilitudMarcas(
           distancia: 1,
           similitudPorcentaje: 95,
           tipoSustitucion: [...sustitucionesDetectadas, "Uso de homoglifos para imitar marca"],
+          desgloseCaracteres,
         });
         break;
       }
@@ -221,7 +262,6 @@ export function detectarSimilitudMarcas(
         const longitudMaxima = Math.max(token.length, nombreMarca.length);
         const similitud = Math.round(((longitudMaxima - distancia) / longitudMaxima) * 100);
 
-        // Si la distancia es 1 o 2 para palabras medianas/largas, o similitud >= 75%
         if (distancia > 0 && distancia <= 2 && similitud >= 75 && longitudMaxima >= 4) {
           resultados.push({
             marcaObjetivo: marca.nombre,
@@ -230,6 +270,7 @@ export function detectarSimilitudMarcas(
             distancia,
             similitudPorcentaje: similitud,
             tipoSustitucion: [`Typosquatting/Variación tipográfica (${distancia} cambios)`],
+            desgloseCaracteres,
           });
           break;
         }

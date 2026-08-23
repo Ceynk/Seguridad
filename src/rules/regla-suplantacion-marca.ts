@@ -1,11 +1,7 @@
-import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla } from "../types/analisis";
+import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla, TecnicaMitreAttack } from "../types/analisis";
 import { ResultadoEvaluacionRegla } from "../types/reglas";
 import { BaseReglaRiesgo } from "./base-regla";
 
-/**
- * Regla para detectar intentos de suplantación de marcas comerciales, financieras o gubernamentales
- * mediante typosquatting, inserción en subdominios no oficiales u homoglifos.
- */
 export class ReglaSuplantacionMarca extends BaseReglaRiesgo {
   readonly id = "REGLA_SUPLANTACION_MARCA";
   readonly nombre = "Suplantación de Marca o Entidad";
@@ -13,6 +9,12 @@ export class ReglaSuplantacionMarca extends BaseReglaRiesgo {
     "Detecta dominios que imitan la identidad de bancos, billeteras digitales, entidades públicas o servicios de paquetería.";
   readonly severidad: SeveridadRegla = "CRITICA";
   readonly puntuacionBase = 45;
+  readonly tecnicaMitre: TecnicaMitreAttack = {
+    id: "T1036.007",
+    nombre: "Masquerading: Double File Extension / Homoglyph",
+    tactica: "Defense Evasion",
+    enlace: "https://attack.mitre.org/techniques/T1036/007/",
+  };
 
   evaluar(caracteristicas: CaracteristicasUrl): ResultadoEvaluacionRegla {
     if (caracteristicas.similitudMarcas.length === 0) {
@@ -35,7 +37,6 @@ export class ReglaSuplantacionMarca extends BaseReglaRiesgo {
         descripcion: `Técnica detectada: ${similitud.tipoSustitucion.join(", ")} (Similitud: ${similitud.similitudPorcentaje}%)`,
       });
 
-      // Si la similitud es exacta o 100% (marca en dominio no oficial), puntuación muy alta
       if (similitud.similitudPorcentaje >= 95) {
         puntuacionTotal += 45;
       } else if (similitud.similitudPorcentaje >= 80) {
@@ -45,9 +46,7 @@ export class ReglaSuplantacionMarca extends BaseReglaRiesgo {
       }
     }
 
-    // Limitar la puntuación aportada por esta regla individualmente
     const puntuacionFinal = Math.min(puntuacionTotal, 55);
-
     return this.crearResultadoActivado(puntuacionFinal, evidencias);
   }
 }

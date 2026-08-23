@@ -1,4 +1,4 @@
-import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla } from "../types/analisis";
+import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla, TecnicaMitreAttack } from "../types/analisis";
 import { ReglaRiesgo, ResultadoEvaluacionRegla } from "../types/reglas";
 
 /**
@@ -11,6 +11,7 @@ export abstract class BaseReglaRiesgo implements ReglaRiesgo {
   abstract readonly severidad: SeveridadRegla;
   abstract readonly puntuacionBase: number;
   readonly habilitada: boolean = true;
+  abstract readonly tecnicaMitre?: TecnicaMitreAttack;
 
   abstract evaluar(
     caracteristicas: CaracteristicasUrl
@@ -25,6 +26,7 @@ export abstract class BaseReglaRiesgo implements ReglaRiesgo {
       severidad: this.severidad,
       puntuacion: 0,
       evidencias: [],
+      tecnicaMitre: this.tecnicaMitre,
     };
   }
 
@@ -40,6 +42,7 @@ export abstract class BaseReglaRiesgo implements ReglaRiesgo {
       severidad: this.severidad,
       puntuacion,
       evidencias,
+      tecnicaMitre: this.tecnicaMitre,
     };
   }
 }

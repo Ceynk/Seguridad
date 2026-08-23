@@ -1,11 +1,7 @@
-import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla } from "../types/analisis";
+import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla, TecnicaMitreAttack } from "../types/analisis";
 import { ResultadoEvaluacionRegla } from "../types/reglas";
 import { BaseReglaRiesgo } from "./base-regla";
 
-/**
- * Regla para evaluar la presencia y combinación de palabras clave altamente sospechosas
- * (autenticación forzada, urgencia/multas, banca no oficial).
- */
 export class ReglaPalabrasSospechosas extends BaseReglaRiesgo {
   readonly id = "REGLA_PALABRAS_SOSPECHOSAS";
   readonly nombre = "Patrones Léxicos de Ingeniería Social";
@@ -13,6 +9,12 @@ export class ReglaPalabrasSospechosas extends BaseReglaRiesgo {
     "Detecta la acumulación de términos de urgencia, pagos, multas, premios y autenticación en la estructura de la URL.";
   readonly severidad: SeveridadRegla = "MEDIA";
   readonly puntuacionBase = 20;
+  readonly tecnicaMitre: TecnicaMitreAttack = {
+    id: "T1566.002",
+    nombre: "Phishing: Spearphishing Link / Social Engineering",
+    tactica: "Initial Access",
+    enlace: "https://attack.mitre.org/techniques/T1566/002/",
+  };
 
   evaluar(caracteristicas: CaracteristicasUrl): ResultadoEvaluacionRegla {
     const palabrasDetectadas: string[] = [
@@ -28,7 +30,6 @@ export class ReglaPalabrasSospechosas extends BaseReglaRiesgo {
     const evidencias: EvidenciaRiesgo[] = [];
     let puntuacion = 0;
 
-    // Si combina autenticación con urgencia/multas o banca (patrón típico phishing)
     const tieneAutenticacion = caracteristicas.contienePalabrasAutenticacion.length > 0;
     const tieneBanca = caracteristicas.contienePalabrasBancarias.length > 0;
     const tieneUrgencia = caracteristicas.contienePalabrasUrgencia.length > 0;

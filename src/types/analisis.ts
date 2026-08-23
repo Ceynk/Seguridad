@@ -1,5 +1,6 @@
 /**
- * Tipos y modelos de datos para el análisis de URLs y evaluación de riesgos.
+ * Tipos y modelos de datos para el análisis de URLs, evaluación de riesgos,
+ * análisis forense y mapeo a marcos de ciberseguridad (MITRE ATT&CK®).
  * Todas las estructuras y variables en español.
  */
 
@@ -8,6 +9,16 @@ export type ClasificacionRiesgo = "SEGURO" | "SOSPECHOSO" | "MALICIOSO";
 export type NivelConfianza = "BAJO" | "MEDIO" | "ALTO";
 
 export type SeveridadRegla = "BAJA" | "MEDIA" | "ALTA" | "CRITICA";
+
+/**
+ * Representación de una técnica del marco internacional MITRE ATT&CK®.
+ */
+export interface TecnicaMitreAttack {
+  id: string; // Ej: T1566.002
+  nombre: string; // Ej: Spearphishing Link
+  tactica: string; // Ej: Initial Access, Defense Evasion
+  enlace: string; // URL a mitre.org
+}
 
 export interface EvidenciaRiesgo {
   campo: string;
@@ -22,6 +33,14 @@ export interface ReglaCoincidente {
   severidad: SeveridadRegla;
   puntuacion: number;
   evidencias: EvidenciaRiesgo[];
+  tecnicaMitre?: TecnicaMitreAttack;
+}
+
+export interface SustitucionCaracterVisual {
+  posicion: number;
+  caracterSospechoso: string;
+  caracterLegitimo: string;
+  tipo: string;
 }
 
 export interface ResultadoSimilitudMarca {
@@ -31,6 +50,14 @@ export interface ResultadoSimilitudMarca {
   distancia: number;
   similitudPorcentaje: number;
   tipoSustitucion: string[];
+  desgloseCaracteres?: SustitucionCaracterVisual[];
+}
+
+export interface VectorIngenieriaSocial {
+  principioCoercion: "URGENCIA_TEMPORAL" | "AUTORIDAD_INSTITUCIONAL" | "MIEDO_SANCION" | "RECOMPENSA_FINANCIERA" | "ACCESO_CRITICO";
+  titulo: string;
+  descripcion: string;
+  terminosIdentificados: string[];
 }
 
 export interface CaracteristicasUrl {
@@ -60,6 +87,29 @@ export interface CaracteristicasUrl {
   contienePalabrasBancarias: string[];
   contienePalabrasUrgencia: string[];
   similitudMarcas: ResultadoSimilitudMarca[];
+  entropiaShannon: number; // Métrica matemática de aleatoriedad (0 - 8)
+  vectoresIngenieriaSocial: VectorIngenieriaSocial[];
+}
+
+export interface FichaForenseIncidente {
+  idIncidente: string;
+  marcaTemporalIso: string;
+  urlObjetivo: string;
+  nombreHost: string;
+  huellaSha256: string;
+  clasificacion: ClasificacionRiesgo;
+  puntuacionRiesgo: number;
+  entropiaShannon: number;
+  tecnicasMitreDetectadas: TecnicaMitreAttack[];
+  vectoresIngenieriaSocial: VectorIngenieriaSocial[];
+  reglasDetonadas: {
+    nombre: string;
+    severidad: SeveridadRegla;
+    puntuacion: number;
+    evidencias: EvidenciaRiesgo[];
+  }[];
+  resumenTecnico: string;
+  recomendacionRespuesta: string;
 }
 
 export interface ResultadoAnalisisUrl {
@@ -74,4 +124,6 @@ export interface ResultadoAnalisisUrl {
   esDominioConocidoSeguro: boolean;
   esDominioConocidoMalicioso: boolean;
   tiempoProcesamientoMs: number;
+  huellaSha256?: string;
+  fichaForense?: FichaForenseIncidente;
 }

@@ -1,4 +1,4 @@
-import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla } from "./analisis";
+import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla, TecnicaMitreAttack } from "./analisis";
 
 /**
  * Interface para el resultado de evaluación de una regla individual.
@@ -11,6 +11,7 @@ export interface ResultadoEvaluacionRegla {
   severidad: SeveridadRegla;
   puntuacion: number;
   evidencias: EvidenciaRiesgo[];
+  tecnicaMitre?: TecnicaMitreAttack;
 }
 
 /**
@@ -23,6 +24,7 @@ export interface ReglaRiesgo {
   readonly severidad: SeveridadRegla;
   readonly puntuacionBase: number;
   readonly habilitada: boolean;
+  readonly tecnicaMitre?: TecnicaMitreAttack;
 
   /**
    * Evalúa las características extraídas de la URL y determina si la regla se activa.

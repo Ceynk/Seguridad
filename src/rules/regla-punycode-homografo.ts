@@ -1,11 +1,7 @@
-import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla } from "../types/analisis";
+import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla, TecnicaMitreAttack } from "../types/analisis";
 import { ResultadoEvaluacionRegla } from "../types/reglas";
 import { BaseReglaRiesgo } from "./base-regla";
 
-/**
- * Regla para detectar el uso de Punycode (IDN) comúnmente empleado en ataques homográficos
- * para engañar visualmente al usuario con caracteres cirílicos, griegos u otros alfabetos.
- */
 export class ReglaPunycodeHomografo extends BaseReglaRiesgo {
   readonly id = "REGLA_PUNYCODE_HOMOGRAFO";
   readonly nombre = "Uso de Dominio Internacionalizado (Punycode / Homógrafo)";
@@ -13,6 +9,12 @@ export class ReglaPunycodeHomografo extends BaseReglaRiesgo {
     "Detecta nombres de dominio codificados en Punycode (prefijo 'xn--'), técnica habitual para suplantar dominios con caracteres visualmente idénticos.";
   readonly severidad: SeveridadRegla = "ALTA";
   readonly puntuacionBase = 35;
+  readonly tecnicaMitre: TecnicaMitreAttack = {
+    id: "T1036.007",
+    nombre: "Masquerading: IDN Homograph Attacks",
+    tactica: "Defense Evasion",
+    enlace: "https://attack.mitre.org/techniques/T1036/007/",
+  };
 
   evaluar(caracteristicas: CaracteristicasUrl): ResultadoEvaluacionRegla {
     if (!caracteristicas.esPunycode) {

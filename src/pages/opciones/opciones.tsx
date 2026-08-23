@@ -9,6 +9,8 @@ import {
   Plus,
   Trash2,
   CheckCircle,
+  FlaskConical,
+  Zap,
 } from "lucide-react";
 import { ConfiguracionExtension, ModoProteccion } from "../../types/configuracion";
 import {
@@ -29,10 +31,64 @@ export const ComponenteOpciones: React.FC = () => {
   const [nuevoDominioNegro, setNuevoDominioNegro] = useState<string>("");
   const [guardadoExitoso, setGuardadoExitoso] = useState<boolean>(false);
 
-  // Sandbox para pruebas de URLs
+  // Sandbox para pruebas de URLs manuales
   const [urlPrueba, setUrlPrueba] = useState<string>("");
   const [resultadoPrueba, setResultadoPrueba] = useState<ResultadoAnalisisUrl | null>(null);
   const [analizandoPrueba, setAnalizandoPrueba] = useState<boolean>(false);
+
+  // Estados del Laboratorio de Ataques Éticos (Cyber Attack Lab)
+  const [marcaVictima, setMarcaVictima] = useState<string>("bancolombia");
+  const [tecnicaEvasion, setTecnicaEvasion] = useState<string>("homoglifo");
+  const [tldMalicioso, setTldMalicioso] = useState<string>("xyz");
+  const [vectorCoercion, setVectorCoercion] = useState<string>("urgencia");
+  const [urlGeneradaLab, setUrlGeneradaLab] = useState<string>("");
+  const [resultadoLab, setResultadoLab] = useState<ResultadoAnalisisUrl | null>(null);
+
+  // Generador dinámico del vector de ataque para demostración en clase
+  const construirUrlAtaque = (
+    marca: string,
+    tecnica: string,
+    tld: string,
+    vector: string
+  ): string => {
+    let host = "";
+
+    switch (tecnica) {
+      case "homoglifo":
+        if (marca === "bancolombia") host = `banc0l0mbia-portal-verificacion.${tld}`;
+        else if (marca === "nequi") host = `nequ1-recuperacion-cuenta.${tld}`;
+        else if (marca === "daviplata") host = `dav1plata-desbloqueo-app.${tld}`;
+        else if (marca === "dian") host = `d1an-multas-facturacion.${tld}`;
+        else if (marca === "pse") host = `pse-pag0s-segur0s.${tld}`;
+        else host = `serv1entrega-env1os.${tld}`;
+        break;
+
+      case "typosquatting":
+        host = `${marca}a-login-oficial.${tld}`;
+        break;
+
+      case "subdominios_anidados":
+        host = `seguridad.login.portal-verificacion.${marca}.${tld}`;
+        break;
+
+      case "userinfo_arroba":
+        return `http://${marca}.com.co@servidor-phishing-externo.${tld}/login-actualizar-datos`;
+
+      default:
+        host = `${marca}-actualizar-datos.${tld}`;
+    }
+
+    let ruta = "/portal/ingreso";
+    if (vector === "miedo_multa") {
+      ruta = "/dian/fotomultas/comparendo-pendiente-inmediato";
+    } else if (vector === "premio") {
+      ruta = "/sorteo/ganador/reembolso-saldo-inmediato";
+    } else {
+      ruta = "/seguridad/actualizar-datos-urgente";
+    }
+
+    return `http://${host}${ruta}`;
+  };
 
   useEffect(() => {
     async function cargarConfiguracion(): Promise<void> {
@@ -40,16 +96,38 @@ export const ComponenteOpciones: React.FC = () => {
       setConfiguracion(config);
       motorRiesgoSandbox.actualizarConfiguracion(config);
 
-      // Verificar si viene una URL para analizar desde los parámetros GET
       const parametros = new URLSearchParams(window.location.search);
       const urlReportada = parametros.get("reportar");
       if (urlReportada) {
         setUrlPrueba(decodeURIComponent(urlReportada));
       }
+
+      // Inicializar URL de laboratorio
+      const urlInicial = construirUrlAtaque(marcaVictima, tecnicaEvasion, tldMalicioso, vectorCoercion);
+      setUrlGeneradaLab(urlInicial);
     }
 
     cargarConfiguracion();
   }, []);
+
+  const actualizarParametrosLab = (
+    nuevaMarca: string,
+    nuevaTecnica: string,
+    nuevoTld: string,
+    nuevoVector: string
+  ) => {
+    setMarcaVictima(nuevaMarca);
+    setTecnicaEvasion(nuevaTecnica);
+    setTldMalicioso(nuevoTld);
+    setVectorCoercion(nuevoVector);
+    const nuevaUrl = construirUrlAtaque(nuevaMarca, nuevaTecnica, nuevoTld, nuevoVector);
+    setUrlGeneradaLab(nuevaUrl);
+  };
+
+  const ejecutarSimulacionLaboratorio = async (): Promise<void> => {
+    const res = await motorRiesgoSandbox.analizarUrl(urlGeneradaLab);
+    setResultadoLab(res);
+  };
 
   const persistirConfiguracion = async (nuevaConfig: ConfiguracionExtension): Promise<void> => {
     setConfiguracion(nuevaConfig);
@@ -141,8 +219,8 @@ export const ComponenteOpciones: React.FC = () => {
       <header className="cabecera-opciones">
         <Shield className="icono-escudo-principal" size={36} />
         <div className="titulos-cabecera">
-          <h1>Panel de Configuración y Seguridad</h1>
-          <p>Personaliza las reglas de detección, sensibilidad y listas de confianza de PhishGuard Colombia</p>
+          <h1>Panel de Control & Laboratorio de Ciberseguridad</h1>
+          <p>PhishGuard Colombia • Heurística Forense, Simulación de Ataques y Marco MITRE ATT&CK®</p>
         </div>
       </header>
 
@@ -152,6 +230,130 @@ export const ComponenteOpciones: React.FC = () => {
           Configuración actualizada y aplicada correctamente.
         </div>
       )}
+
+      {/* LABORATORIO DE SIMULACIÓN DE ATAQUES ÉTICOS */}
+      <section className="contenedor-laboratorio">
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <FlaskConical size={22} color="#c084fc" />
+          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#f3e8ff" }}>
+            Laboratorio Interactivo de Simulación de Phishing (Para Demostración en Clase)
+          </h2>
+        </div>
+        <p style={{ fontSize: "12px", color: "#cbd5e1", lineHeight: "1.5" }}>
+          Construye vectores de ataque de phishing combinando entidades colombianas reales, técnicas de evasión de defensas y manipulación psicológica para ver cómo el motor de PhishGuard los detecta y desmantela capa por capa.
+        </p>
+
+        <div className="grid-selectores-lab">
+          <div className="campo-lab">
+            <label className="etiqueta-lab">1. Entidad Objetivo (Víctima)</label>
+            <select
+              className="select-lab"
+              value={marcaVictima}
+              onChange={(e) =>
+                actualizarParametrosLab(e.target.value, tecnicaEvasion, tldMalicioso, vectorCoercion)
+              }
+            >
+              <option value="bancolombia">Bancolombia (Banca Tradicional)</option>
+              <option value="nequi">Nequi (Billetera Digital)</option>
+              <option value="daviplata">Daviplata (Banca Móvil)</option>
+              <option value="dian">DIAN (Gobierno / Tributario)</option>
+              <option value="pse">PSE (Pasarela de Pagos ACH)</option>
+              <option value="servientrega">Servientrega (Paquetería)</option>
+            </select>
+          </div>
+
+          <div className="campo-lab">
+            <label className="etiqueta-lab">2. Técnica de Evasión (MITRE)</label>
+            <select
+              className="select-lab"
+              value={tecnicaEvasion}
+              onChange={(e) =>
+                actualizarParametrosLab(marcaVictima, e.target.value, tldMalicioso, vectorCoercion)
+              }
+            >
+              <option value="homoglifo">Homoglifos Visuales (0 por o, 1 por l) [T1036.007]</option>
+              <option value="typosquatting">Typosquatting / Levenshtein [T1036.007]</option>
+              <option value="subdominios_anidados">Subdominios Profundos Anidados [T1566.002]</option>
+              <option value="userinfo_arroba">Ofuscación RFC mediante '@' [T1566.002]</option>
+            </select>
+          </div>
+
+          <div className="campo-lab">
+            <label className="etiqueta-lab">3. Extensión TLD Maliciosa</label>
+            <select
+              className="select-lab"
+              value={tldMalicioso}
+              onChange={(e) =>
+                actualizarParametrosLab(marcaVictima, tecnicaEvasion, e.target.value, vectorCoercion)
+              }
+            >
+              <option value="xyz">.xyz (Abuso Masivo)</option>
+              <option value="top">.top (Alta Frecuencia Phishing)</option>
+              <option value="click">.click (Spam / Fake Portals)</option>
+              <option value="tk">.tk (Dominio Gratuito)</option>
+            </select>
+          </div>
+
+          <div className="campo-lab">
+            <label className="etiqueta-lab">4. Vector de Coerción Psicológica</label>
+            <select
+              className="select-lab"
+              value={vectorCoercion}
+              onChange={(e) =>
+                actualizarParametrosLab(marcaVictima, tecnicaEvasion, tldMalicioso, e.target.value)
+              }
+            >
+              <option value="urgencia">Urgencia Temporal (Cuenta Bloqueada)</option>
+              <option value="miedo_multa">Miedo / Coerción Legal (Embargo / Fotomulta)</option>
+              <option value="premio">Cebo de Recompensa (Devolución de Dinero)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <span style={{ fontSize: "11px", fontWeight: 700, color: "#94a3b8" }}>
+            Vector de Ataque Sintetizado:
+          </span>
+          <div className="caja-url-generada">
+            <span>{urlGeneradaLab}</span>
+          </div>
+        </div>
+
+        <button className="boton-lanzar-simulacion" onClick={ejecutarSimulacionLaboratorio}>
+          <Zap size={16} /> Detonar Simulación & Desmantelar con PhishGuard
+        </button>
+
+        {resultadoLab && (
+          <div className="resultado-sandbox" style={{ borderLeft: "4px solid #ef4444" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontWeight: 700, fontSize: "14px" }}>
+                🛡️ Veredicto Forense: {resultadoLab.clasificacion} ({resultadoLab.puntuacionRiesgo}/100)
+              </span>
+              <span style={{ fontSize: "11px", color: "#38bdf8", fontFamily: "ui-monospace" }}>
+                {resultadoLab.tiempoProcesamientoMs} ms
+              </span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "4px" }}>
+              <div style={{ background: "rgba(15, 23, 42, 0.6)", padding: "6px", borderRadius: "4px", fontSize: "11px" }}>
+                <strong>Entropía Shannon:</strong> {resultadoLab.caracteristicas.entropiaShannon} bits/símbolo
+              </div>
+              <div style={{ background: "rgba(15, 23, 42, 0.6)", padding: "6px", borderRadius: "4px", fontSize: "11px" }}>
+                <strong>Mapeo MITRE:</strong> {resultadoLab.reglasCoincidentes.map((r) => r.tecnicaMitre?.id).filter(Boolean).join(", ") || "N/A"}
+              </div>
+            </div>
+
+            <div style={{ marginTop: "6px" }}>
+              <strong style={{ fontSize: "11px", color: "#fca5a5" }}>Capas Defensivas Detonadas:</strong>
+              {resultadoLab.reglasCoincidentes.map((regla) => (
+                <div key={regla.id} style={{ fontSize: "11px", color: "#e2e8f0", marginTop: "2px" }}>
+                  • <strong>{regla.nombre}</strong> (+{regla.puntuacion} pts): {regla.descripcion}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Sensibilidad y Modos de Protección */}
       <section className="seccion-configuracion">
@@ -168,7 +370,7 @@ export const ComponenteOpciones: React.FC = () => {
           >
             <span className="titulo-modo">🛡️ Estricto</span>
             <p className="desc-modo">
-              Máxima alerta. Umbrales bajos (Sospechoso ≥ 20, Malicioso ≥ 55). Recomendado para usuarios vulnerables o alta exposición.
+              Máxima alerta. Umbrales bajos (Sospechoso ≥ 20, Malicioso ≥ 55).
             </p>
           </div>
 
@@ -180,7 +382,7 @@ export const ComponenteOpciones: React.FC = () => {
           >
             <span className="titulo-modo">⚖️ Equilibrado (Recomendado)</span>
             <p className="desc-modo">
-              Balance óptimo entre detección y prevención de falsos positivos (Sospechoso ≥ 30, Malicioso ≥ 70).
+              Balance óptimo con prevención de falsos positivos (Sospechoso ≥ 30, Malicioso ≥ 70).
             </p>
           </div>
 
@@ -192,7 +394,7 @@ export const ComponenteOpciones: React.FC = () => {
           >
             <span className="titulo-modo">🔓 Permisivo</span>
             <p className="desc-modo">
-              Solo bloquea amenazas con evidencia contundente y acumulativa (Sospechoso ≥ 45, Malicioso ≥ 80).
+              Solo bloquea con evidencia contundente acumulativa (Sospechoso ≥ 45, Malicioso ≥ 80).
             </p>
           </div>
         </div>
@@ -305,104 +507,96 @@ export const ComponenteOpciones: React.FC = () => {
       {/* Probador / Sandbox de Análisis de URLs */}
       <section className="seccion-configuracion">
         <h2 className="titulo-seccion">
-          <Search size={18} /> Probador Heurístico de URLs (Sandbox de Análisis)
+          <Search size={18} /> Probador Heurístico de URLs Arbitrarias
         </h2>
-        <p style={{ fontSize: "12px", color: "#94a3b8" }}>
-          Inserta cualquier URL para inspeccionar en tiempo real cómo el motor extrae características, evalúa homoglifos y asigna la puntuación de riesgo.
-        </p>
 
-        <form onSubmit={ejecutarPruebaUrl} className="caja-sandbox">
-          <div className="grupo-formulario-lista">
-            <input
-              type="text"
-              className="input-texto"
-              placeholder="Ej: http://banc0l0mbia-login-verificacion.xyz/portal/actualizar-datos"
-              value={urlPrueba}
-              onChange={(e) => setUrlPrueba(e.target.value)}
-              required
-            />
-            <button type="submit" className="boton-agregar" disabled={analizandoPrueba}>
-              {analizandoPrueba ? "Analizando..." : "Analizar URL"}
-            </button>
-          </div>
-
-          {resultadoPrueba && (
-            <div className="resultado-sandbox">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontWeight: 600 }}>Host: {resultadoPrueba.nombreHost}</span>
-                <span
-                  style={{
-                    padding: "3px 10px",
-                    borderRadius: "12px",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    backgroundColor:
-                      resultadoPrueba.clasificacion === "MALICIOSO"
-                        ? "rgba(239,68,68,0.2)"
-                        : resultadoPrueba.clasificacion === "SOSPECHOSO"
-                        ? "rgba(245,158,11,0.2)"
-                        : "rgba(16,185,129,0.2)",
-                    color:
-                      resultadoPrueba.clasificacion === "MALICIOSO"
-                        ? "#ef4444"
-                        : resultadoPrueba.clasificacion === "SOSPECHOSO"
-                        ? "#f59e0b"
-                        : "#10b981",
-                  }}
-                >
-                  {resultadoPrueba.clasificacion} ({resultadoPrueba.puntuacionRiesgo} / 100)
-                </span>
-              </div>
-
-              <div style={{ fontSize: "11px", color: "#94a3b8" }}>
-                Tiempo de procesamiento local: {resultadoPrueba.tiempoProcesamientoMs} ms • Confianza: {resultadoPrueba.nivelConfianza}
-              </div>
-
-              {resultadoPrueba.reglasCoincidentes.length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}>
-                  <strong style={{ fontSize: "12px", color: "#e2e8f0" }}>Reglas Disparadas:</strong>
-                  {resultadoPrueba.reglasCoincidentes.map((regla) => (
-                    <div
-                      key={regla.id}
-                      style={{
-                        backgroundColor: "rgba(15, 23, 42, 0.6)",
-                        padding: "8px",
-                        borderRadius: "6px",
-                        fontSize: "11px",
-                      }}
-                    >
-                      <div style={{ fontWeight: 600, color: "#f87171" }}>
-                        {regla.nombre} (+{regla.puntuacion} pts)
-                      </div>
-                      <div style={{ color: "#94a3b8" }}>{regla.descripcion}</div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ color: "#34d399", fontSize: "12px", marginTop: "4px" }}>
-                  ✓ No se identificaron anomalías sospechosas ni indicios de phishing.
-                </div>
-              )}
-            </div>
-          )}
+        <form onSubmit={ejecutarPruebaUrl} className="grupo-formulario-lista">
+          <input
+            type="text"
+            className="input-texto"
+            placeholder="Ej: http://banc0l0mbia-login-verificacion.xyz/portal/actualizar-datos"
+            value={urlPrueba}
+            onChange={(e) => setUrlPrueba(e.target.value)}
+            required
+          />
+          <button type="submit" className="boton-agregar" disabled={analizandoPrueba}>
+            {analizandoPrueba ? "Analizando..." : "Analizar"}
+          </button>
         </form>
+
+        {resultadoPrueba && (
+          <div className="resultado-sandbox">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontWeight: 600 }}>Host: {resultadoPrueba.nombreHost}</span>
+              <span
+                style={{
+                  padding: "3px 10px",
+                  borderRadius: "12px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  backgroundColor:
+                    resultadoPrueba.clasificacion === "MALICIOSO"
+                      ? "rgba(239,68,68,0.2)"
+                      : resultadoPrueba.clasificacion === "SOSPECHOSO"
+                      ? "rgba(245,158,11,0.2)"
+                      : "rgba(16,185,129,0.2)",
+                  color:
+                    resultadoPrueba.clasificacion === "MALICIOSO"
+                      ? "#ef4444"
+                      : resultadoPrueba.clasificacion === "SOSPECHOSO"
+                      ? "#f59e0b"
+                      : "#10b981",
+                }}
+              >
+                {resultadoPrueba.clasificacion} ({resultadoPrueba.puntuacionRiesgo} / 100)
+              </span>
+            </div>
+
+            <div style={{ fontSize: "11px", color: "#94a3b8" }}>
+              Tiempo: {resultadoPrueba.tiempoProcesamientoMs} ms • Entropía Shannon: {resultadoPrueba.caracteristicas.entropiaShannon} bits/símbolo
+            </div>
+
+            {resultadoPrueba.reglasCoincidentes.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}>
+                <strong style={{ fontSize: "12px", color: "#e2e8f0" }}>Reglas & Técnicas MITRE:</strong>
+                {resultadoPrueba.reglasCoincidentes.map((regla) => (
+                  <div
+                    key={regla.id}
+                    style={{
+                      backgroundColor: "rgba(15, 23, 42, 0.6)",
+                      padding: "8px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ fontWeight: 600, color: "#f87171" }}>{regla.nombre}</span>
+                      {regla.tecnicaMitre && (
+                        <span style={{ color: "#60a5fa", fontFamily: "ui-monospace" }}>
+                          [{regla.tecnicaMitre.id}]
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ color: "#94a3b8" }}>{regla.descripcion}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
-      {/* Privacidad y Seguridad */}
+      {/* Privacidad */}
       <section className="seccion-configuracion">
         <h2 className="titulo-seccion">
-          <Lock size={18} /> Declaración de Privacidad y Arquitectura Local
+          <Lock size={18} /> Privacidad y Arquitectura Local
         </h2>
         <p style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.6" }}>
-          PhishGuard Colombia está diseñado bajo la filosofía de <strong>Privacidad por Diseño (Privacy by Design)</strong>.
+          • El análisis forense se ejecuta <strong>100% de manera local</strong> en el Service Worker.
           <br />
-          • El análisis léxico, de homoglifos y reputación se ejecuta <strong>100% de manera local</strong> en tu dispositivo mediante el Service Worker de la extensión.
+          • <strong>NO</strong> se registra historial de navegación ni se capturan formularios/contraseñas.
           <br />
-          • <strong>NO</strong> se recopila ni almacena tu historial de navegación.
-          <br />
-          • <strong>NO</strong> se leen formularios ni contraseñas introducidas en páginas web.
-          <br />
-          • Los datos de sesión (conteo de sitios analizados y último host inspeccionado) residen únicamente en el almacenamiento volátil y seguro <code>chrome.storage.local</code>.
+          • Los datos forenses se generan bajo demanda para fines de respuesta a incidentes y auditoría técnica.
         </p>
       </section>
     </div>

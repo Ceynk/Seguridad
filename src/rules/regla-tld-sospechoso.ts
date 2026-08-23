@@ -1,11 +1,7 @@
-import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla } from "../types/analisis";
+import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla, TecnicaMitreAttack } from "../types/analisis";
 import { ResultadoEvaluacionRegla } from "../types/reglas";
 import { BaseReglaRiesgo } from "./base-regla";
 
-/**
- * Regla para evaluar dominios con TLDs de bajo costo frecuentemente abusados (.xyz, .top, .tk, etc.)
- * combinados con marcas o palabras sensibles.
- */
 export class ReglaTldSospechoso extends BaseReglaRiesgo {
   readonly id = "REGLA_TLD_SOSPECHOSO";
   readonly nombre = "Extensión de Dominio (TLD) de Alto Riesgo";
@@ -13,6 +9,12 @@ export class ReglaTldSospechoso extends BaseReglaRiesgo {
     "Detecta extensiones de dominio gratuitas o de bajo costo comúnmente abusadas para despliegues masivos de sitios fraudulentos.";
   readonly severidad: SeveridadRegla = "MEDIA";
   readonly puntuacionBase = 20;
+  readonly tecnicaMitre: TecnicaMitreAttack = {
+    id: "T1583.001",
+    nombre: "Resource Development: Acquire Domains",
+    tactica: "Resource Development",
+    enlace: "https://attack.mitre.org/techniques/T1583/001/",
+  };
 
   evaluar(caracteristicas: CaracteristicasUrl): ResultadoEvaluacionRegla {
     if (!caracteristicas.tldEsSospechoso) {
@@ -29,7 +31,6 @@ export class ReglaTldSospechoso extends BaseReglaRiesgo {
 
     let puntuacion = this.puntuacionBase;
 
-    // Si el TLD sospechoso está asociado a una marca imitada o palabras financieras, el riesgo se eleva
     if (
       caracteristicas.similitudMarcas.length > 0 ||
       caracteristicas.contienePalabrasBancarias.length > 0 ||
