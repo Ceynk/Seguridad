@@ -1,7 +1,8 @@
 :root {
-  --color-fondo: #0f172a;
-  --color-tarjeta: #1e293b;
-  --color-borde: #334155;
+  --color-fondo: #0b0f19;
+  --color-tarjeta: #131d2e;
+  --color-tarjeta-interna: #1e293b;
+  --color-borde: #2a3749;
   --color-texto-principal: #f8fafc;
   --color-texto-secundario: #94a3b8;
   --color-verde: #10b981;
@@ -12,8 +13,8 @@
   --color-rojo-fondo: rgba(239, 68, 68, 0.15);
   --color-azul: #3b82f6;
   --color-azul-fondo: rgba(59, 130, 246, 0.15);
-  --color-morado: #8b5cf6;
-  --color-morado-fondo: rgba(139, 92, 246, 0.15);
+  --color-morado: #a855f7;
+  --color-morado-fondo: rgba(168, 85, 247, 0.15);
   --fuente: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -24,8 +25,8 @@
 }
 
 body {
-  width: 380px;
-  min-height: 520px;
+  width: 400px;
+  min-height: 560px;
   background-color: var(--color-fondo);
   color: var(--color-texto-principal);
   font-family: var(--fuente);
@@ -95,10 +96,10 @@ body {
 .barra-pestanas {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  background-color: rgba(15, 23, 42, 0.7);
+  background-color: rgba(15, 23, 42, 0.9);
   border: 1px solid var(--color-borde);
   border-radius: 8px;
-  padding: 3px;
+  padding: 4px;
   gap: 4px;
 }
 
@@ -106,7 +107,7 @@ body {
   background: transparent;
   border: none;
   color: var(--color-texto-secundario);
-  padding: 6px 4px;
+  padding: 7px 4px;
   font-size: 11px;
   font-weight: 600;
   border-radius: 6px;
@@ -115,17 +116,67 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .boton-pestana:hover {
   color: var(--color-texto-principal);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .boton-pestana.pestana-activa {
   background-color: var(--color-azul);
   color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+}
+
+/* Selector de Pruebas Rápidas */
+.banner-pruebas-rapidas {
+  background-color: rgba(30, 41, 59, 0.6);
+  border: 1px dashed var(--color-borde);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fila-botones-demos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.boton-demo-chip {
+  background-color: #1e293b;
+  border: 1px solid var(--color-borde);
+  color: #e2e8f0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.boton-demo-chip:hover {
+  background-color: #334155;
+  border-color: var(--color-azul);
+}
+
+.input-rapido-url {
+  width: 100%;
+  background-color: #0f172a;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: white;
+  font-size: 11px;
+  font-family: inherit;
 }
 
 /* Tarjetas */
@@ -219,7 +270,7 @@ input:checked + .deslizador:before {
 .host-nombre {
   font-weight: 600;
   font-size: 13px;
-  max-width: 230px;
+  max-width: 240px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -263,8 +314,8 @@ input:checked + .deslizador:before {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   border: 3px solid var(--color-borde);
   font-weight: 700;
@@ -292,7 +343,7 @@ input:checked + .deslizador:before {
   color: var(--color-texto-principal);
 }
 
-/* MODO FORENSE / RAYOS X */
+/* MODO RAYOS X FORENSE */
 .contenedor-forense {
   display: flex;
   flex-direction: column;
@@ -300,13 +351,13 @@ input:checked + .deslizador:before {
 }
 
 .bloque-rayos-x {
-  background-color: rgba(15, 23, 42, 0.8);
+  background-color: var(--color-tarjeta);
   border: 1px solid var(--color-borde);
   border-radius: 8px;
-  padding: 10px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .titulo-bloque-forense {
@@ -321,37 +372,73 @@ input:checked + .deslizador:before {
 
 .visualizador-cadena-host {
   background-color: #020617;
-  border: 1px solid #1e293b;
+  border: 1px solid #334155;
   border-radius: 6px;
-  padding: 8px 10px;
+  padding: 10px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px;
+  font-size: 14px;
   display: flex;
   flex-wrap: wrap;
-  gap: 1px;
+  gap: 2px;
 }
 
 .caracter-normal {
-  color: #e2e8f0;
+  color: #cbd5e1;
+  padding: 2px 3px;
 }
 
 .caracter-alterado {
-  color: #ef4444;
-  background-color: rgba(239, 68, 68, 0.2);
+  color: #ffffff;
+  background-color: #dc2626;
   font-weight: 700;
-  border-radius: 2px;
-  padding: 0 1px;
-  text-decoration: underline;
+  border-radius: 3px;
+  padding: 2px 4px;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.6);
+  animation: pulsoAlerta 1.5s infinite alternate;
+}
+
+@keyframes pulsoAlerta {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+
+.leyenda-homoglifo {
+  background-color: rgba(220, 38, 38, 0.1);
+  border-left: 3px solid #ef4444;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #fca5a5;
 }
 
 .tarjeta-entropia {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: rgba(30, 41, 59, 0.7);
+  flex-direction: column;
+  gap: 6px;
+  background-color: var(--color-tarjeta);
   border: 1px solid var(--color-borde);
-  border-radius: 6px;
-  padding: 8px 10px;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.fila-entropia-valores {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.barra-entropia-fondo {
+  width: 100%;
+  height: 8px;
+  background-color: #1e293b;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barra-entropia-progreso {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
 }
 
 .valor-entropia {
@@ -369,13 +456,13 @@ input:checked + .deslizador:before {
 }
 
 .chip-mitre {
-  background-color: rgba(59, 130, 246, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.4);
+  background-color: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.35);
   border-radius: 6px;
-  padding: 6px 8px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   font-size: 11px;
 }
 
@@ -393,13 +480,14 @@ input:checked + .deslizador:before {
 
 .tactica-mitre {
   font-size: 9px;
-  background-color: rgba(59, 130, 246, 0.3);
-  padding: 1px 6px;
+  background-color: rgba(59, 130, 246, 0.25);
+  padding: 2px 6px;
   border-radius: 10px;
   color: #bfdbfe;
+  font-weight: 600;
 }
 
-/* Exportador Forense */
+/* TAB FICHA CSIRT */
 .contenedor-exportador {
   background-color: var(--color-tarjeta);
   border: 1px solid var(--color-borde);
@@ -414,11 +502,24 @@ input:checked + .deslizador:before {
   background-color: #020617;
   border: 1px solid var(--color-borde);
   border-radius: 6px;
-  padding: 8px;
+  padding: 8px 10px;
   font-family: ui-monospace, monospace;
-  font-size: 10px;
+  font-size: 11px;
   color: #38bdf8;
   word-break: break-all;
+}
+
+.caja-resumen-csirt {
+  background-color: #020617;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 10px;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: #e2e8f0;
+  max-height: 160px;
+  overflow-y: auto;
+  white-space: pre-wrap;
 }
 
 .boton-accion-forense {
@@ -426,7 +527,7 @@ input:checked + .deslizador:before {
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 9px;
+  padding: 10px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
