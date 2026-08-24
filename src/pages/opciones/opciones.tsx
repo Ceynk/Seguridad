@@ -11,6 +11,7 @@ import {
   CheckCircle,
   FlaskConical,
   Zap,
+  ShieldAlert,
 } from "lucide-react";
 import { ConfiguracionExtension, ModoProteccion } from "../../types/configuracion";
 import {
@@ -319,9 +320,24 @@ export const ComponenteOpciones: React.FC = () => {
           </div>
         </div>
 
-        <button className="boton-lanzar-simulacion" onClick={ejecutarSimulacionLaboratorio}>
-          <Zap size={16} /> Detonar Simulación & Desmantelar con PhishGuard
-        </button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button className="boton-lanzar-simulacion" style={{ flex: 1 }} onClick={ejecutarSimulacionLaboratorio}>
+            <Zap size={16} /> Analizar Vector en Sandbox
+          </button>
+          <button
+            className="boton-lanzar-simulacion"
+            style={{ background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)" }}
+            onClick={() => {
+              if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
+                chrome.runtime.sendMessage({ tipo: "PROBAR_BLOQUEO_EN_VIVO", url: urlGeneradaLab });
+              } else {
+                window.open(`../bloqueado/index.html?url=${encodeURIComponent(urlGeneradaLab)}&puntuacion=95&host=banc0l0mbia-portal-verificacion.xyz`, "_blank");
+              }
+            }}
+          >
+            <ShieldAlert size={16} /> Detonar Pantalla de Bloqueo en Pestaña
+          </button>
+        </div>
 
         {resultadoLab && (
           <div className="resultado-sandbox" style={{ borderLeft: "4px solid #ef4444" }}>
