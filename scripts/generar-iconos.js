@@ -3,32 +3,28 @@ import path from "node:path";
 import zlib from "node:zlib";
 
 function createPng(width, height, r, g, b) {
-  // Simple uncompressed/deflated raw PNG generator
   const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 
-  // IHDR
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(width, 0);
   ihdr.writeUInt32BE(height, 4);
-  ihdr.writeUInt8(8, 8); // bit depth
-  ihdr.writeUInt8(6, 9); // RGBA
-  ihdr.writeUInt8(0, 10); // compression
-  ihdr.writeUInt8(0, 11); // filter
-  ihdr.writeUInt8(0, 12); // interlace
+  ihdr.writeUInt8(8, 8);
+  ihdr.writeUInt8(6, 9);
+  ihdr.writeUInt8(0, 10);
+  ihdr.writeUInt8(0, 11);
+  ihdr.writeUInt8(0, 12);
 
   const ihdrChunk = createChunk("IHDR", ihdr);
 
-  // IDAT raw scanlines
   const rowSize = width * 4 + 1;
   const rawData = Buffer.alloc(rowSize * height);
 
   for (let y = 0; y < height; y++) {
     const rowOffset = y * rowSize;
-    rawData[rowOffset] = 0; // Filter None
+    rawData[rowOffset] = 0;
 
     for (let x = 0; x < width; x++) {
       const pixelOffset = rowOffset + 1 + x * 4;
-      // Shield-like circle / gradient pattern
       const dx = x - width / 2;
       const dy = y - height / 2;
       const dist = Math.sqrt(dx * dx + dy * dy);
@@ -50,8 +46,6 @@ function createPng(width, height, r, g, b) {
 
   const deflated = zlib.deflateSync(rawData);
   const idatChunk = createChunk("IDAT", deflated);
-
-  // IEND
   const iendChunk = createChunk("IEND", Buffer.alloc(0));
 
   return Buffer.concat([signature, ihdrChunk, idatChunk, iendChunk]);
@@ -69,7 +63,6 @@ function createChunk(type, data) {
   return chunk;
 }
 
-// Standard CRC32 table
 const crcTable = [];
 for (let n = 0; n < 256; n++) {
   let c = n;
@@ -94,8 +87,6 @@ if (!fs.existsSync(dirIconos)) {
 }
 
 [16, 32, 48, 128].forEach((size) => {
-  const png = createPng(size, size, 59, 130, 246); // Blue shield color #3b82f6
+  const png = createPng(size, size, 59, 130, 246);
   fs.writeFileSync(path.join(dirIconos, `icon-${size}.png`), png);
 });
-
-console.log("Iconos generados exitosamente en public/icons/");

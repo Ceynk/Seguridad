@@ -3,29 +3,13 @@ import { ServicioAlmacenamiento, CONFIGURACION_PREDETERMINADA } from "../storage
 import { ResultadoAnalisisUrl } from "../types/analisis";
 import { ConfiguracionExtension } from "../types/configuracion";
 
-/**
- * Service Worker de segundo plano (Manifest V3).
- * Intercepta la navegación web, coordina el análisis de riesgo y aplica bloqueos/inspecciones.
- */
-
-// Instancia única del motor de riesgo
 const motorRiesgo = new MotorRiesgo();
 
-// Caché en memoria de la configuración para respuesta instantánea (cero latencia de storage en navegación)
 let configuracionEnMemoria: ConfiguracionExtension = CONFIGURACION_PREDETERMINADA;
-
-// Conjunto en memoria de dominios con excepción temporal concedida por el usuario en la sesión
 const dominiosExcepcionTemporal = new Set<string>();
-
-// Caché en memoria del último resultado por pestaña para respuesta inmediata a la interfaz
 const mapaResultadosPorPestana = new Map<number, ResultadoAnalisisUrl>();
-
-// Conjunto para evitar bucles de redirección por pestaña
 const pestanasEnProcesoBloqueo = new Set<number>();
 
-/**
- * Actualiza el indicador visual (Badge) en el icono de la extensión para una pestaña específica.
- */
 function actualizarInsigniaPestana(idPestana: number, resultado: ResultadoAnalisisUrl): void {
   if (typeof chrome === "undefined" || !chrome.action) return;
 
@@ -45,9 +29,6 @@ function actualizarInsigniaPestana(idPestana: number, resultado: ResultadoAnalis
   }
 }
 
-/**
- * Determina si una URL debe ser excluida del análisis.
- */
 function esUrlExcluida(urlTexto: string): boolean {
   if (!urlTexto) return true;
   return (
@@ -62,9 +43,6 @@ function esUrlExcluida(urlTexto: string): boolean {
   );
 }
 
-/**
- * Construye la URL de la página de bloqueo local.
- */
 function construirUrlPaginaBloqueo(urlOriginal: string, host: string, resultado: ResultadoAnalisisUrl): string {
   const motivos = resultado.reglasCoincidentes.map((r) => ({
     nombre: r.nombre,
@@ -83,9 +61,6 @@ function construirUrlPaginaBloqueo(urlOriginal: string, host: string, resultado:
   );
 }
 
-/**
- * Función centralizada y ultra-rápida de inspección y bloqueo de navegación.
- */
 async function procesarNavegacion(idPestana: number, urlTexto: string): Promise<boolean> {
   if (esUrlExcluida(urlTexto)) return false;
   if (!configuracionEnMemoria.proteccionHabilitada) return false;
@@ -102,12 +77,10 @@ async function procesarNavegacion(idPestana: number, urlTexto: string): Promise<
     const host = urlObj.hostname.toLowerCase();
     if (dominiosExcepcionTemporal.has(host)) return false;
 
-    // Ejecutar análisis heurístico y de reputación
     const resultado = await motorRiesgo.analizarUrl(urlTexto);
     mapaResultadosPorPestana.set(idPestana, resultado);
     actualizarInsigniaPestana(idPestana, resultado);
 
-    // Registro asíncrono en segundo plano (sin retrasar el bloqueo)
     ServicioAlmacenamiento.registrarAnalisis({
       url: urlTexto,
       nombreHost: host,
@@ -116,7 +89,6 @@ async function procesarNavegacion(idPestana: number, urlTexto: string): Promise<
       marcaTemporal: resultado.marcaTemporal,
     }).catch(() => {});
 
-    // Si es MALICIOSO y el bloqueo automático está activo, REDIRIGIR INMEDIATAMENTE
     if (
       resultado.clasificacion === "MALICIOSO" &&
       configuracionEnMemoria.bloquearMaliciososAutomaticamente
@@ -132,15 +104,11 @@ async function procesarNavegacion(idPestana: number, urlTexto: string): Promise<
       return true;
     }
   } catch {
-    // Silencioso ante errores
   }
 
   return false;
 }
 
-/**
- * Inicializa la configuración y eventos del Service Worker.
- */
 async function inicializarServiceWorker(): Promise<void> {
   try {
     const config = await ServicioAlmacenamiento.obtenerConfiguracion();
@@ -153,9 +121,6 @@ async function inicializarServiceWorker(): Promise<void> {
 
 inicializarServiceWorker();
 
-/**
- * Interceptor 1: webNavigation.onBeforeNavigate (Captura antes de la solicitud de red)
- */
 if (typeof chrome !== "undefined" && chrome.webNavigation && chrome.webNavigation.onBeforeNavigate) {
   chrome.webNavigation.onBeforeNavigate.addListener((detalles) => {
     if (detalles.frameId === 0) {
@@ -164,9 +129,6 @@ if (typeof chrome !== "undefined" && chrome.webNavigation && chrome.webNavigatio
   });
 }
 
-/**
- * Interceptor 2: tabs.onUpdated (Captura cambios de URL en la barra de direcciones o enlaces)
- */
 if (typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.onUpdated) {
   chrome.tabs.onUpdated.addListener((idPestana, cambioInfo, pestana) => {
     if (cambioInfo.url) {
@@ -177,9 +139,6 @@ if (typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.onUpdated) {
   });
 }
 
-/**
- * Limpieza de recursos al cerrar pestañas.
- */
 if (typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.onRemoved) {
   chrome.tabs.onRemoved.addListener((idPestana) => {
     mapaResultadosPorPestana.delete(idPestana);
@@ -187,9 +146,6 @@ if (typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.onRemoved) {
   });
 }
 
-/**
- * Mensajería entre componentes (Popup, Opciones, Bloqueo y Service Worker).
- */
 if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessage) {
   chrome.runtime.onMessage.addListener((mensaje, _remitente, responder) => {
     (async () => {

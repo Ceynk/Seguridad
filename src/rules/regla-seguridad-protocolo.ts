@@ -6,12 +6,12 @@ export class ReglaSeguridadProtocolo extends BaseReglaRiesgo {
   readonly id = "REGLA_SEGURIDAD_PROTOCOLO";
   readonly nombre = "Protocolo No Cifrado (HTTP)";
   readonly descripcion =
-    "Detecta la ausencia de cifrado HTTPS, especialmente en páginas que solicitan datos sensibles o pagos.";
+    "Detecta el uso de protocolo HTTP no cifrado en páginas web.";
   readonly severidad: SeveridadRegla = "MEDIA";
   readonly puntuacionBase = 15;
   readonly tecnicaMitre: TecnicaMitreAttack = {
     id: "T1040",
-    nombre: "Network Sniffing / Cleartext Credential Exposure",
+    nombre: "Network Sniffing",
     tactica: "Credential Access",
     enlace: "https://attack.mitre.org/techniques/T1040/",
   };

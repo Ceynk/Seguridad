@@ -20,7 +20,7 @@ describe("Módulo de Homoglifos y Similitud de Marcas", () => {
     expect(caso1.sustitucionesDetectadas.length).toBeGreaterThan(0);
 
     const caso2 = desofuscarHomoglifos("nequ1");
-    expect(caso2.textoDesofuscado).toBe("nequl"); // 1 -> l
+    expect(caso2.textoDesofuscado).toBe("nequl");
 
     const caso3 = desofuscarHomoglifos("d4v1pl4t4");
     expect(caso3.textoDesofuscado).toBe("davlplata");

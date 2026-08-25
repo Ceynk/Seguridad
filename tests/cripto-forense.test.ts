@@ -9,15 +9,12 @@ import { MotorRiesgo } from "../src/analyzer/motor-riesgo";
 
 describe("Módulo de Criptografía Forense y Telemetría", () => {
   it("debe calcular la entropía de Shannon correctamente", () => {
-    // Cadena repetitiva tiene entropía 0
     expect(calcularEntropiaShannon("aaaaa")).toBe(0);
 
-    // Dominio normal tiene entropía típica entre 2.5 y 3.8
     const entropiaNormal = calcularEntropiaShannon("bancolombia.com");
     expect(entropiaNormal).toBeGreaterThan(2.0);
     expect(entropiaNormal).toBeLessThan(4.5);
 
-    // Cadena aleatoria tiene mayor entropía
     const entropiaAleatoria = calcularEntropiaShannon("x8k2-m9zq-1p7v-99a.xyz");
     expect(entropiaAleatoria).toBeGreaterThan(3.5);
   });
@@ -45,16 +42,16 @@ describe("Módulo de Criptografía Forense y Telemetría", () => {
     expect(ficha.vectoresIngenieriaSocial.length).toBeGreaterThan(0);
   });
 
-  it("debe exportar un informe en Markdown con formato profesional CSIRT", async () => {
+  it("debe exportar un informe en Markdown", async () => {
     const motor = new MotorRiesgo();
     const resultado = await motor.analizarUrl("http://banc0l0mbia-login-verificacion.xyz/dian/fotomulta");
     const ficha = generarFichaForense(resultado);
 
     const markdown = exportarInformeMarkdown(ficha);
 
-    expect(markdown).toContain("FICHA TÉCNICA DE INCIDENTE FORENSE");
+    expect(markdown).toContain("FICHA TECNICA DE INCIDENTE FORENSE");
     expect(markdown).toContain("MITRE ATT&CK");
     expect(markdown).toContain(ficha.huellaSha256);
-    expect(markdown).toContain("Playbook CSIRT");
+    expect(markdown).toContain("Recomendaciones de Respuesta al Incidente");
   });
 });

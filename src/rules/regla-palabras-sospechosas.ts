@@ -6,12 +6,12 @@ export class ReglaPalabrasSospechosas extends BaseReglaRiesgo {
   readonly id = "REGLA_PALABRAS_SOSPECHOSAS";
   readonly nombre = "Patrones Léxicos de Ingeniería Social";
   readonly descripcion =
-    "Detecta la acumulación de términos de urgencia, pagos, multas, premios y autenticación en la estructura de la URL.";
+    "Detecta acumulación de términos de urgencia, pagos, multas, premios y autenticación en la URL.";
   readonly severidad: SeveridadRegla = "MEDIA";
   readonly puntuacionBase = 20;
   readonly tecnicaMitre: TecnicaMitreAttack = {
     id: "T1566.002",
-    nombre: "Phishing: Spearphishing Link / Social Engineering",
+    nombre: "Phishing: Spearphishing Link",
     tactica: "Initial Access",
     enlace: "https://attack.mitre.org/techniques/T1566/002/",
   };
@@ -39,14 +39,14 @@ export class ReglaPalabrasSospechosas extends BaseReglaRiesgo {
       evidencias.push({
         campo: "combinacionTerminos",
         valorEncontrado: palabrasDetectadas.join(", "),
-        descripcion: "Combinación de términos de autenticación/acceso con entidades financieras o alertas de urgencia.",
+        descripcion: "Combinación de términos de autenticación con entidades financieras o urgencia.",
       });
     } else if (palabrasDetectadas.length >= 3) {
       puntuacion += 25;
       evidencias.push({
         campo: "densidadTerminos",
         valorEncontrado: palabrasDetectadas.join(", "),
-        descripcion: `Múltiples palabras clave sensibles en la URL (${palabrasDetectadas.length} términos).`,
+        descripcion: `Múltiples palabras clave sensibles en la URL (${palabrasDetectadas.length}).`,
       });
     } else if (palabrasDetectadas.length >= 1) {
       puntuacion += 10;

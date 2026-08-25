@@ -4,9 +4,6 @@ import {
   RegistroSitioReciente,
 } from "../types/configuracion";
 
-/**
- * Configuración predeterminada segura del sistema.
- */
 export const CONFIGURACION_PREDETERMINADA: ConfiguracionExtension = {
   proteccionHabilitada: true,
   modoProteccion: "EQUILIBRADO",
@@ -19,9 +16,6 @@ export const CONFIGURACION_PREDETERMINADA: ConfiguracionExtension = {
   permitirBypassTemporal: true,
 };
 
-/**
- * Estadísticas iniciales de sesión.
- */
 export const ESTADISTICAS_PREDETERMINADAS: EstadisticasSesion = {
   sitiosAnalizados: 0,
   amenazasBloqueadas: 0,
@@ -31,16 +25,9 @@ export const ESTADISTICAS_PREDETERMINADAS: EstadisticasSesion = {
 const CLAVE_ALMACENAMIENTO_CONFIGURACION = "phishguard_configuracion";
 const CLAVE_ALMACENAMIENTO_ESTADISTICAS = "phishguard_estadisticas_sesion";
 
-/**
- * Servicio de almacenamiento local tipado y seguro para Chrome Storage API.
- * Respeta la privacidad: NO almacena historial de navegación persistente ni contenido privado.
- */
 export class ServicioAlmacenamiento {
   private static memoriaLocal: Record<string, unknown> = {};
 
-  /**
-   * Determina si la API de Chrome Extensions está disponible.
-   */
   private static esEntornoExtension(): boolean {
     return (
       typeof chrome !== "undefined" &&
@@ -49,9 +36,6 @@ export class ServicioAlmacenamiento {
     );
   }
 
-  /**
-   * Obtiene la configuración actual del usuario.
-   */
   public static async obtenerConfiguracion(): Promise<ConfiguracionExtension> {
     if (this.esEntornoExtension()) {
       return new Promise((resolver) => {
@@ -77,9 +61,6 @@ export class ServicioAlmacenamiento {
     return enMemoria ? { ...CONFIGURACION_PREDETERMINADA, ...enMemoria } : CONFIGURACION_PREDETERMINADA;
   }
 
-  /**
-   * Guarda las preferencias de configuración del usuario.
-   */
   public static async guardarConfiguracion(
     configuracion: ConfiguracionExtension
   ): Promise<void> {
@@ -95,9 +76,6 @@ export class ServicioAlmacenamiento {
     this.memoriaLocal[CLAVE_ALMACENAMIENTO_CONFIGURACION] = configuracion;
   }
 
-  /**
-   * Obtiene las estadísticas acumuladas en la sesión.
-   */
   public static async obtenerEstadisticas(): Promise<EstadisticasSesion> {
     if (this.esEntornoExtension()) {
       return new Promise((resolver) => {
@@ -123,9 +101,6 @@ export class ServicioAlmacenamiento {
     return enMemoria ? { ...ESTADISTICAS_PREDETERMINADAS, ...enMemoria } : ESTADISTICAS_PREDETERMINADAS;
   }
 
-  /**
-   * Actualiza el registro del último sitio analizado y sus contadores.
-   */
   public static async registrarAnalisis(
     sitio: RegistroSitioReciente
   ): Promise<EstadisticasSesion> {
@@ -154,9 +129,6 @@ export class ServicioAlmacenamiento {
     return estadisticasActuales;
   }
 
-  /**
-   * Restablece las métricas de la sesión a ceros.
-   */
   public static async reiniciarEstadisticas(): Promise<void> {
     if (this.esEntornoExtension()) {
       await new Promise<void>((resolver) => {

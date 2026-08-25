@@ -32,12 +32,10 @@ export const ComponenteOpciones: React.FC = () => {
   const [nuevoDominioNegro, setNuevoDominioNegro] = useState<string>("");
   const [guardadoExitoso, setGuardadoExitoso] = useState<boolean>(false);
 
-  // Sandbox para pruebas de URLs manuales
   const [urlPrueba, setUrlPrueba] = useState<string>("");
   const [resultadoPrueba, setResultadoPrueba] = useState<ResultadoAnalisisUrl | null>(null);
   const [analizandoPrueba, setAnalizandoPrueba] = useState<boolean>(false);
 
-  // Estados del Laboratorio de Ataques Éticos (Cyber Attack Lab)
   const [marcaVictima, setMarcaVictima] = useState<string>("bancolombia");
   const [tecnicaEvasion, setTecnicaEvasion] = useState<string>("homoglifo");
   const [tldMalicioso, setTldMalicioso] = useState<string>("xyz");
@@ -45,7 +43,6 @@ export const ComponenteOpciones: React.FC = () => {
   const [urlGeneradaLab, setUrlGeneradaLab] = useState<string>("");
   const [resultadoLab, setResultadoLab] = useState<ResultadoAnalisisUrl | null>(null);
 
-  // Generador dinámico del vector de ataque para demostración en clase
   const construirUrlAtaque = (
     marca: string,
     tecnica: string,
@@ -103,7 +100,6 @@ export const ComponenteOpciones: React.FC = () => {
         setUrlPrueba(decodeURIComponent(urlReportada));
       }
 
-      // Inicializar URL de laboratorio
       const urlInicial = construirUrlAtaque(marcaVictima, tecnicaEvasion, tldMalicioso, vectorCoercion);
       setUrlGeneradaLab(urlInicial);
     }
@@ -216,37 +212,35 @@ export const ComponenteOpciones: React.FC = () => {
 
   return (
     <div className="contenedor-opciones">
-      {/* Cabecera */}
       <header className="cabecera-opciones">
         <Shield className="icono-escudo-principal" size={36} />
         <div className="titulos-cabecera">
-          <h1>Panel de Control & Laboratorio de Ciberseguridad</h1>
-          <p>PhishGuard Colombia • Heurística Forense, Simulación de Ataques y Marco MITRE ATT&CK®</p>
+          <h1>Panel de Control & Simulación</h1>
+          <p>PhishGuard Colombia • Heurística y Reglas de Detección</p>
         </div>
       </header>
 
       {guardadoExitoso && (
         <div className="mensaje-guardado">
           <CheckCircle size={18} />
-          Configuración actualizada y aplicada correctamente.
+          Configuración actualizada correctamente.
         </div>
       )}
 
-      {/* LABORATORIO DE SIMULACIÓN DE ATAQUES ÉTICOS */}
       <section className="contenedor-laboratorio">
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <FlaskConical size={22} color="#c084fc" />
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#f3e8ff" }}>
-            Laboratorio Interactivo de Simulación de Phishing (Para Demostración en Clase)
+            Simulador de URLs y Vectores de Ataque
           </h2>
         </div>
         <p style={{ fontSize: "12px", color: "#cbd5e1", lineHeight: "1.5" }}>
-          Construye vectores de ataque de phishing combinando entidades colombianas reales, técnicas de evasión de defensas y manipulación psicológica para ver cómo el motor de PhishGuard los detecta y desmantela capa por capa.
+          Permite generar y evaluar variantes sintácticas para comprobar la respuesta del motor de detección ante distintas técnicas de evasión.
         </p>
 
         <div className="grid-selectores-lab">
           <div className="campo-lab">
-            <label className="etiqueta-lab">1. Entidad Objetivo (Víctima)</label>
+            <label className="etiqueta-lab">1. Entidad Objetivo</label>
             <select
               className="select-lab"
               value={marcaVictima}
@@ -254,17 +248,17 @@ export const ComponenteOpciones: React.FC = () => {
                 actualizarParametrosLab(e.target.value, tecnicaEvasion, tldMalicioso, vectorCoercion)
               }
             >
-              <option value="bancolombia">Bancolombia (Banca Tradicional)</option>
-              <option value="nequi">Nequi (Billetera Digital)</option>
-              <option value="daviplata">Daviplata (Banca Móvil)</option>
-              <option value="dian">DIAN (Gobierno / Tributario)</option>
-              <option value="pse">PSE (Pasarela de Pagos ACH)</option>
-              <option value="servientrega">Servientrega (Paquetería)</option>
+              <option value="bancolombia">Bancolombia</option>
+              <option value="nequi">Nequi</option>
+              <option value="daviplata">Daviplata</option>
+              <option value="dian">DIAN</option>
+              <option value="pse">PSE</option>
+              <option value="servientrega">Servientrega</option>
             </select>
           </div>
 
           <div className="campo-lab">
-            <label className="etiqueta-lab">2. Técnica de Evasión (MITRE)</label>
+            <label className="etiqueta-lab">2. Técnica de Evasión</label>
             <select
               className="select-lab"
               value={tecnicaEvasion}
@@ -272,15 +266,15 @@ export const ComponenteOpciones: React.FC = () => {
                 actualizarParametrosLab(marcaVictima, e.target.value, tldMalicioso, vectorCoercion)
               }
             >
-              <option value="homoglifo">Homoglifos Visuales (0 por o, 1 por l) [T1036.007]</option>
-              <option value="typosquatting">Typosquatting / Levenshtein [T1036.007]</option>
-              <option value="subdominios_anidados">Subdominios Profundos Anidados [T1566.002]</option>
-              <option value="userinfo_arroba">Ofuscación RFC mediante '@' [T1566.002]</option>
+              <option value="homoglifo">Homoglifos Visuales (0 por o, 1 por l)</option>
+              <option value="typosquatting">Typosquatting / Variación Levenshtein</option>
+              <option value="subdominios_anidados">Subdominios Anidados</option>
+              <option value="userinfo_arroba">Uso de @ en URL</option>
             </select>
           </div>
 
           <div className="campo-lab">
-            <label className="etiqueta-lab">3. Extensión TLD Maliciosa</label>
+            <label className="etiqueta-lab">3. Extensión TLD</label>
             <select
               className="select-lab"
               value={tldMalicioso}
@@ -288,15 +282,15 @@ export const ComponenteOpciones: React.FC = () => {
                 actualizarParametrosLab(marcaVictima, tecnicaEvasion, e.target.value, vectorCoercion)
               }
             >
-              <option value="xyz">.xyz (Abuso Masivo)</option>
-              <option value="top">.top (Alta Frecuencia Phishing)</option>
-              <option value="click">.click (Spam / Fake Portals)</option>
-              <option value="tk">.tk (Dominio Gratuito)</option>
+              <option value="xyz">.xyz</option>
+              <option value="top">.top</option>
+              <option value="click">.click</option>
+              <option value="tk">.tk</option>
             </select>
           </div>
 
           <div className="campo-lab">
-            <label className="etiqueta-lab">4. Vector de Coerción Psicológica</label>
+            <label className="etiqueta-lab">4. Vector Léxico</label>
             <select
               className="select-lab"
               value={vectorCoercion}
@@ -305,15 +299,15 @@ export const ComponenteOpciones: React.FC = () => {
               }
             >
               <option value="urgencia">Urgencia Temporal (Cuenta Bloqueada)</option>
-              <option value="miedo_multa">Miedo / Coerción Legal (Embargo / Fotomulta)</option>
-              <option value="premio">Cebo de Recompensa (Devolución de Dinero)</option>
+              <option value="miedo_multa">Sanción Legal (Fotomulta / Embargo)</option>
+              <option value="premio">Recompensa (Devolución de Saldo)</option>
             </select>
           </div>
         </div>
 
         <div>
           <span style={{ fontSize: "11px", fontWeight: 700, color: "#94a3b8" }}>
-            Vector de Ataque Sintetizado:
+            URL Sintetizada:
           </span>
           <div className="caja-url-generada">
             <span>{urlGeneradaLab}</span>
@@ -322,7 +316,7 @@ export const ComponenteOpciones: React.FC = () => {
 
         <div style={{ display: "flex", gap: "8px" }}>
           <button className="boton-lanzar-simulacion" style={{ flex: 1 }} onClick={ejecutarSimulacionLaboratorio}>
-            <Zap size={16} /> Analizar Vector en Sandbox
+            <Zap size={16} /> Evaluar URL Sintetizada
           </button>
           <button
             className="boton-lanzar-simulacion"
@@ -335,7 +329,7 @@ export const ComponenteOpciones: React.FC = () => {
               }
             }}
           >
-            <ShieldAlert size={16} /> Detonar Pantalla de Bloqueo en Pestaña
+            <ShieldAlert size={16} /> Probar Pantalla de Bloqueo
           </button>
         </div>
 
@@ -343,7 +337,7 @@ export const ComponenteOpciones: React.FC = () => {
           <div className="resultado-sandbox" style={{ borderLeft: "4px solid #ef4444" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontWeight: 700, fontSize: "14px" }}>
-                🛡️ Veredicto Forense: {resultadoLab.clasificacion} ({resultadoLab.puntuacionRiesgo}/100)
+                Resultado: {resultadoLab.clasificacion} ({resultadoLab.puntuacionRiesgo}/100)
               </span>
               <span style={{ fontSize: "11px", color: "#38bdf8", fontFamily: "ui-monospace" }}>
                 {resultadoLab.tiempoProcesamientoMs} ms
@@ -355,12 +349,12 @@ export const ComponenteOpciones: React.FC = () => {
                 <strong>Entropía Shannon:</strong> {resultadoLab.caracteristicas.entropiaShannon} bits/símbolo
               </div>
               <div style={{ background: "rgba(15, 23, 42, 0.6)", padding: "6px", borderRadius: "4px", fontSize: "11px" }}>
-                <strong>Mapeo MITRE:</strong> {resultadoLab.reglasCoincidentes.map((r) => r.tecnicaMitre?.id).filter(Boolean).join(", ") || "N/A"}
+                <strong>MITRE ATT&CK:</strong> {resultadoLab.reglasCoincidentes.map((r) => r.tecnicaMitre?.id).filter(Boolean).join(", ") || "N/A"}
               </div>
             </div>
 
             <div style={{ marginTop: "6px" }}>
-              <strong style={{ fontSize: "11px", color: "#fca5a5" }}>Capas Defensivas Detonadas:</strong>
+              <strong style={{ fontSize: "11px", color: "#fca5a5" }}>Reglas Activadas:</strong>
               {resultadoLab.reglasCoincidentes.map((regla) => (
                 <div key={regla.id} style={{ fontSize: "11px", color: "#e2e8f0", marginTop: "2px" }}>
                   • <strong>{regla.nombre}</strong> (+{regla.puntuacion} pts): {regla.descripcion}
@@ -371,10 +365,9 @@ export const ComponenteOpciones: React.FC = () => {
         )}
       </section>
 
-      {/* Sensibilidad y Modos de Protección */}
       <section className="seccion-configuracion">
         <h2 className="titulo-seccion">
-          <Sliders size={18} /> Nivel de Sensibilidad y Protección
+          <Sliders size={18} /> Nivel de Sensibilidad
         </h2>
 
         <div className="cuadricula-modos">
@@ -384,7 +377,7 @@ export const ComponenteOpciones: React.FC = () => {
             }`}
             onClick={() => cambiarModo("ESTRICTO")}
           >
-            <span className="titulo-modo">🛡️ Estricto</span>
+            <span className="titulo-modo">Estricto</span>
             <p className="desc-modo">
               Máxima alerta. Umbrales bajos (Sospechoso ≥ 20, Malicioso ≥ 55).
             </p>
@@ -396,9 +389,9 @@ export const ComponenteOpciones: React.FC = () => {
             }`}
             onClick={() => cambiarModo("EQUILIBRADO")}
           >
-            <span className="titulo-modo">⚖️ Equilibrado (Recomendado)</span>
+            <span className="titulo-modo">Equilibrado</span>
             <p className="desc-modo">
-              Balance óptimo con prevención de falsos positivos (Sospechoso ≥ 30, Malicioso ≥ 70).
+              Balance recomendado con prevención de falsos positivos (Sospechoso ≥ 30, Malicioso ≥ 70).
             </p>
           </div>
 
@@ -408,7 +401,7 @@ export const ComponenteOpciones: React.FC = () => {
             }`}
             onClick={() => cambiarModo("PERMISIVO")}
           >
-            <span className="titulo-modo">🔓 Permisivo</span>
+            <span className="titulo-modo">Permisivo</span>
             <p className="desc-modo">
               Solo bloquea con evidencia contundente acumulativa (Sospechoso ≥ 45, Malicioso ≥ 80).
             </p>
@@ -419,7 +412,7 @@ export const ComponenteOpciones: React.FC = () => {
           <div className="info-opcion">
             <span className="nombre-opcion">Bloqueo automático de sitios maliciosos</span>
             <span className="desc-opcion">
-              Impide la carga de páginas clasificadas como MALICIOSAS redirigiendo a la pantalla de advertencia segura.
+              Impide la carga de páginas clasificadas como MALICIOSAS redirigiendo a la pantalla de bloqueo.
             </span>
           </div>
           <input
@@ -435,16 +428,14 @@ export const ComponenteOpciones: React.FC = () => {
         </div>
       </section>
 
-      {/* Listas Personalizadas */}
       <section className="seccion-configuracion">
         <h2 className="titulo-seccion">
-          <ListPlus size={18} /> Listas de Excepción Personalizadas
+          <ListPlus size={18} /> Listas de Excepción
         </h2>
 
-        {/* Lista Blanca */}
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <span style={{ fontSize: "13px", fontWeight: 600, color: "#10b981" }}>
-            Lista Blanca de Confianza (Siempre permitidos)
+            Lista Blanca (Siempre permitidos)
           </span>
           <form onSubmit={agregarListaBlanca} className="grupo-formulario-lista">
             <input
@@ -461,7 +452,7 @@ export const ComponenteOpciones: React.FC = () => {
           <div className="contenedor-chips">
             {configuracion.listaBlancaPersonalizada.length === 0 ? (
               <span style={{ fontSize: "12px", color: "#64748b" }}>
-                No has agregado dominios a tu lista blanca personal.
+                No hay dominios en la lista blanca personal.
               </span>
             ) : (
               configuracion.listaBlancaPersonalizada.map((dom) => (
@@ -480,10 +471,9 @@ export const ComponenteOpciones: React.FC = () => {
           </div>
         </div>
 
-        {/* Lista Negra */}
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "12px" }}>
           <span style={{ fontSize: "13px", fontWeight: 600, color: "#ef4444" }}>
-            Lista Negra de Bloqueo (Siempre bloqueados)
+            Lista Negra (Siempre bloqueados)
           </span>
           <form onSubmit={agregarListaNegra} className="grupo-formulario-lista">
             <input
@@ -500,7 +490,7 @@ export const ComponenteOpciones: React.FC = () => {
           <div className="contenedor-chips">
             {configuracion.listaNegraPersonalizada.length === 0 ? (
               <span style={{ fontSize: "12px", color: "#64748b" }}>
-                No has agregado dominios a tu lista negra personal.
+                No hay dominios en la lista negra personal.
               </span>
             ) : (
               configuracion.listaNegraPersonalizada.map((dom) => (
@@ -520,10 +510,9 @@ export const ComponenteOpciones: React.FC = () => {
         </div>
       </section>
 
-      {/* Probador / Sandbox de Análisis de URLs */}
       <section className="seccion-configuracion">
         <h2 className="titulo-seccion">
-          <Search size={18} /> Probador Heurístico de URLs Arbitrarias
+          <Search size={18} /> Probador de URLs
         </h2>
 
         <form onSubmit={ejecutarPruebaUrl} className="grupo-formulario-lista">
@@ -574,7 +563,7 @@ export const ComponenteOpciones: React.FC = () => {
 
             {resultadoPrueba.reglasCoincidentes.length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}>
-                <strong style={{ fontSize: "12px", color: "#e2e8f0" }}>Reglas & Técnicas MITRE:</strong>
+                <strong style={{ fontSize: "12px", color: "#e2e8f0" }}>Reglas activadas:</strong>
                 {resultadoPrueba.reglasCoincidentes.map((regla) => (
                   <div
                     key={regla.id}
@@ -602,17 +591,16 @@ export const ComponenteOpciones: React.FC = () => {
         )}
       </section>
 
-      {/* Privacidad */}
       <section className="seccion-configuracion">
         <h2 className="titulo-seccion">
-          <Lock size={18} /> Privacidad y Arquitectura Local
+          <Lock size={18} /> Privacidad
         </h2>
         <p style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.6" }}>
-          • El análisis forense se ejecuta <strong>100% de manera local</strong> en el Service Worker.
+          • El análisis se ejecuta de manera local en el navegador.
           <br />
-          • <strong>NO</strong> se registra historial de navegación ni se capturan formularios/contraseñas.
+          • No se almacena historial de navegación persistente ni se inspeccionan contraseñas o campos de formulario.
           <br />
-          • Los datos forenses se generan bajo demanda para fines de respuesta a incidentes y auditoría técnica.
+          • Los reportes forenses se generan bajo demanda para auditoría técnica.
         </p>
       </section>
     </div>

@@ -6,7 +6,7 @@ export class ReglaTldSospechoso extends BaseReglaRiesgo {
   readonly id = "REGLA_TLD_SOSPECHOSO";
   readonly nombre = "Extensión de Dominio (TLD) de Alto Riesgo";
   readonly descripcion =
-    "Detecta extensiones de dominio gratuitas o de bajo costo comúnmente abusadas para despliegues masivos de sitios fraudulentos.";
+    "Detecta extensiones de dominio comúnmente abusadas para despliegues de sitios fraudulentos.";
   readonly severidad: SeveridadRegla = "MEDIA";
   readonly puntuacionBase = 20;
   readonly tecnicaMitre: TecnicaMitreAttack = {
@@ -25,7 +25,7 @@ export class ReglaTldSospechoso extends BaseReglaRiesgo {
       {
         campo: "extensionTld",
         valorEncontrado: `.${caracteristicas.extensionTld}`,
-        descripcion: `El dominio utiliza la extensión '.${caracteristicas.extensionTld}', clasificada con alta tasa de abuso en campañas de phishing.`,
+        descripcion: `El dominio utiliza la extensión '.${caracteristicas.extensionTld}'.`,
       },
     ];
 

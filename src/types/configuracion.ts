@@ -1,13 +1,7 @@
 import { ClasificacionRiesgo } from "./analisis";
 
-/**
- * Modos de sensibilidad de protección disponibles.
- */
 export type ModoProteccion = "ESTRICTO" | "EQUILIBRADO" | "PERMISIVO";
 
-/**
- * Configuración general del usuario y la extensión.
- */
 export interface ConfiguracionExtension {
   proteccionHabilitada: boolean;
   modoProteccion: ModoProteccion;
@@ -20,9 +14,6 @@ export interface ConfiguracionExtension {
   permitirBypassTemporal: boolean;
 }
 
-/**
- * Registro de un sitio analizado recientemente (efímero en sesión, sin persistir historial completo).
- */
 export interface RegistroSitioReciente {
   url: string;
   nombreHost: string;
@@ -31,9 +22,6 @@ export interface RegistroSitioReciente {
   marcaTemporal: number;
 }
 
-/**
- * Estadísticas de la sesión actual de navegación.
- */
 export interface EstadisticasSesion {
   sitiosAnalizados: number;
   amenazasBloqueadas: number;

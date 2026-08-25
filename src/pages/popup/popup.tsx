@@ -34,22 +34,21 @@ const motorLocal = new MotorRiesgo();
 
 type TabPopup = "general" | "forense" | "reporte";
 
-// Casos de prueba preconfigurados para demostración rápida en clase
 const CASOS_DEMO = [
   {
-    nombre: "🚨 Banc0l0mbia Phishing",
+    nombre: "Banc0l0mbia Phishing",
     url: "http://banc0l0mbia-login-verificacion.xyz/portal/actualizar-datos",
   },
   {
-    nombre: "⚠️ Nequ1 Alerta",
+    nombre: "Nequ1 Alerta",
     url: "http://nequ1-recuperacion-cuenta.top/seguridad",
   },
   {
-    nombre: "⚖️ DIAN Fotomulta",
+    nombre: "DIAN Fotomulta",
     url: "http://d1an-multas-facturacion.click/fotomulta/inmediato",
   },
   {
-    nombre: "🟢 Google Legítimo",
+    nombre: "Google Legítimo",
     url: "https://www.google.com/search?q=ciberseguridad",
   },
 ];
@@ -69,7 +68,6 @@ export const ComponentePopup: React.FC = () => {
   const [urlBusquedaManual, setUrlBusquedaManual] = useState<string>("");
   const [esPaginaInterna, setEsPaginaInterna] = useState<boolean>(false);
 
-  // Analizar una URL dada y actualizar el estado
   const analizarUrlEnPopup = async (urlAAnalizar: string): Promise<void> => {
     setCargando(true);
     try {
@@ -103,7 +101,6 @@ export const ComponentePopup: React.FC = () => {
               url.startsWith("edge://")
             ) {
               setEsPaginaInterna(true);
-              // Cargar por defecto el primer caso demo para que las pestañas Rayos X y Ficha nunca queden vacías
               urlEncontrada = CASOS_DEMO[0].url;
             } else {
               urlEncontrada = url;
@@ -119,7 +116,6 @@ export const ComponentePopup: React.FC = () => {
         setAnalisisActual(resultado);
         setCargando(false);
       } catch {
-        // Fallback garantizado
         const resFallback = await motorLocal.analizarUrl(CASOS_DEMO[0].url);
         setAnalisisActual(resFallback);
         setCargando(false);
@@ -185,7 +181,7 @@ export const ComponentePopup: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const enlace = document.createElement("a");
     enlace.href = url;
-    enlace.download = `reporte_forense_${analisisActual.nombreHost || "incidente"}.md`;
+    enlace.download = `reporte_${analisisActual.nombreHost || "incidente"}.md`;
     enlace.click();
     URL.revokeObjectURL(url);
   };
@@ -197,7 +193,6 @@ export const ComponentePopup: React.FC = () => {
     }
   };
 
-  // Renderizador visual de homoglifos carácter por carácter
   const renderizarHostConRayosX = (host: string) => {
     const caracteresSospechosos: { char: string; legitimo: string }[] = [];
 
@@ -224,7 +219,7 @@ export const ComponentePopup: React.FC = () => {
         <div className="visualizador-cadena-host">{elementosChar}</div>
         {caracteresSospechosos.length > 0 && (
           <div className="leyenda-homoglifo">
-            ⚠️ <strong>Sustituciones tipográficas detectadas:</strong>{" "}
+            <strong>Sustituciones detectadas:</strong>{" "}
             {caracteresSospechosos
               .map((s) => `'${s.char}' imita a '${s.legitimo}'`)
               .join(", ")}
@@ -236,18 +231,17 @@ export const ComponentePopup: React.FC = () => {
 
   return (
     <div className="contenedor-popup">
-      {/* Cabecera */}
       <header className="cabecera">
         <div className="logo-titulo">
           <ShieldCheck className="icono-escudo" size={22} />
           <div>
             <h1 className="titulo-app">PhishGuard Colombia</h1>
-            <p className="subtitulo-app">Cyber Forensics & Threat Defense</p>
+            <p className="subtitulo-app">Detección de Phishing</p>
           </div>
         </div>
         <button
           className="boton-icono"
-          title="Configuración y Laboratorio de Ataques"
+          title="Configuración"
           onClick={abrirPaginaOpciones}
           aria-label="Abrir configuración"
         >
@@ -255,7 +249,6 @@ export const ComponentePopup: React.FC = () => {
         </button>
       </header>
 
-      {/* Barra de Pestañas */}
       <nav className="barra-pestanas">
         <button
           className={`boton-pestana ${tabActiva === "general" ? "pestana-activa" : ""}`}
@@ -277,11 +270,10 @@ export const ComponentePopup: React.FC = () => {
         </button>
       </nav>
 
-      {/* Banner de Pruebas Rápidas si está en página interna de Chrome o demo */}
       {esPaginaInterna && (
         <div className="banner-pruebas-rapidas">
           <span style={{ fontSize: "10px", color: "#93c5fd", fontWeight: 600 }}>
-            ⚡ Pestaña interna de Chrome detectada. Selecciona una prueba en vivo:
+            Pestaña interna detectada. Ejemplos de prueba:
           </span>
           <div className="fila-botones-demos">
             {CASOS_DEMO.map((caso, i) => (
@@ -298,12 +290,11 @@ export const ComponentePopup: React.FC = () => {
         </div>
       )}
 
-      {/* Buscador Rápido de URLs en Popup */}
       <form onSubmit={manejarBusquedaManual} style={{ display: "flex", gap: "6px" }}>
         <input
           type="text"
           className="input-rapido-url"
-          placeholder="Inspeccionar cualquier URL en vivo..."
+          placeholder="Inspeccionar URL..."
           value={urlBusquedaManual}
           onChange={(e) => setUrlBusquedaManual(e.target.value)}
         />
@@ -317,7 +308,6 @@ export const ComponentePopup: React.FC = () => {
         </button>
       </form>
 
-      {/* TAB 1: VISTA GENERAL */}
       {tabActiva === "general" && (
         <>
           <section className="tarjeta-estado-proteccion">
@@ -327,7 +317,7 @@ export const ComponentePopup: React.FC = () => {
               </span>
               <span className="subtexto-proteccion">
                 {configuracion.proteccionHabilitada
-                  ? "Inspección local y heurística en tiempo real"
+                  ? "Inspección local en tiempo real"
                   : "La extensión no bloqueará amenazas"}
               </span>
             </div>
@@ -344,7 +334,7 @@ export const ComponentePopup: React.FC = () => {
           <section className="tarjeta-analisis">
             {cargando ? (
               <p style={{ textAlign: "center", color: "#94a3b8", padding: "16px" }}>
-                Analizando artefacto web...
+                Analizando...
               </p>
             ) : analisisActual ? (
               <>
@@ -442,25 +432,22 @@ export const ComponentePopup: React.FC = () => {
         </>
       )}
 
-      {/* TAB 2: MODO FORENSE / RAYOS X */}
       {tabActiva === "forense" && (
         <section className="contenedor-forense">
           {analisisActual && (
             <>
-              {/* Rayos X Léxicos */}
               <div className="bloque-rayos-x">
                 <span className="titulo-bloque-forense">
-                  <Cpu size={14} /> Rayos X Léxicos & Homoglifos
+                  <Cpu size={14} /> Rayos X Léxicos y Homoglifos
                 </span>
                 {renderizarHostConRayosX(analisisActual.nombreHost)}
                 <span style={{ fontSize: "11px", color: "#94a3b8" }}>
                   {analisisActual.caracteristicas.similitudMarcas.length > 0
-                    ? `🎯 Marca imitada: ${analisisActual.caracteristicas.similitudMarcas[0].marcaObjetivo.toUpperCase()} (Similitud: ${analisisActual.caracteristicas.similitudMarcas[0].similitudPorcentaje}%)`
+                    ? `Marca identificada: ${analisisActual.caracteristicas.similitudMarcas[0].marcaObjetivo.toUpperCase()} (Similitud: ${analisisActual.caracteristicas.similitudMarcas[0].similitudPorcentaje}%)`
                     : "No se identificaron patrones de suplantación de marca conocida."}
                 </span>
               </div>
 
-              {/* Entropía de Shannon */}
               <div className="tarjeta-entropia">
                 <div className="fila-entropia-valores">
                   <div>
@@ -468,7 +455,7 @@ export const ComponentePopup: React.FC = () => {
                       ENTROPÍA DE SHANNON (H)
                     </span>
                     <p style={{ fontSize: "10px", color: "#94a3b8" }}>
-                      Aleatoriedad del dominio (DGA / Botnet)
+                      Aleatoriedad del dominio
                     </p>
                   </div>
                   <span className="valor-entropia">
@@ -487,10 +474,9 @@ export const ComponentePopup: React.FC = () => {
                 </div>
               </div>
 
-              {/* Mapeo MITRE ATT&CK */}
               <div className="bloque-rayos-x">
                 <span className="titulo-bloque-forense">
-                  <ShieldAlert size={14} /> Mapeo Marco MITRE ATT&CK®
+                  <ShieldAlert size={14} /> Marco MITRE ATT&CK
                 </span>
                 <div className="contenedor-mitre">
                   {analisisActual.reglasCoincidentes.filter((r) => r.tecnicaMitre).length > 0 ? (
@@ -509,17 +495,16 @@ export const ComponentePopup: React.FC = () => {
                       ))
                   ) : (
                     <span style={{ fontSize: "11px", color: "#64748b" }}>
-                      Sin técnicas adversarias MITRE detonadas para este artefacto.
+                      Sin técnicas MITRE asociadas a este artefacto.
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Ingeniería Social */}
               {analisisActual.caracteristicas.vectoresIngenieriaSocial.length > 0 && (
                 <div className="bloque-rayos-x">
                   <span className="titulo-bloque-forense">
-                    <BrainCircuit size={14} /> Coerción Psicológica (Cialdini)
+                    <BrainCircuit size={14} /> Patrones de Ingeniería Social
                   </span>
                   {analisisActual.caracteristicas.vectoresIngenieriaSocial.map((vector, i) => (
                     <div key={i} style={{ fontSize: "11px", color: "#e2e8f0" }}>
@@ -533,16 +518,15 @@ export const ComponentePopup: React.FC = () => {
         </section>
       )}
 
-      {/* TAB 3: FICHA FORENSE CSIRT */}
       {tabActiva === "reporte" && (
         <section className="contenedor-exportador">
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <Binary size={16} color="#38bdf8" />
-            <strong style={{ fontSize: "13px" }}>Telemetría Forense CSIRT / SOC</strong>
+            <strong style={{ fontSize: "13px" }}>Telemetría CSIRT / SOC</strong>
           </div>
 
           <div>
-            <span style={{ fontSize: "11px", color: "#94a3b8" }}>Huella Criptográfica SHA-256:</span>
+            <span style={{ fontSize: "11px", color: "#94a3b8" }}>Huella SHA-256:</span>
             <div className="caja-hash">{analisisActual?.huellaSha256 || "Generando..."}</div>
           </div>
 
@@ -555,7 +539,7 @@ export const ComponentePopup: React.FC = () => {
           <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
             <button className="boton-accion-forense" style={{ flex: 1 }} onClick={copiarFichaMarkdown}>
               {copiado ? <Check size={14} /> : <Copy size={14} />}
-              {copiado ? "Copiado al Portapapeles" : "Copiar Ficha (.md)"}
+              {copiado ? "Copiado" : "Copiar Ficha (.md)"}
             </button>
             <button
               className="boton-accion-forense"
@@ -569,7 +553,6 @@ export const ComponentePopup: React.FC = () => {
         </section>
       )}
 
-      {/* Acciones Rápidas Pie */}
       <footer className="acciones-pie">
         <button
           className="boton-secundario"
@@ -590,7 +573,7 @@ export const ComponentePopup: React.FC = () => {
       </footer>
 
       <div className="pie-privacidad">
-        🔒 Análisis Forense Local • Privacidad por Diseño (Manifest V3)
+        Análisis local • Manifest V3
       </div>
     </div>
   );

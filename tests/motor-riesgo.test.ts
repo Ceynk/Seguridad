@@ -13,7 +13,7 @@ describe("Motor de Riesgo y Clasificación Heurística", () => {
     expect(resultado.nivelConfianza).toBe("ALTO");
   });
 
-  it("debe clasificar como MALICIOSO una URL con múltiples indicadores combinados (marca suplantada + TLD sospechoso + HTTP + palabras bancarias)", async () => {
+  it("debe clasificar como MALICIOSO una URL con múltiples indicadores combinados", async () => {
     const urlAtaque = "http://bancolombia-actualizar-datos-seguridad.xyz/portal/login";
     const resultado = await motor.analizarUrl(urlAtaque);
 
@@ -23,7 +23,6 @@ describe("Motor de Riesgo y Clasificación Heurística", () => {
   });
 
   it("debe clasificar como SOSPECHOSO un dominio con señales aisladas o moderadas", async () => {
-    // TLD sospechoso + protocolo HTTP sin marca directa
     const urlSospechosa = "http://tienda-articulos-nuevos.top/productos";
     const resultado = await motor.analizarUrl(urlSospechosa);
 

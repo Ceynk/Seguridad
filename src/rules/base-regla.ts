@@ -1,9 +1,6 @@
 import { CaracteristicasUrl, EvidenciaRiesgo, SeveridadRegla, TecnicaMitreAttack } from "../types/analisis";
 import { ReglaRiesgo, ResultadoEvaluacionRegla } from "../types/reglas";
 
-/**
- * Clase base abstracta para la creación de reglas de detección de riesgo.
- */
 export abstract class BaseReglaRiesgo implements ReglaRiesgo {
   abstract readonly id: string;
   abstract readonly nombre: string;

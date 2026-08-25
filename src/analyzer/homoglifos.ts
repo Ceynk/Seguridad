@@ -1,8 +1,5 @@
 import { ResultadoSimilitudMarca, SustitucionCaracterVisual } from "../types/analisis";
 
-/**
- * Marcas objetivo monitoreadas comúnmente suplantadas en ataques de phishing en Colombia y globales.
- */
 export interface MarcaObjetivo {
   nombre: string;
   dominioLegitimo: string;
@@ -10,7 +7,6 @@ export interface MarcaObjetivo {
 }
 
 export const MARCAS_OBJETIVO: MarcaObjetivo[] = [
-  // Banca y billeteras digitales Colombia
   { nombre: "bancolombia", dominioLegitimo: "bancolombia.com", nombresAlternativos: ["grupo-bancolombia"] },
   { nombre: "nequi", dominioLegitimo: "nequi.com.co", nombresAlternativos: ["nequicolombia"] },
   { nombre: "daviplata", dominioLegitimo: "daviplata.com", nombresAlternativos: ["daviplata-app"] },
@@ -27,7 +23,6 @@ export const MARCAS_OBJETIVO: MarcaObjetivo[] = [
   { nombre: "lulo-bank", dominioLegitimo: "lulobank.com", nombresAlternativos: ["lulobank"] },
   { nombre: "nu-bank", dominioLegitimo: "nu.com.co", nombresAlternativos: ["nubank", "nubankcolombia"] },
 
-  // Entidades gubernamentales y tributarias Colombia
   { nombre: "dian", dominioLegitimo: "dian.gov.co", nombresAlternativos: ["muisca-dian", "factura-dian"] },
   { nombre: "sisben", dominioLegitimo: "sisben.gov.co", nombresAlternativos: ["sisben-colombia"] },
   { nombre: "procuraduria", dominioLegitimo: "procuraduria.gov.co", nombresAlternativos: [] },
@@ -36,14 +31,12 @@ export const MARCAS_OBJETIVO: MarcaObjetivo[] = [
   { nombre: "runt", dominioLegitimo: "runt.gov.co", nombresAlternativos: ["runtcolombia"] },
   { nombre: "simit", dominioLegitimo: "fcm.org.co", nombresAlternativos: ["simit-multas"] },
 
-  // Envíos y paquetería Colombia
   { nombre: "4-72", dominioLegitimo: "4-72.com.co", nombresAlternativos: ["cuatrosietedos", "472colombia", "serviciospostales"] },
   { nombre: "servientrega", dominioLegitimo: "servientrega.com", nombresAlternativos: ["servientrega-rastreo"] },
   { nombre: "envia", dominioLegitimo: "envia.co", nombresAlternativos: ["enviacolombia"] },
   { nombre: "interrapidisimo", dominioLegitimo: "interrapidisimo.com", nombresAlternativos: ["inter-rapidisimo"] },
   { nombre: "coordinadora", dominioLegitimo: "coordinadora.com", nombresAlternativos: ["coordinadora-envios"] },
 
-  // Servicios globales populares frecuentemente suplantados
   { nombre: "google", dominioLegitimo: "google.com", nombresAlternativos: ["gmail"] },
   { nombre: "microsoft", dominioLegitimo: "microsoft.com", nombresAlternativos: ["outlook", "office365", "live"] },
   { nombre: "netflix", dominioLegitimo: "netflix.com", nombresAlternativos: [] },
@@ -53,9 +46,6 @@ export const MARCAS_OBJETIVO: MarcaObjetivo[] = [
   { nombre: "apple", dominioLegitimo: "apple.com", nombresAlternativos: ["icloud"] },
 ];
 
-/**
- * Tabla de sustituciones comunes de homoglifos / caracteres visualmente engañosos.
- */
 export const MAPA_HOMOGLIFOS: Record<string, string> = {
   "0": "o",
   "1": "l",
@@ -74,9 +64,6 @@ export const MAPA_HOMOGLIFOS: Record<string, string> = {
   "cl": "d",
 };
 
-/**
- * Calcula la distancia de Levenshtein entre dos cadenas de texto.
- */
 export function calcularDistanciaLevenshtein(cadenaA: string, cadenaB: string): number {
   const longitudA = cadenaA.length;
   const longitudB = cadenaB.length;
@@ -108,10 +95,6 @@ export function calcularDistanciaLevenshtein(cadenaA: string, cadenaB: string): 
   return matriz[longitudA][longitudB];
 }
 
-/**
- * Reemplaza homoglifos conocidos en un texto para revelar la palabra oculta
- * y genera el desglose de posiciones exactas para visualización en modo Rayos X.
- */
 export function desofuscarHomoglifos(texto: string): {
   textoDesofuscado: string;
   sustitucionesDetectadas: string[];
@@ -121,7 +104,6 @@ export function desofuscarHomoglifos(texto: string): {
   const sustitucionesDetectadas: string[] = [];
   const desgloseCaracteres: SustitucionCaracterVisual[] = [];
 
-  // Mapear sustituciones multi-carácter
   if (textoResultado.includes("vv")) {
     const pos = textoResultado.indexOf("vv");
     textoResultado = textoResultado.replace(/vv/g, "w");
@@ -156,7 +138,6 @@ export function desofuscarHomoglifos(texto: string): {
     });
   }
 
-  // Mapear caracteres individuales
   for (let i = 0; i < texto.length; i++) {
     const char = texto[i].toLowerCase();
     if (MAPA_HOMOGLIFOS[char]) {
@@ -181,9 +162,6 @@ export function desofuscarHomoglifos(texto: string): {
   return { textoDesofuscado: textoResultado, sustitucionesDetectadas, desgloseCaracteres };
 }
 
-/**
- * Extrae las etiquetas o palabras constitutivas de un nombre de host.
- */
 export function extraerTokensDeHost(nombreHost: string): string[] {
   return nombreHost
     .toLowerCase()
@@ -191,9 +169,6 @@ export function extraerTokensDeHost(nombreHost: string): string[] {
     .filter((token) => token.length >= 2);
 }
 
-/**
- * Analiza un nombre de host contra la lista de marcas conocidas para identificar suplantaciones.
- */
 export function detectarSimilitudMarcas(
   nombreHost: string,
   dominioPrincipal: string
@@ -209,7 +184,6 @@ export function detectarSimilitudMarcas(
   for (const marca of MARCAS_OBJETIVO) {
     const dominioLegitimoMinusculas = marca.dominioLegitimo.toLowerCase();
 
-    // Si el dominio analizado ES el dominio legítimo (o un subdominio legítimo del mismo), no es suplantación
     if (
       dominioMinusculas === dominioLegitimoMinusculas ||
       hostMinusculas.endsWith(`.${dominioLegitimoMinusculas}`)
@@ -220,7 +194,6 @@ export function detectarSimilitudMarcas(
     const nombresAComparar = [marca.nombre, ...marca.nombresAlternativos];
 
     for (const nombreMarca of nombresAComparar) {
-      // 1. Detección por presencia literal de la marca dentro de un dominio diferente (ej: bancolombia-login.xyz)
       if (hostMinusculas.includes(nombreMarca) && !dominioMinusculas.includes(dominioLegitimoMinusculas)) {
         resultados.push({
           marcaObjetivo: marca.nombre,
@@ -234,7 +207,6 @@ export function detectarSimilitudMarcas(
         break;
       }
 
-      // 2. Detección por desofuscación de homoglifos (ej: banc0l0mbia -> bancolombia)
       if (
         textoDesofuscado.includes(nombreMarca) &&
         !hostMinusculas.includes(nombreMarca) &&
@@ -252,7 +224,6 @@ export function detectarSimilitudMarcas(
         break;
       }
 
-      // 3. Detección por similitud Levenshtein en cada token del dominio
       const todosLosTokens = Array.from(new Set([...tokensHost, ...tokensDesofuscados]));
 
       for (const token of todosLosTokens) {

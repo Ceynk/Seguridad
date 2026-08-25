@@ -1,23 +1,14 @@
-/**
- * Tipos y modelos de datos para el análisis de URLs, evaluación de riesgos,
- * análisis forense y mapeo a marcos de ciberseguridad (MITRE ATT&CK®).
- * Todas las estructuras y variables en español.
- */
-
 export type ClasificacionRiesgo = "SEGURO" | "SOSPECHOSO" | "MALICIOSO";
 
 export type NivelConfianza = "BAJO" | "MEDIO" | "ALTO";
 
 export type SeveridadRegla = "BAJA" | "MEDIA" | "ALTA" | "CRITICA";
 
-/**
- * Representación de una técnica del marco internacional MITRE ATT&CK®.
- */
 export interface TecnicaMitreAttack {
-  id: string; // Ej: T1566.002
-  nombre: string; // Ej: Spearphishing Link
-  tactica: string; // Ej: Initial Access, Defense Evasion
-  enlace: string; // URL a mitre.org
+  id: string;
+  nombre: string;
+  tactica: string;
+  enlace: string;
 }
 
 export interface EvidenciaRiesgo {
@@ -87,7 +78,7 @@ export interface CaracteristicasUrl {
   contienePalabrasBancarias: string[];
   contienePalabrasUrgencia: string[];
   similitudMarcas: ResultadoSimilitudMarca[];
-  entropiaShannon: number; // Métrica matemática de aleatoriedad (0 - 8)
+  entropiaShannon: number;
   vectoresIngenieriaSocial: VectorIngenieriaSocial[];
 }
 

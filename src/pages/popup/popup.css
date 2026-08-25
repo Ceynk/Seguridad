@@ -42,7 +42,6 @@ body {
   gap: 12px;
 }
 
-/* Cabecera */
 .cabecera {
   display: flex;
   align-items: center;
@@ -92,7 +91,6 @@ body {
   color: var(--color-texto-principal);
 }
 
-/* Pestañas de Navegación */
 .barra-pestanas {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -130,7 +128,6 @@ body {
   box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
 }
 
-/* Selector de Pruebas Rápidas */
 .banner-pruebas-rapidas {
   background-color: rgba(30, 41, 59, 0.6);
   border: 1px dashed var(--color-borde);
@@ -179,7 +176,6 @@ body {
   font-family: inherit;
 }
 
-/* Tarjetas */
 .tarjeta-estado-proteccion {
   background-color: var(--color-tarjeta);
   border: 1px solid var(--color-borde);
@@ -250,7 +246,6 @@ input:checked + .deslizador:before {
   transform: translateX(18px);
 }
 
-/* Tarjeta de Análisis */
 .tarjeta-analisis {
   background-color: var(--color-tarjeta);
   border: 1px solid var(--color-borde);
@@ -343,7 +338,6 @@ input:checked + .deslizador:before {
   color: var(--color-texto-principal);
 }
 
-/* MODO RAYOS X FORENSE */
 .contenedor-forense {
   display: flex;
   flex-direction: column;
@@ -448,7 +442,6 @@ input:checked + .deslizador:before {
   color: #a78bfa;
 }
 
-/* Insignias MITRE ATT&CK */
 .contenedor-mitre {
   display: flex;
   flex-direction: column;
@@ -487,7 +480,6 @@ input:checked + .deslizador:before {
   font-weight: 600;
 }
 
-/* TAB FICHA CSIRT */
 .contenedor-exportador {
   background-color: var(--color-tarjeta);
   border: 1px solid var(--color-borde);

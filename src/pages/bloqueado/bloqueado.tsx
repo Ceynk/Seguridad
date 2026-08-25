@@ -87,7 +87,7 @@ export const ComponenteBloqueado: React.FC = () => {
       vectoresIngenieriaSocial: [
         {
           principioCoercion: "AUTORIDAD_INSTITUCIONAL",
-          titulo: "Suplantación de Entidad Bancaria / Pública",
+          titulo: "Suplantación de Entidad",
           descripcion: "Intento de engaño aprovechando la confianza en marcas establecidas.",
           terminosIdentificados: ["banco", "portal", "seguridad"],
         },
@@ -104,8 +104,8 @@ export const ComponenteBloqueado: React.FC = () => {
           },
         ],
       })),
-      resumenTecnico: `El artefacto '${nombreHost}' fue interceptado y bloqueado preventivamente por exhibir firmas de fraude financiero.`,
-      recomendacionRespuesta: `1. Aislar sesión y verificar credenciales.\n2. Notificar a CSIRT.\n3. Aplicar regla perimetral de bloqueo en DNS.`,
+      resumenTecnico: `El artefacto '${nombreHost}' fue bloqueado preventivamente por coincidencia con firmas de fraude.`,
+      recomendacionRespuesta: `1. Aislar sesión.\n2. Notificar a CSIRT.\n3. Aplicar regla perimetral de bloqueo en DNS.`,
     };
 
     const markdown = exportarInformeMarkdown(fichaSimulada);
@@ -120,16 +120,14 @@ export const ComponenteBloqueado: React.FC = () => {
 
   return (
     <div className="contenedor-bloqueo">
-      {/* Franja superior de alerta */}
       <header className="franja-alerta">
         <ShieldAlert className="icono-alerta-grande" size={44} />
         <div className="titulos-alerta">
           <h1>Sitio Bloqueado por Seguridad</h1>
-          <p>Detectamos señales críticas compatibles con phishing o fraude financiero.</p>
+          <p>Se detectaron señales compatibles con suplantación de identidad o fraude.</p>
         </div>
       </header>
 
-      {/* Cuerpo explicativo */}
       <main className="cuerpo-bloqueo">
         <div className="seccion-dato">
           <span className="etiqueta-dato">Dirección Web Analizada</span>
@@ -146,7 +144,7 @@ export const ComponenteBloqueado: React.FC = () => {
             <div className="valor-metrica valor-rojo">{puntuacionRiesgo} / 100</div>
           </div>
           <div className="tarjeta-metrica">
-            <span className="etiqueta-dato">Marco MITRE ATT&CK</span>
+            <span className="etiqueta-dato">MITRE ATT&CK</span>
             <div className="valor-metrica" style={{ fontSize: "14px", color: "#60a5fa", marginTop: "4px" }}>
               T1566.002
             </div>
@@ -174,9 +172,9 @@ export const ComponenteBloqueado: React.FC = () => {
           <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
             <Info size={18} style={{ flexShrink: 0, marginTop: "2px" }} />
             <div>
-              <strong>¿Por qué se bloqueó esta página?</strong>
+              <strong>Motivo de bloqueo preventivo:</strong>
               <br />
-              Los atacantes suelen crear dominios visualmente engañosos parecidos a bancos (*Bancolombia, Nequi, Davivienda*), pasarelas (*PSE*) o entidades públicas (*DIAN*) para robar contraseñas y datos financieros.
+              El sitio utiliza un nombre o estructura engañosa similar a entidades conocidas (bancos, pasarelas de pago o portales públicos) para intentar capturar contraseñas o datos financieros.
             </div>
           </div>
         </div>
@@ -196,7 +194,7 @@ export const ComponenteBloqueado: React.FC = () => {
             }}
           >
             <CheckCircle size={16} />
-            Gracias. Tu reporte de falso positivo ha sido registrado para revisión.
+            El reporte ha sido registrado para revisión.
           </div>
         )}
 
@@ -204,7 +202,7 @@ export const ComponenteBloqueado: React.FC = () => {
           <form onSubmit={enviarReporteFalsoPositivo} className="formulario-reporte">
             <span className="etiqueta-dato">Reportar Falso Positivo</span>
             <p style={{ fontSize: "12px", color: "#9ca3af" }}>
-              Si estás seguro de que {nombreHost} es un sitio legítimo oficial, indícanos por qué:
+              Si confirmas que {nombreHost} es un sitio legítimo, indícanos el motivo:
             </p>
             <textarea
               className="textarea-reporte"
@@ -229,7 +227,6 @@ export const ComponenteBloqueado: React.FC = () => {
           </form>
         )}
 
-        {/* Acciones principales */}
         <footer className="acciones-bloqueo">
           <button className="boton-principal" onClick={regresarASeguridad}>
             <ArrowLeft size={16} />

@@ -6,12 +6,12 @@ export class ReglaIpHost extends BaseReglaRiesgo {
   readonly id = "REGLA_IP_HOST";
   readonly nombre = "Uso de Dirección IP Directa como Host";
   readonly descripcion =
-    "Detecta si la URL apunta directamente a una dirección IP numérica (IPv4 o IPv6), técnica frecuente en infraestructura de phishing efímera.";
+    "Detecta si la URL apunta directamente a una dirección IP numérica en lugar de un dominio registrado.";
   readonly severidad: SeveridadRegla = "ALTA";
   readonly puntuacionBase = 35;
   readonly tecnicaMitre: TecnicaMitreAttack = {
     id: "T1071.001",
-    nombre: "Application Layer Protocol: Web Protocols via Direct IP",
+    nombre: "Application Layer Protocol: Web Protocols",
     tactica: "Command and Control",
     enlace: "https://attack.mitre.org/techniques/T1071/001/",
   };
@@ -25,7 +25,7 @@ export class ReglaIpHost extends BaseReglaRiesgo {
       {
         campo: "nombreHost",
         valorEncontrado: caracteristicas.nombreHost,
-        descripcion: `El sitio utiliza una dirección IP (${caracteristicas.versionIp || "IPv4"}) directa en lugar de un dominio registrado.`,
+        descripcion: `El sitio utiliza una dirección IP (${caracteristicas.versionIp || "IPv4"}) directa.`,
       },
     ];
 
@@ -42,7 +42,7 @@ export class ReglaIpHost extends BaseReglaRiesgo {
           ...caracteristicas.contienePalabrasAutenticacion,
           ...caracteristicas.contienePalabrasBancarias,
         ].join(", "),
-        descripcion: "La IP contiene rutas o parámetros asociados a credenciales o banca.",
+        descripcion: "La IP contiene rutas o parámetros de autenticación o banca.",
       });
     }
 

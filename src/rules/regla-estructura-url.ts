@@ -6,12 +6,12 @@ export class ReglaEstructuraUrl extends BaseReglaRiesgo {
   readonly id = "REGLA_ESTRUCTURA_URL";
   readonly nombre = "Anomalías Estructurales en la URL";
   readonly descripcion =
-    "Detecta técnicas de evasión estructural como exceso de subdominios anidados, uso de @, longitud anómala o exceso de símbolos.";
+    "Detecta anomalías estructurales como exceso de subdominios anidados, uso de @, longitud excesiva o caracteres especiales.";
   readonly severidad: SeveridadRegla = "ALTA";
   readonly puntuacionBase = 20;
   readonly tecnicaMitre: TecnicaMitreAttack = {
     id: "T1566.002",
-    nombre: "Phishing: URL Obfuscation & Subdomain Nesting",
+    nombre: "Phishing: Spearphishing Link",
     tactica: "Initial Access",
     enlace: "https://attack.mitre.org/techniques/T1566/002/",
   };
@@ -25,7 +25,7 @@ export class ReglaEstructuraUrl extends BaseReglaRiesgo {
       evidencias.push({
         campo: "tieneArroba",
         valorEncontrado: true,
-        descripcion: "Presencia del carácter '@' en la URL, utilizado para ofuscar el servidor de destino real.",
+        descripcion: "Presencia del carácter '@' en la URL.",
       });
     }
 
@@ -34,7 +34,7 @@ export class ReglaEstructuraUrl extends BaseReglaRiesgo {
       evidencias.push({
         campo: "cantidadSubdominios",
         valorEncontrado: caracteristicas.cantidadSubdominios,
-        descripcion: `Estructura profunda de subdominios anidados (${caracteristicas.subdominios.join(".")}).`,
+        descripcion: `Estructura profunda de subdominios (${caracteristicas.subdominios.join(".")}).`,
       });
     }
 
@@ -43,7 +43,7 @@ export class ReglaEstructuraUrl extends BaseReglaRiesgo {
       evidencias.push({
         campo: "cantidadGuiones",
         valorEncontrado: caracteristicas.cantidadGuiones,
-        descripcion: `Múltiples guiones en el nombre de host (${caracteristicas.cantidadGuiones} guiones), patrón típico de evasión.`,
+        descripcion: `Múltiples guiones en el host (${caracteristicas.cantidadGuiones}).`,
       });
     }
 
@@ -52,7 +52,7 @@ export class ReglaEstructuraUrl extends BaseReglaRiesgo {
       evidencias.push({
         campo: "longitudDominio",
         valorEncontrado: caracteristicas.longitudDominio,
-        descripcion: `Nombre de dominio inusualmente largo (${caracteristicas.longitudDominio} caracteres).`,
+        descripcion: `Nombre de dominio largo (${caracteristicas.longitudDominio} caracteres).`,
       });
     }
 
@@ -61,7 +61,7 @@ export class ReglaEstructuraUrl extends BaseReglaRiesgo {
       evidencias.push({
         campo: "porcentajeCodificacionUrl",
         valorEncontrado: `${caracteristicas.porcentajeCodificacionUrl}%`,
-        descripcion: "Alto porcentaje de caracteres codificados en hexadecimal para ofuscar el contenido.",
+        descripcion: "Alto porcentaje de caracteres codificados en hexadecimal.",
       });
     }
 
@@ -70,7 +70,7 @@ export class ReglaEstructuraUrl extends BaseReglaRiesgo {
       evidencias.push({
         campo: "caracteresEspecialesSospechosos",
         valorEncontrado: caracteristicas.caracteresEspecialesSospechosos,
-        descripcion: "Presencia de caracteres especiales no estándar en el nombre de host.",
+        descripcion: "Presencia de caracteres especiales no estándar en el host.",
       });
     }
 

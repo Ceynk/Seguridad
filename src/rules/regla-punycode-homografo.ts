@@ -4,9 +4,9 @@ import { BaseReglaRiesgo } from "./base-regla";
 
 export class ReglaPunycodeHomografo extends BaseReglaRiesgo {
   readonly id = "REGLA_PUNYCODE_HOMOGRAFO";
-  readonly nombre = "Uso de Dominio Internacionalizado (Punycode / Homógrafo)";
+  readonly nombre = "Uso de Dominio Internacionalizado (Punycode)";
   readonly descripcion =
-    "Detecta nombres de dominio codificados en Punycode (prefijo 'xn--'), técnica habitual para suplantar dominios con caracteres visualmente idénticos.";
+    "Detecta nombres de dominio codificados en Punycode (prefijo 'xn--').";
   readonly severidad: SeveridadRegla = "ALTA";
   readonly puntuacionBase = 35;
   readonly tecnicaMitre: TecnicaMitreAttack = {
@@ -25,7 +25,7 @@ export class ReglaPunycodeHomografo extends BaseReglaRiesgo {
       {
         campo: "nombreHost",
         valorEncontrado: caracteristicas.nombreHost,
-        descripcion: `El dominio utiliza codificación Punycode (${caracteristicas.nombreHost}), indicativo de posibles caracteres homográficos no latinos.`,
+        descripcion: `El dominio utiliza codificación Punycode (${caracteristicas.nombreHost}).`,
       },
     ];
 

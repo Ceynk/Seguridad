@@ -12,9 +12,6 @@ import { ProveedorReputacionLocal } from "../reputation/reputacion-local";
 import { extraerCaracteristicasUrl } from "./extractor-caracteristicas";
 import { calcularHashSha256Simple, generarFichaForense } from "../utils/cripto-forense";
 
-/**
- * Opciones para instanciar o configurar el Motor de Riesgo.
- */
 export interface OpcionesMotorRiesgo {
   registroReglas?: RegistroReglas;
   proveedorReputacion?: ProveedorReputacion;
@@ -22,9 +19,6 @@ export interface OpcionesMotorRiesgo {
   umbralMalicioso?: number;
 }
 
-/**
- * Motor central de análisis de riesgo, evaluación de reglas heurísticas, reputación y análisis forense.
- */
 export class MotorRiesgo {
   private registroReglas: RegistroReglas;
   private proveedorReputacion: ProveedorReputacion;
@@ -82,15 +76,13 @@ export class MotorRiesgo {
     const nombreHost = caracteristicas.nombreHost;
     const huellaSha256 = calcularHashSha256Simple(urlEntrada);
 
-    // 1. Consultar reputación del dominio
     const resultadoReputacion = await this.proveedorReputacion.consultarDominio(nombreHost);
 
-    // Caso A: Dominio en lista negra conocida
     if (resultadoReputacion.encontrado && resultadoReputacion.tipo === "NEGRA") {
       const tiempoFin = performance.now();
       const reglaReputacion: ReglaCoincidente = {
         id: "REPUTACION_LISTA_NEGRA",
-        nombre: "Dominio en Lista de Amenazas / Threat Feed",
+        nombre: "Dominio en Lista de Amenazas",
         descripcion: resultadoReputacion.descripcion || "Dominio identificado previamente como malicioso.",
         severidad: "CRITICA",
         puntuacion: 95,
@@ -128,7 +120,6 @@ export class MotorRiesgo {
       return resultadoParcial;
     }
 
-    // Caso B: Dominio en lista blanca confiable y sin carácter '@' engañoso
     if (
       resultadoReputacion.encontrado &&
       resultadoReputacion.tipo === "BLANCA" &&
@@ -154,7 +145,6 @@ export class MotorRiesgo {
       return resultadoParcial;
     }
 
-    // Caso C: Evaluación heurística mediante el registro de reglas
     const reglasActivas = this.registroReglas.obtenerReglasActivas();
     const reglasCoincidentes: ReglaCoincidente[] = [];
     let sumaPuntuacion = 0;
@@ -175,7 +165,6 @@ export class MotorRiesgo {
       }
     }
 
-    // Factor de amplificación si se activan múltiples reglas simultáneas
     if (reglasCoincidentes.length >= 3) {
       sumaPuntuacion = Math.round(sumaPuntuacion * 1.25);
     } else if (reglasCoincidentes.length === 2) {

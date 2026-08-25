@@ -3,9 +3,6 @@ import { normalizarYAnalizarUrl } from "../utils/normalizador-url";
 import { calcularEntropiaShannon } from "../utils/cripto-forense";
 import { detectarSimilitudMarcas } from "./homoglifos";
 
-/**
- * Diccionarios de palabras clave frecuentemente utilizadas en ataques de ingeniería social y phishing.
- */
 export const PALABRAS_AUTENTICACION = [
   "login",
   "iniciar-sesion",
@@ -107,16 +104,10 @@ export const TLDS_SOSPECHOSOS = new Set([
   "science",
 ]);
 
-/**
- * Determina si una cadena contiene caracteres de Punycode (IDN).
- */
 export function verificarEsPunycode(texto: string): boolean {
   return texto.toLowerCase().includes("xn--");
 }
 
-/**
- * Calcula el porcentaje de caracteres codificados en porcentaje (%XX) en una URL.
- */
 export function calcularPorcentajeCodificacion(urlTexto: string): number {
   const coincidencias = urlTexto.match(/%[0-9a-fA-F]{2}/g);
   if (!coincidencias || coincidencias.length === 0) return 0;
@@ -124,28 +115,17 @@ export function calcularPorcentajeCodificacion(urlTexto: string): number {
   return Math.round((caracteresCodificados / urlTexto.length) * 100);
 }
 
-/**
- * Extrae la extensión TLD final de un dominio.
- */
 export function extraerExtensionTld(dominioPrincipal: string): string {
   const partes = dominioPrincipal.toLowerCase().split(".");
   if (partes.length < 2) return "";
   return partes[partes.length - 1];
 }
 
-/**
- * Busca ocurrencias de un conjunto de palabras clave en un texto.
- */
 export function buscarPalabrasClave(texto: string, listaPalabras: string[]): string[] {
   const textoLimpio = texto.toLowerCase();
-  return listaPalabras.filter((palabra) => {
-    return textoLimpio.includes(palabra);
-  });
+  return listaPalabras.filter((palabra) => textoLimpio.includes(palabra));
 }
 
-/**
- * Analiza el contexto de la URL para identificar los vectores psicológicos de ingeniería social (Cialdini).
- */
 export function clasificarVectoresIngenieriaSocial(
   contieneAutenticacion: string[],
   contieneBancarias: string[],
@@ -224,9 +204,6 @@ export function clasificarVectoresIngenieriaSocial(
   return vectores;
 }
 
-/**
- * Extrae todas las características estáticas, léxicas y forenses de una URL dada.
- */
 export function extraerCaracteristicasUrl(urlEntrada: string): CaracteristicasUrl {
   const urlNormalizada = normalizarYAnalizarUrl(urlEntrada);
   const urlCompleta = urlNormalizada.urlSanitizada;
@@ -235,7 +212,6 @@ export function extraerCaracteristicasUrl(urlEntrada: string): CaracteristicasUr
   const ruta = urlNormalizada.ruta;
   const extensionTld = extraerExtensionTld(dominioPrincipal);
 
-  // Detección de caracteres especiales en el dominio
   const cantidadGuiones = (nombreHost.match(/-/g) || []).length;
   const cantidadPuntos = (nombreHost.match(/\./g) || []).length;
   const caracteresEspecialesSospechosos = (nombreHost.match(/[@_~$!=+]/g) || []).length;

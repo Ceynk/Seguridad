@@ -4,12 +4,7 @@ import {
   ResultadoReputacion,
 } from "../types/reputacion";
 
-/**
- * Base de datos local de dominios confiables conocidos (Lista Blanca).
- * Evita falsos positivos en sitios de alta reputación y portales oficiales legítimos.
- */
 export const DOMINIOS_CONFIABLES_LOCALES: EntradaReputacion[] = [
-  // Servicios globales comunes
   { dominio: "google.com", tipo: "BLANCA", categoria: "Tecnología/Búsqueda", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Google" },
   { dominio: "google.com.co", tipo: "BLANCA", categoria: "Tecnología/Búsqueda", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Google Colombia" },
   { dominio: "microsoft.com", tipo: "BLANCA", categoria: "Tecnología", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Microsoft" },
@@ -18,7 +13,6 @@ export const DOMINIOS_CONFIABLES_LOCALES: EntradaReputacion[] = [
   { dominio: "amazon.com", tipo: "BLANCA", categoria: "Comercio", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Amazon" },
   { dominio: "netflix.com", tipo: "BLANCA", categoria: "Entretenimiento", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Netflix" },
 
-  // Banca y pasarelas oficiales en Colombia
   { dominio: "bancolombia.com", tipo: "BLANCA", categoria: "Banca Colombia", fechaRegistro: "2026-01-01", descripcion: "Portal oficial Bancolombia" },
   { dominio: "nequi.com.co", tipo: "BLANCA", categoria: "Banca Digital", fechaRegistro: "2026-01-01", descripcion: "Portal oficial Nequi Colombia" },
   { dominio: "daviplata.com", tipo: "BLANCA", categoria: "Banca Digital", fechaRegistro: "2026-01-01", descripcion: "Portal oficial Daviplata" },
@@ -28,20 +22,15 @@ export const DOMINIOS_CONFIABLES_LOCALES: EntradaReputacion[] = [
   { dominio: "pse.com.co", tipo: "BLANCA", categoria: "Pasarela Pagos", fechaRegistro: "2026-01-01", descripcion: "Portal oficial ACH Colombia PSE" },
   { dominio: "transfiya.com.co", tipo: "BLANCA", categoria: "Pasarela Pagos", fechaRegistro: "2026-01-01", descripcion: "Portal oficial Transfiya" },
 
-  // Entidades gubernamentales oficiales en Colombia
   { dominio: "dian.gov.co", tipo: "BLANCA", categoria: "Gobierno Colombia", fechaRegistro: "2026-01-01", descripcion: "Dirección de Impuestos y Aduanas Nacionales" },
   { dominio: "gov.co", tipo: "BLANCA", categoria: "Gobierno Colombia", fechaRegistro: "2026-01-01", descripcion: "Portal del Estado Colombiano" },
   { dominio: "runt.gov.co", tipo: "BLANCA", categoria: "Gobierno Colombia", fechaRegistro: "2026-01-01", descripcion: "Registro Único Nacional de Tránsito" },
   { dominio: "fcm.org.co", tipo: "BLANCA", categoria: "Gobierno/Tránsito", fechaRegistro: "2026-01-01", descripcion: "Federación Colombiana de Municipios (SIMIT)" },
 
-  // Envíos oficiales en Colombia
   { dominio: "4-72.com.co", tipo: "BLANCA", categoria: "Logística", fechaRegistro: "2026-01-01", descripcion: "Servicios Postales Nacionales 4-72" },
   { dominio: "servientrega.com", tipo: "BLANCA", categoria: "Logística", fechaRegistro: "2026-01-01", descripcion: "Servientrega Colombia" },
 ];
 
-/**
- * Lista de dominios de prueba claramente ficticios categorizados como maliciosos para pruebas unitarias y de integración.
- */
 export const DOMINIOS_MALICIOSOS_PRUEBA: EntradaReputacion[] = [
   {
     dominio: "phishing-bancolombia-ficticio.xyz",
@@ -80,9 +69,6 @@ export const DOMINIOS_MALICIOSOS_PRUEBA: EntradaReputacion[] = [
   },
 ];
 
-/**
- * Proveedor local de reputación basado en listas en memoria y configurables por el usuario.
- */
 export class ProveedorReputacionLocal implements ProveedorReputacion {
   private mapaReputacion: Map<string, EntradaReputacion> = new Map();
   private listaBlancaUsuario: Set<string> = new Set();
@@ -109,7 +95,6 @@ export class ProveedorReputacionLocal implements ProveedorReputacion {
   public async consultarDominio(dominio: string): Promise<ResultadoReputacion> {
     const dominioMinusculas = dominio.toLowerCase().trim();
 
-    // 1. Verificar lista negra personalizada del usuario
     if (this.listaNegraUsuario.has(dominioMinusculas)) {
       return {
         encontrado: true,
@@ -120,7 +105,6 @@ export class ProveedorReputacionLocal implements ProveedorReputacion {
       };
     }
 
-    // 2. Verificar lista blanca personalizada del usuario
     if (this.listaBlancaUsuario.has(dominioMinusculas)) {
       return {
         encontrado: true,
@@ -131,7 +115,6 @@ export class ProveedorReputacionLocal implements ProveedorReputacion {
       };
     }
 
-    // 3. Verificar si coincide con la base local exacta
     const entradaDirecta = this.mapaReputacion.get(dominioMinusculas);
     if (entradaDirecta) {
       return {
@@ -143,7 +126,6 @@ export class ProveedorReputacionLocal implements ProveedorReputacion {
       };
     }
 
-    // 4. Verificar si es un subdominio de un dominio confiable conocido
     for (const [dominioRegistrado, entrada] of this.mapaReputacion.entries()) {
       if (entrada.tipo === "BLANCA" && dominioMinusculas.endsWith(`.${dominioRegistrado}`)) {
         return {

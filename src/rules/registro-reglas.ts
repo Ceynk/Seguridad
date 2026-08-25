@@ -7,9 +7,6 @@ import { ReglaPalabrasSospechosas } from "./regla-palabras-sospechosas";
 import { ReglaTldSospechoso } from "./regla-tld-sospechoso";
 import { ReglaEstructuraUrl } from "./regla-estructura-url";
 
-/**
- * Registro y fábrica de reglas de análisis de riesgo de la extensión.
- */
 export class RegistroReglas {
   private reglas: Map<string, ReglaRiesgo> = new Map();
 

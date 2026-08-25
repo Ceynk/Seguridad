@@ -6,12 +6,12 @@ export class ReglaSuplantacionMarca extends BaseReglaRiesgo {
   readonly id = "REGLA_SUPLANTACION_MARCA";
   readonly nombre = "Suplantación de Marca o Entidad";
   readonly descripcion =
-    "Detecta dominios que imitan la identidad de bancos, billeteras digitales, entidades públicas o servicios de paquetería.";
+    "Detecta dominios que imitan la identidad de marcas o entidades oficiales.";
   readonly severidad: SeveridadRegla = "CRITICA";
   readonly puntuacionBase = 45;
   readonly tecnicaMitre: TecnicaMitreAttack = {
     id: "T1036.007",
-    nombre: "Masquerading: Double File Extension / Homoglyph",
+    nombre: "Masquerading: Homoglyph",
     tactica: "Defense Evasion",
     enlace: "https://attack.mitre.org/techniques/T1036/007/",
   };
@@ -28,7 +28,7 @@ export class ReglaSuplantacionMarca extends BaseReglaRiesgo {
       evidencias.push({
         campo: "marcaImitada",
         valorEncontrado: similitud.marcaObjetivo,
-        descripcion: `El dominio '${caracteristicas.nombreHost}' imita a la entidad '${similitud.marcaObjetivo}' (Dominio legítimo: ${similitud.dominioOriginal})`,
+        descripcion: `El dominio '${caracteristicas.nombreHost}' imita a '${similitud.marcaObjetivo}' (Dominio legítimo: ${similitud.dominioOriginal})`,
       });
 
       evidencias.push({

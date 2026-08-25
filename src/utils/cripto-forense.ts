@@ -4,11 +4,6 @@ import {
   TecnicaMitreAttack,
 } from "../types/analisis";
 
-/**
- * Calcula la Entropía de Información de Shannon de una cadena de texto (0 a 8 bits/símbolo).
- * Métrica estándar para detectar Domain Generation Algorithms (DGA), nombres ofuscados o aleatorios.
- * Fórmula: H(X) = - Σ [ P(x_i) * log2(P(x_i)) ]
- */
 export function calcularEntropiaShannon(cadena: string): number {
   if (!cadena || cadena.length === 0) return 0;
 
@@ -26,15 +21,10 @@ export function calcularEntropiaShannon(cadena: string): number {
     entropia -= probabilidad * Math.log2(probabilidad);
   }
 
-  // Redondear a 2 decimales
   return Math.round(entropia * 100) / 100;
 }
 
-/**
- * Calcula un hash SHA-256 síncrono determinista de una cadena de texto para telemetría forense.
- */
 export function calcularHashSha256Simple(texto: string): string {
-  // Implementación determinista rápida de SHA-256 para entorno local
   let h0 = 0x6a09e667;
   let h1 = 0xbb67ae85;
   let h2 = 0x3c6ef372;
@@ -60,9 +50,6 @@ export function calcularHashSha256Simple(texto: string): string {
   return `${hex(h0)}${hex(h1)}${hex(h2)}${hex(h3)}${hex(h4)}${hex(h5)}${hex(h6)}${hex(h7)}`;
 }
 
-/**
- * Genera la Ficha Forense estructurada para exportación a equipos SOC / CSIRT.
- */
 export function generarFichaForense(
   resultado: ResultadoAnalisisUrl
 ): FichaForenseIncidente {
@@ -77,7 +64,7 @@ export function generarFichaForense(
 
   const resumenTecnico =
     resultado.clasificacion === "MALICIOSO"
-      ? `El artefacto analizado '${resultado.nombreHost}' exhibe patrones contundentes de suplantación de identidad (Phishing) dirigidos a infraestructura crítica o financiera, combinando técnicas de ofuscación y manipulación psicológica.`
+      ? `El artefacto analizado '${resultado.nombreHost}' exhibe patrones de suplantación de identidad (Phishing) dirigidos a infraestructura crítica o financiera, combinando técnicas de ofuscación y manipulación psicológica.`
       : resultado.clasificacion === "SOSPECHOSO"
       ? `El artefacto analizado '${resultado.nombreHost}' contiene anomalías estructurales o indicadores no concluyentes que requieren precaución.`
       : `El artefacto analizado '${resultado.nombreHost}' cumple con los parámetros de integridad y no presenta anomalías conocidas.`;
@@ -86,7 +73,7 @@ export function generarFichaForense(
     resultado.clasificacion === "MALICIOSO"
       ? `1. Interrumpir navegación y aislar sesión.\n2. Bloquear dominio '${resultado.nombreHost}' en firewall perimetral y DNS sinkhole.\n3. Notificar a la entidad bancaria o al CSIRT sectorial correspondiente.\n4. Auditar si hubo ingreso de credenciales para forzar revocación de tokens.`
       : resultado.clasificacion === "SOSPECHOSO"
-      ? `1. Proceder con extrema precaución.\n2. No ingresar contraseñas, números de tarjeta ni tokens de autenticación.\n3. Verificar el certificado digital y canal oficial.`
+      ? `1. Proceder con precaución.\n2. No ingresar contraseñas, números de tarjeta ni tokens de autenticación.\n3. Verificar el certificado digital y canal oficial.`
       : `No se requieren acciones de mitigación.`;
 
   return {
@@ -111,11 +98,8 @@ export function generarFichaForense(
   };
 }
 
-/**
- * Exporta el informe forense a formato Markdown profesional listo para descargar o copiar.
- */
 export function exportarInformeMarkdown(ficha: FichaForenseIncidente): string {
-  return `# 🛡️ FICHA TÉCNICA DE INCIDENTE FORENSE • PHISHGUARD
+  return `# FICHA TECNICA DE INCIDENTE FORENSE - PHISHGUARD
 **ID Incidente:** \`${ficha.idIncidente}\`  
 **Fecha/Hora:** \`${ficha.marcaTemporalIso}\`  
 **Clasificación:** **${ficha.clasificacion}** (Riesgo: ${ficha.puntuacionRiesgo}/100)  
@@ -126,17 +110,17 @@ export function exportarInformeMarkdown(ficha: FichaForenseIncidente): string {
 * **URL Analizada:** \`${ficha.urlObjetivo}\`
 * **Nombre de Host:** \`${ficha.nombreHost}\`
 * **Huella Digital SHA-256:** \`${ficha.huellaSha256}\`
-* **Entropía de Shannon (Aleatoriedad $H$):** \`${ficha.entropiaShannon} bits/símbolo\`
+* **Entropía de Shannon (Aleatoriedad H):** \`${ficha.entropiaShannon} bits/símbolo\`
 
 ---
 
-## 2. Mapeo al Marco MITRE ATT&CK®
+## 2. Mapeo al Marco MITRE ATT&CK
 ${
   ficha.tecnicasMitreDetectadas.length > 0
     ? ficha.tecnicasMitreDetectadas
         .map(
           (t) =>
-            `* **[${t.id}] ${t.nombre}** — *Táctica:* \`${t.tactica}\` (${t.enlace})`
+            `* **[${t.id}] ${t.nombre}** - *Táctica:* \`${t.tactica}\` (${t.enlace})`
         )
         .join("\n")
     : "* *Sin técnicas MITRE asociadas directamente.*"
@@ -172,10 +156,7 @@ ${r.evidencias.map((e) => `  - **${e.campo}:** ${e.descripcion} *(Valor: \`${e.v
 ## 5. Resumen Técnico del Analista
 ${ficha.resumenTecnico}
 
-## 6. Recomendaciones de Respuesta al Incidente (Playbook CSIRT)
+## 6. Recomendaciones de Respuesta al Incidente
 ${ficha.recomendacionRespuesta}
-
----
-*Generado automáticamente por el Motor Forense de PhishGuard Colombia (Manifest V3).*
 `;
 }
