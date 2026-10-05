@@ -37,16 +37,20 @@ export class ReglaSuplantacionMarca extends BaseReglaRiesgo {
         descripcion: `Técnica detectada: ${similitud.tipoSustitucion.join(", ")} (Similitud: ${similitud.similitudPorcentaje}%)`,
       });
 
-      if (similitud.similitudPorcentaje >= 95) {
-        puntuacionTotal += 45;
+      const usaHomoglifos = similitud.tipoSustitucion.some((t) =>
+        t.toLowerCase().includes("homoglifo") || t.toLowerCase().includes("sustitución")
+      );
+
+      if (usaHomoglifos || similitud.similitudPorcentaje >= 95) {
+        puntuacionTotal += 85;
       } else if (similitud.similitudPorcentaje >= 80) {
-        puntuacionTotal += 35;
+        puntuacionTotal += 55;
       } else {
-        puntuacionTotal += 25;
+        puntuacionTotal += 35;
       }
     }
 
-    const puntuacionFinal = Math.min(puntuacionTotal, 55);
+    const puntuacionFinal = Math.min(puntuacionTotal, 95);
     return this.crearResultadoActivado(puntuacionFinal, evidencias);
   }
 }

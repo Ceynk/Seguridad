@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.antiphishing.smishguard.app-debug-55:/xml_data_extraction_rules.xml.flat",
+        "source": "com.antiphishing.smishguard.app-main-57:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.antiphishing.smishguard.app-debug-55:/drawable_ic_shield.xml.flat",
+        "source": "com.antiphishing.smishguard.app-main-57:/drawable/ic_shield.xml"
+    }
+]

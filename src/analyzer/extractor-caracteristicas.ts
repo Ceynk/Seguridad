@@ -1,7 +1,7 @@
 import { CaracteristicasUrl, VectorIngenieriaSocial } from "../types/analisis";
 import { normalizarYAnalizarUrl } from "../utils/normalizador-url";
 import { calcularEntropiaShannon } from "../utils/cripto-forense";
-import { detectarSimilitudMarcas } from "./homoglifos";
+import { detectarSimilitudMarcas, detectarLetrasRarasYAlfabetoMixto } from "./homoglifos";
 
 export const PALABRAS_AUTENTICACION = [
   "login",
@@ -230,6 +230,8 @@ export function extraerCaracteristicasUrl(urlEntrada: string): CaracteristicasUr
     contienePalabrasUrgencia
   );
 
+  const analisisLetrasRaras = detectarLetrasRarasYAlfabetoMixto(nombreHost);
+
   return {
     urlCompleta,
     protocolo: urlNormalizada.protocolo,
@@ -259,5 +261,9 @@ export function extraerCaracteristicasUrl(urlEntrada: string): CaracteristicasUr
     similitudMarcas,
     entropiaShannon,
     vectoresIngenieriaSocial,
+    dominioDecodificadoUnicode: analisisLetrasRaras.hostUnicode,
+    tieneLetrasRarasHomoglifos: analisisLetrasRaras.tieneLetrasRaras,
+    tieneAlfabetoMixto: analisisLetrasRaras.tieneAlfabetoMixto,
+    desgloseLetrasRaras: analisisLetrasRaras.desglose,
   };
 }

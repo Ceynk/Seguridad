@@ -42,4 +42,46 @@ describe("Motor de Riesgo y Clasificación Heurística", () => {
     expect(resBancolombia.puntuacionRiesgo).toBe(0);
     expect(resBancolombia.esDominioConocidoSeguro).toBe(true);
   });
+
+  it("debe clasificar como MALICIOSO y activar bloqueo ante un dominio falso con letras raras", async () => {
+    // Dominio falso con 'а' cirílica (\u0430) en vez de 'a' latina
+    const urlHomografo = "https://b\u0430ncolombi\u0430-pagos.com/portal";
+    const resultado = await motor.analizarUrl(urlHomografo);
+
+    expect(resultado.clasificacion).toBe("MALICIOSO");
+    expect(resultado.puntuacionRiesgo).toBeGreaterThanOrEqual(85);
+    expect(resultado.reglasCoincidentes.some((r) => r.id === "REGLA_PUNYCODE_HOMOGRAFO")).toBe(true);
+  });
+
+  it("debe clasificar como MALICIOSO y 95 pts un dominio añadido a la lista negra personalizada (Opción 3)", async () => {
+    const motorConListaNegra = new MotorRiesgo();
+    motorConListaNegra.actualizarConfiguracion({
+      proteccionHabilitada: true,
+      modoProteccion: "EQUILIBRADO",
+      umbralSospechoso: 30,
+      umbralMalicioso: 70,
+      bloquearMaliciososAutomaticamente: true,
+      advertirSospechosos: true,
+      listaBlancaPersonalizada: [],
+      listaNegraPersonalizada: ["https://sitio-phishing-agregado.com/login", "dominio-malo.xyz"],
+      permitirBypassTemporal: true,
+    });
+
+    // 1. Probar URL exacta
+    const res1 = await motorConListaNegra.analizarUrl("https://sitio-phishing-agregado.com/login");
+    expect(res1.clasificacion).toBe("MALICIOSO");
+    expect(res1.puntuacionRiesgo).toBe(95);
+    expect(res1.esDominioConocidoMalicioso).toBe(true);
+    expect(res1.reglasCoincidentes[0].id).toBe("REPUTACION_LISTA_NEGRA");
+
+    // 2. Probar con www
+    const res2 = await motorConListaNegra.analizarUrl("https://www.sitio-phishing-agregado.com/otra-cosa");
+    expect(res2.clasificacion).toBe("MALICIOSO");
+    expect(res2.puntuacionRiesgo).toBe(95);
+
+    // 3. Probar subdominio
+    const res3 = await motorConListaNegra.analizarUrl("http://sub.dominio-malo.xyz/alerta");
+    expect(res3.clasificacion).toBe("MALICIOSO");
+    expect(res3.puntuacionRiesgo).toBe(95);
+  });
 });

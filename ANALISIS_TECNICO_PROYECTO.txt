@@ -1,0 +1,1066 @@
+====================================================================================================
+DOCUMENTO DE ANÁLISIS TÉCNICO, FUNCIONAL Y ARQUITECTÓNICO INTEGRAL
+PROYECTO: PHISHGUARD COLOMBIA & SMISHINGGUARD ANDROID
+ECOSISTEMA DEFENSIVO LOCAL CONTRA INGENIERÍA SOCIAL (PHISHING, SMISHING Y VISHING)
+====================================================================================================
+Fecha de Análisis: Octubre 2026
+Disciplina: Ingeniería de Sistemas / Ciberseguridad Defensiva
+Metodología de Análisis: Ingeniería Inversa de Código Fuente y Auditoría de Software
+Entorno Analizado: D:\Seguridad (Repositorio Monorepo Local)
+====================================================================================================
+
+TABLA DE CONTENIDO:
+1. INTRODUCCIÓN, DEFINICIÓN DEL PROBLEMA Y PROPÓSITO GENERAL
+2. MAPEO ESTRUCTURAL EXHAUSTIVO DEL REPOSITORIO
+3. ARQUITECTURA GENERAL DEL SISTEMA (PHISHGUARD & SMISHINGGUARD)
+4. ANÁLISIS DETALLADO DE TECNOLOGÍAS, VERSIONES Y DEPENDENCIAS
+5. ANÁLISIS EXHAUSTIVO DEL COMPONENTE WEB: PHISHGUARD COLOMBIA (MANIFEST V3)
+6. ANÁLISIS EXHAUSTIVO DEL COMPONENTE MÓVIL: SMISHINGGUARD (KOTLIN / JETPACK COMPOSE)
+7. LÓGICA DE NEGOCIO, MOTORES HEURÍSTICOS Y ALGORITMOS DE DETECCIÓN
+8. ANÁLISIS EXHAUSTIVO DEL MODELO DE DATOS Y PERSISTENCIA
+9. ANÁLISIS DE AUTENTICACIÓN, AUTORIZACIÓN Y GESTIÓN DE PRIVILEGIOS
+10. AUDITORÍA BÁSICA DE SEGURIDAD DEL SOFTWARE
+11. GESTIÓN DE CONFIGURACIÓN Y VARIABLES DE ENTORNO
+12. COMUNICACIÓN INTER-COMPONENTES Y FLUJO DE DATOS
+13. MANEJO DE EXCEPCIONES, ERRORES Y RESILIENCIA
+14. RENDIMIENTO, COMPLEJIDAD COMPUTACIONAL Y ESCALABILIDAD
+15. CICLO DE VIDA, SCRIPTS, INSTALACIÓN Y DESPLIEGUE
+16. PATRONES DE DISEÑO Y CALIDAD DE SOFTWARE
+17. FLUJO COMPLETO DE CASOS DE USO PRINCIPALES
+18. ACTORES DEL SISTEMA Y MATRIZ DE CONTROL DE ACCESO
+19. DESCRIPCIÓN TÉCNICA DEL SISTEMA (FORMATO ACADÉMICO / PROFESIONAL)
+20. FUNCIONAMIENTO Y LÓGICA DEL SISTEMA
+21. ARQUITECTURA DEL SISTEMA
+22. MODELO DE DATOS
+23. REQUISITOS FUNCIONALES IDENTIFICADOS (IMPLEMENTADOS VS NO IMPLEMENTADOS)
+24. REQUISITOS NO FUNCIONALES IDENTIFICADOS (VERIFICABLES VS RECOMENDADOS)
+25. SEGURIDAD DEL SISTEMA
+26. LIMITACIONES ACTUALES DEL SISTEMA
+27. POSIBLES MEJORAS (NECESARIAS VS OPCIONALES)
+28. TABLA DE INVENTARIO TÉCNICO
+29. MATRIZ DE TRAZABILIDAD TÉCNICA
+30. RESUMEN TÉCNICO PARA DOCUMENTACIÓN
+
+====================================================================================================
+1. INTRODUCCIÓN, DEFINICIÓN DEL PROBLEMA Y PROPÓSITO GENERAL
+====================================================================================================
+
+1.1. Contexto y Problemática:
+El fraude electrónico basado en ingeniería social representa uno de los vectores de ataque más críticos contra usuarios finales y organizaciones. En el contexto de Colombia y América Latina, este fenómeno se manifiesta agresivamente mediante tres modalidades convergentes:
+1. Phishing Web: Despliegue de sitios web apócrifos que clonan portales gubernamentales (DIAN, SIMIT, RUNT) y bancarios (Bancolombia, Nequi, Daviplata, BBVA, PSE) empleando ataques homógrafos Unicode (IDN Homograph Attacks), dominios con prefijo Punycode (RFC 3492), typosquatting y dominios de nivel superior (TLD) de bajo costo o abuso masivo.
+2. Smishing (SMS Phishing): Mensajes de texto que infunden falsas alarmas de bloqueo de cuentas, embargos judiciales, premios o paquetes retenidos en aduanas, incitando a la víctima a pulsar enlaces acortados o dominios efímeros alojados en servicios en la nube gratuitos o túneles de desarrollo (ngrok, duckdns, vercel, firebase).
+3. Vishing y Fraude Telefónico: Llamadas no solicitadas que utilizan técnicas de Caller ID Spoofing, llamadas perdidas de un solo timbrazo hacia destinos internacionales de alto costo (fraude Wangiri) y números con apariencia de proximidad local (Neighbor Spoofing).
+
+1.2. Propósito General del Sistema:
+El ecosistema integrado por PhishGuard Colombia y SmishingGuard tiene como objetivo primordial proporcionar una suite de defensa multicapa, proactiva, determinista y de ejecución 100% local (Edge Computing / On-Device Processing) contra ataques de ingeniería social. El sistema rechaza deliberadamente el uso de telemetría, consultas DNS remotas hacia servidores propietarios o el envío de datos personales a la nube, garantizando el principio de Privacidad por Diseño (Privacy by Design).
+
+1.3. Usuarios del Sistema:
+- Usuario Final Navegante Web: Persona que utiliza navegadores basados en Chromium (Google Chrome, Microsoft Edge, Brave) y requiere protección en tiempo real contra sitios de suplantación sin ver ralentizada su navegación.
+- Usuario Móvil Android: Persona que recibe mensajes de texto SMS y llamadas en un smartphone Android, buscando neutralizar notificaciones fraudulentas y aislar enlaces maliciosos sin ceder sus datos a proveedores externos.
+- Analista de Seguridad / Estudiante de Ingeniería: Usuario avanzado que utiliza las consolas forenses (Popup y Laboratorio de Opciones en PhishGuard, o Analizador Manual en SmishingGuard) para examinar la heurística, calcular métricas criptográficas (Entropía de Shannon, hash SHA-256), auditar técnicas mapeadas al estándar MITRE ATT&CK y exportar fichas técnicas forenses.
+
+====================================================================================================
+2. MAPEO ESTRUCTURAL EXHAUSTIVO DEL REPOSITORIO
+====================================================================================================
+
+El proyecto se encuentra organizado como un monorepo que alberga dos sistemas independientes pero conceptualmente alineados:
+
+D:\Seguridad
+│
+├── .gitignore                              [Configuración de exclusión para Git]
+├── .prettierrc                             [Reglas de formateo de código JS/TS]
+├── package.json                            [Manifiesto de dependencias npm del módulo Web]
+├── package-lock.json                       [Árbol determinista de dependencias npm]
+├── tsconfig.json                           [Configuración del compilador TypeScript]
+├── vite.config.ts                          [Configuración del empaquetador Vite y Rollup]
+├── vitest.config.ts                        [Configuración de la suite de pruebas unitarias Vitest]
+├── diagramas-uml.html                      [Visualizador web interactivo de diagramas UML Mermaid]
+├── README.md                               [Documentación general de PhishGuard Colombia]
+├── Propuesta_Proyecto_Grado_Ciberseguridad.docx  [Documento formal académico de propuesta]
+├── Proyecto_Grado_Ciberseguridad.docx       [Documento formal académico del proyecto de grado]
+│
+├── public/                                 [Activos estáticos de la extensión Web]
+│   ├── manifest.json                       [Manifiesto Manifest V3 de Chromium]
+│   └── icons/                              [Iconos de la extensión en resoluciones 16, 32, 48, 128 px]
+│
+├── scripts/                                [Utilidades y scripts de desarrollo]
+│   ├── generar-iconos.js                   [Script Canvas para generar imágenes PNG de escudo]
+│   └── procesar-csv.js                     [Parser de datasets de dominios maliciosos a JSON]
+│
+├── src/                                    [Código fuente TypeScript de PhishGuard Colombia]
+│   ├── analyzer/                           [Motor analítico central de URLs]
+│   │   ├── extractor-caracteristicas.ts    [Parser sintáctico y extracción de tokens léxicos]
+│   │   ├── homoglifos.ts                   [Decodificador Punycode RFC 3492 y Levenshtein]
+│   │   └── motor-riesgo.ts                 [Pipeline de orquestación y cálculo de riesgo]
+│   ├── background/                         [Controlador en segundo plano del navegador]
+│   │   └── service-worker.ts               [Service Worker Manifest V3: intercepción y bloqueo]
+│   ├── content/                            [Inyección en DOM de páginas web]
+│   │   └── content-script.ts               [Content script para notificación de eventos de carga]
+│   ├── pages/                              [Interfaces de usuario desarrolladas en React]
+│   │   ├── bloqueado/                      [Página de advertencia y bloqueo defensivo]
+│   │   │   ├── index.html, bloqueado.tsx, bloqueado.css
+│   │   ├── opciones/                       [Laboratorio sandbox, listas y configuración]
+│   │   │   ├── index.html, opciones.tsx, opciones.css
+│   │   └── popup/                          [Menú contextual de barra de herramientas]
+│   │       ├── index.html, popup.tsx, popup.css
+│   ├── reputation/                         [Listas locales de confianza y mitigación]
+│   │   └── reputacion-local.ts             [Base de conocimiento en memoria de dominios oficiales]
+│   ├── rules/                              [Arquitectura de plugins para reglas de riesgo]
+│   │   ├── base-regla.ts                   [Clase abstracta patrón Strategy BaseReglaRiesgo]
+│   │   ├── registro-reglas.ts              [Catálogo y registro central de reglas activas]
+│   │   ├── regla-estructura-url.ts         [Regla: detección de anomalías sintácticas y @]
+│   │   ├── regla-ip-host.ts                [Regla: host numérico IPv4/IPv6]
+│   │   ├── regla-palabras-sospechosas.ts   [Regla: densidad léxica de ingeniería social]
+│   │   ├── regla-punycode-homografo.ts     [Regla: ataque homógrafo y mezcla de alfabetos]
+│   │   ├── regla-seguridad-protocolo.ts    [Regla: HTTP en flujos sensibles]
+│   │   ├── regla-suplantacion-marca.ts     [Regla: imitación tipográfica de marcas]
+│   │   └── regla-tld-sospechoso.ts         [Regla: extensiones TLD de alta peligrosidad]
+│   ├── storage/                            [Persistencia desacoplada del navegador]
+│   │   └── servicio-almacenamiento.ts      [Abstracción sobre chrome.storage.local y RAM]
+│   ├── types/                              [Definiciones de interfaces y modelos TypeScript]
+│   │   ├── analisis.ts, configuracion.ts, reglas.ts, reputacion.ts
+│   │   └── utils/                          [Utilidades criptográficas y sintácticas]
+│   │       ├── cripto-forense.ts           [Entropía de Shannon, SHA-256 y ficha MITRE]
+│   │       └── normalizador-url.ts         [Normalizador canónico y clasificador IPv4/IPv6]
+│   └── tests/                              [Suite de pruebas unitarias con Vitest]
+│       ├── cripto-forense.test.ts, extractor-caracteristicas.test.ts, falsos-positivos.test.ts,
+│       ├── homoglifos.test.ts, motor-riesgo.test.ts, reglas.test.ts, reputacion.test.ts
+│
+└── android-smishguard/                     [Proyecto Nativo Android de SmishingGuard]
+    ├── build.gradle.kts                    [Configuración Gradle raíz del proyecto Android]
+    ├── settings.gradle.kts                 [Definición de módulos y repositorios Gradle]
+    ├── gradle.properties                   [Configuración de memoria de la JVM de Gradle]
+    ├── gradlew, gradlew.bat                [Wrappers de ejecución autónoma de Gradle]
+    ├── README.md                           [Documentación técnica de SmishingGuard Android]
+    ├── gradle/
+    │   ├── libs.versions.toml              [Catálogo declarativo de versiones y dependencias]
+    │   └── wrapper/gradle-wrapper.properties
+    └── app/
+        ├── build.gradle.kts                [Buildscript del módulo Android aplicación]
+        ├── proguard-rules.pro              [Reglas de ofuscación y optimización R8]
+        └── src/
+            ├── test/java/.../              [Pruebas unitarias JUnit en JVM local]
+            │   ├── CallDetectorEngineTest.kt, SafeRegexTest.kt,
+            │   ├── SenderKeyTest.kt, SmishDetectorEngineTest.kt
+            └── main/
+                ├── AndroidManifest.xml     [Manifiesto de componentes, permisos y servicios]
+                ├── res/                    [Recursos XML: cadenas, colores, temas, iconos]
+                └── java/com/antiphishing/smishguard/
+                    ├── SmishGuardApp.kt    [Clase Application: inicialización y DI manual]
+                    ├── data/
+                    │   ├── local/          [Persistencia Room / SQLite]
+                    │   │   ├── AppDatabase.kt  [Clase abstracta RoomDatabase v3]
+                    │   │   ├── dao/        [Data Access Objects: SmsDao, CallDao, etc.]
+                    │   │   └── entity/     [Entidades Room con índices declarativos]
+                    │   ├── repository/     [Capa repositorio: SmsRepository, RuleCache, etc.]
+                    │   └── security/       [Criptografía hardware en Android]
+                    │       └── FieldCipher.kt [Cifrado AES-256-GCM con Android Keystore]
+                    ├── domain/
+                    │   ├── detector/       [Motores de inferencia heurística]
+                    │   │   ├── SmishDetectorEngine.kt, CallDetectorEngine.kt,
+                    │   │   ├── HomographDetector.kt, PatternRuleEngine.kt,
+                    │   │   ├── SenderFraudAnalyzer.kt, UrlThreatAnalyzer.kt
+                    │   └── model/          [Modelos de dominio: AnalysisResult, etc.]
+                    ├── receiver/           [Receptores de difusión del sistema operativo]
+                    │   ├── SmsBroadcastReceiver.kt, CallStateReceiver.kt,
+                    │   ├── MmsBroadcastReceiver.kt, HeadlessSmsSendService.kt
+                    ├── service/            [Servicios desacoplados del sistema Android]
+                    │   ├── CallScreeningServiceImpl.kt [Filtrado de llamadas Telecom API 29+]
+                    │   ├── NotificationFilterService.kt [Supresión de avisos en tiempo real]
+                    │   └── ThreatNotificationManager.kt [Gestor de alertas en barra de estado]
+                    ├── ui/                 [Capa de presentación Jetpack Compose]
+                    │   ├── MainActivity.kt, navigation/, theme/,
+                    │   ├── dashboard/, quarantine/, analyzer/, settings/
+                    └── util/               [Utilidades contra ataques DoS y parsing]
+                        ├── SafeRegex.kt    [Guarda contra ReDoS mediante deadline de nanoTime]
+                        └── SenderKey.kt    [Normalizador canónico de remitentes y números]
+
+====================================================================================================
+3. ARQUITECTURA GENERAL DEL SISTEMA (PHISHGUARD & SMISHINGGUARD)
+====================================================================================================
+
+3.1. Justificación de los Patrones Arquitectónicos:
+El sistema completo no responde a una arquitectura monolítica web tradicional basada en servidor centralizado ni al patrón cliente-servidor típico con APIs REST remotas. La evidencia en el código demuestra la convergencia de dos arquitecturas especializadas por plataforma:
+
+A. PhishGuard Colombia:
+- Clasificación: Arquitectura Basada en Eventos de Navegación y Pipeline de Inspección en Pipeline Modular (Pipes and Filters / Strategy Registry) sobre especificación Manifest V3 de Chromium.
+- Justificación: No existe un backend HTTP externo. La capa de control reside en un Service Worker (`service-worker.ts`) que intercepta eventos del ciclo de vida del navegador (`chrome.webNavigation.onBeforeNavigate`). La URL candidata pasa secuencialmente por un normalizador canónico, un extractor de características léxicas, un proveedor de reputación en memoria y un registro dinámico de reglas independientes que heredan de una abstracción común.
+- Presentación: Single Page Applications (SPA) desacopladas desarrolladas en React 18, empaquetadas localmente como páginas internas de extensión (`chrome-extension://<id>/...`).
+
+B. SmishingGuard Android:
+- Clasificación: Arquitectura Limpia (Clean Architecture) combinada con el patrón de presentación Modelo-Vista-VistaModelo (MVVM) y programación reactiva unidireccional basada en flujos de Kotlin Coroutines (`StateFlow` / `Flow`).
+- Justificación:
+  1. Capa de Dominio (Domain Layer): Independiente del framework Android (`SmishDetectorEngine`, `CallDetectorEngine`, `PatternRuleEngine`). Realiza cálculos matemáticos puros, parsing de cadenas y análisis sintáctico.
+  2. Capa de Datos (Data Layer): Abstrae el almacenamiento local a través de Repositorios (`SmsRepository`, `CallRepository`), asegurando el acceso concurrente mediante primitivas de sincronización (`Mutex` en `RuleCache`) y aislando la base de datos Room (`AppDatabase`).
+  3. Capa de Servicios/Broadcast: Adapta eventos del sistema Android (SMS entrantes, llamadas, notificaciones en barra de estado) hacia casos de uso del dominio.
+  4. Capa de Presentación (UI Layer): Vistas declarativas puras en Jetpack Compose observando estados inmutables expuestos por `ViewModel`.
+
+====================================================================================================
+4. ANÁLISIS DETALLADO DE TECNOLOGÍAS, VERSIONES Y DEPENDENCIAS
+====================================================================================================
+
+4.1. Módulo Web Extension (PhishGuard):
+- TypeScript (v5.7.3): Lenguaje con tipado estático estricto. Permite definir contratos rigurosos (`CaracteristicasUrl`, `ReglaRiesgo`, `FichaForenseIncidente`) en tiempo de compilación.
+- Google Chrome Extensions Manifest V3: Estándar moderno de extensiones web. Reemplaza las páginas de fondo persistentes por Service Workers efímeros dirigidos por eventos (`service-worker.ts`), incrementando la seguridad y optimizando el consumo de memoria RAM.
+- Vite (v6.1.0) + @vitejs/plugin-react (v4.3.4): Herramienta de compilación ultrarrápida y empaquetador Rollup configurado con múltiples puntos de entrada en `vite.config.ts` (popup, bloqueado, opciones, service-worker y content-script).
+- React (v18.3.1) y React-DOM (v18.3.1): Biblioteca de renderizado declarativo para construir la interfaz del popup, la pantalla de bloqueo y el laboratorio de opciones.
+- Lucide React (v0.475.0): Biblioteca de iconos vectoriales ligeros en formato SVG para la interfaz de usuario.
+- Vitest (v3.0.5): Framework de pruebas unitarias de alto rendimiento con compatibilidad nativa con módulos ES y TypeScript.
+- Prettier (v3.5.1) y ESLint (v9.20.1): Herramientas de formateo y análisis estático de código.
+
+Dependencias Fundamentales (PhishGuard):
+- TypeScript, Vite, React, React-DOM, Manifest V3: Sin estos elementos el código no compila ni genera la estructura de extensión válida requerida por Chromium.
+Dependencias Secundarias / Desarrollo (PhishGuard):
+- Lucide React (estética UI), Prettier, ESLint, Vitest (aseguramiento de calidad).
+
+4.2. Módulo Móvil Android (SmishingGuard):
+- Lenguaje Kotlin (v2.0.0): Lenguaje moderno de tipado estático para la JVM y Android. Incorpora null-safety, funciones de extensión y soporte nativo para programación asíncrona mediante Coroutines.
+- Android Gradle Plugin (AGP v8.3.2): Herramienta de automatización de compilación de proyectos Android.
+- Compile SDK / Target SDK (API 34 - Android 14): Compatible con las últimas políticas de seguridad de Google Play. Min SDK 26 (Android 8.0 Oreo), cubriendo más del 95% de los dispositivos activos en el mercado.
+- Jetpack Compose (BOM 2024.05.00) + Material 3: Toolkit declarativo de interfaz gráfica moderna para Android. Elimina la necesidad de archivos XML de layout y facilita la gestión reactiva del estado.
+- AndroidX Lifecycle & ViewModel Compose (v2.8.0): Manejo del ciclo de vida y preservación del estado de la interfaz ante eventos de configuración (rotación de pantalla).
+- Navigation Compose (v2.7.7): Enrutador declarativo para transiciones fluidas entre pantallas en Jetpack Compose.
+- Room Database (v2.6.1) + KSP (Kotlin Symbol Processing v2.0.0-1.0.21): Abstracción sobre SQLite nativo que genera código en tiempo de compilación con verificación de consultas SQL y mapeo a entidades fuertemente tipadas.
+- Kotlinx Coroutines Android & Test (v1.8.1): Manejo estructurado de concurrencia y subprocesos en segundo plano (Dispatchers.IO) para no bloquear el hilo principal (Main Thread).
+- Android Keystore System + Java Cryptography Extension (JCE): Cifrado AES-256 en modo GCM (Galois/Counter Mode) respaldado por hardware de seguridad (TEE / SE) cuando está disponible en el hardware.
+- JUnit 4 (v4.13.2) y AndroidX Test (v1.1.5): Infraestructura de pruebas unitarias en JVM local y de instrumentación en dispositivo.
+
+Dependencias Fundamentales (SmishingGuard):
+- Android SDK, Kotlin, Jetpack Compose, Room Runtime/KTX/Compiler, Coroutines, Navigation Compose: Esenciales para la arquitectura y ejecución.
+Dependencias Secundarias (SmishingGuard):
+- Material Icons Extended (iconografía auxiliar), Espresso Core (automatización de UI en pruebas).
+
+====================================================================================================
+5. ANÁLISIS EXHAUSTIVO DEL COMPONENTE WEB: PHISHGUARD COLOMBIA (MANIFEST V3)
+====================================================================================================
+
+5.1. Punto de Entrada y Ciclo de Vida del Service Worker:
+El archivo `src/background/service-worker.ts` opera como el cerebro de control de la extensión. A diferencia de las extensiones Manifest V2, no existe una página en segundo plano activa continuamente; el Service Worker se activa por eventos específicos:
+1. `chrome.webNavigation.onBeforeNavigate`: Se dispara tan pronto como el motor de navegación de Chromium resuelve iniciar una petición de navegación en el marco principal (`details.frameId === 0`), antes de que se descargue cualquier byte de HTML o script del servidor destino.
+2. `chrome.tabs.onUpdated`: Garantiza la cobertura ante modificaciones en el estado de la pestaña o navegación mediante SPA interna.
+3. `chrome.tabs.onRemoved`: Limpia las entradas de memoria asociadas a la pestaña en `mapaResultadosPorPestana` y `pestanasEnProcesoBloqueo` para evitar fugas de memoria (memory leaks).
+4. `chrome.runtime.onMessage`: Canal de comunicación por paso de mensajes asíncronos con el popup, la pantalla de opciones o scripts de contenido.
+
+5.2. Pipeline de Intercepción y Evaluación de URLs:
+La función interna `procesarNavegacion(idPestana, urlTexto)` ejecuta la siguiente secuencia técnica:
+1. Filtrado de Exclusión: Comprueba mediante `esUrlExcluida(urlTexto)` si la URL pertenece a esquemas internos del navegador (`chrome://`, `chrome-extension://`, `about:`, `devtools://`, `blob:`, etc.). Si es interna, se ignora inmediatamente.
+2. Comprobación de Estado: Verifica si la protección global está habilitada (`configuracionEnMemoria.proteccionHabilitada`) y si la pestaña no se encuentra ya en un bucle de redirección defensiva (`pestanasEnProcesoBloqueo`).
+3. Comprobación de Bypass Temporal: Verifica si el host se encuentra en el conjunto en memoria `dominiosExcepcionTemporal`. Esto permite que el usuario omita temporalmente un bloqueo bajo su propio consentimiento sin deshabilitar el escudo para el resto de la navegación.
+4. Ejecución del Motor Heurístico: Delega la evaluación a `motorRiesgo.analizarUrl(urlTexto)`.
+5. Registro y Señalización Visual:
+   - Almacena el resultado en la caché en memoria de la pestaña (`mapaResultadosPorPestana`).
+   - Actualiza la insignia (Badge) en el icono del navegador (`actualizarInsigniaPestana`):
+     * "ALERTA" en fondo rojo (#DC2626) para MALICIOSO.
+     * "RIESGO" en fondo ámbar (#D97706) para SOSPECHOSO.
+     * "OK" en fondo verde (#16A34A) para SEGURO.
+   - Envía asíncronamente las métricas de análisis al almacenamiento local (`ServicioAlmacenamiento.registrarAnalisis`).
+6. Bloqueo Defensivo: Si la clasificación es `MALICIOSO` y la opción `bloquearMaliciososAutomaticamente` es verdadera:
+   - Marca la pestaña en `pestanasEnProcesoBloqueo` para romper posibles recursiones.
+   - Construye la URL interna hacia `src/pages/bloqueado/index.html` codificando como parámetros de consulta (query params): URL original, puntuación de riesgo, nombre de host y un arreglo serializado en JSON con las evidencias de las reglas detonadas y sus correspondientes técnicas MITRE.
+   - Ejecuta `chrome.tabs.update(idPestana, { url: urlBloqueo })`.
+
+5.3. Interfaz de Usuario (React + Vite):
+A. Popup (`src/pages/popup/popup.tsx`):
+- Pestaña "General": Muestra un velocímetro/indicador de riesgo circular del 0 al 100%, el dictamen técnico ("SEGURO", "SOSPECHOSO", "MALICIOSO"), un conmutador rápido para activar/desactivar el escudo, métricas acumuladas de la sesión (sitios analizados, amenazas bloqueadas) y un desglosador colapsable de las reglas detonadas.
+- Pestaña "Forense": Expone el cálculo de Entropía de Shannon del nombre de host, la huella digital SHA-256 de la URL, el desglose de sustituciones de homoglifos y la lista de técnicas detectadas del marco MITRE ATT&CK. Incluye botones interactivos para copiar el informe completo al portapapeles o descargarlo en formato Markdown estandarizado.
+- Pestaña "Reporte / Análisis Manual": Proporciona un campo de entrada para pegar cualquier enlace arbitrario y someterlo a análisis inmediato en el motor local sin necesidad de navegar a él, además de botones de prueba rápida ("CASOS_DEMO") con vectores reales simulados de Bancolombia, Nequi y la DIAN.
+
+B. Pantalla de Bloqueo (`src/pages/bloqueado/bloqueado.tsx`):
+- Se despliega localmente aislando al usuario del sitio malicioso.
+- Informa con claridad el motivo exacto del bloqueo, la entidad presuntamente suplantada y las evidencias técnicas.
+- Mecanismo de Omisión Bajo Consentimiento Informado (Bypass): Incluye un botón secundario que despliega un modal modal de advertencia crítica. Si el usuario marca la casilla de verificación asumiendo la responsabilidad y pulsa continuar, la extensión emite el mensaje `PERMITIR_DOMINIO_TEMPORALMENTE` al Service Worker y redirige a la URL original.
+
+C. Laboratorio y Opciones (`src/pages/opciones/opciones.tsx`):
+- Configuración de Sensibilidad: Selección de modo de protección ("ESTRICTO" [umbrales 20/55], "EQUILIBRADO" [umbrales 30/70], "PERMISIVO" [umbrales 45/80]).
+- Gestor de Listas Locales: Tablas reactivas para agregar o eliminar dominios en la Lista Blanca Personalizada (exclusiones de análisis) o Lista Negra Personalizada (bloqueo forzado a 100% de riesgo).
+- Sandbox Generador de Vectores de Ataque: Módulo de experimentación que permite combinar marcas víctimas (Bancolombia, Nequi, Daviplata, DIAN, PSE), técnicas de evasión (homoglifos, typosquatting, subdominios anidados, userinfo con `@`), TLDs maliciosos (.xyz, .top, .click) y vectores de coerción psicológica para generar la URL sintética y analizarla en tiempo real en un entorno controlado.
+
+====================================================================================================
+6. ANÁLISIS EXHAUSTIVO DEL COMPONENTE MÓVIL: SMISHINGGUARD (KOTLIN / JETPACK COMPOSE)
+====================================================================================================
+
+6.1. Modos Operativos y Concurrencia de Receptores:
+SmishingGuard implementa una arquitectura dual de captura para conciliar la máxima protección con la comodidad del usuario:
+
+A. Modo Guardián No Invasivo (NotificationListenerService):
+- Archivo: `android-smishguard/app/src/main/java/com/antiphishing/smishguard/service/NotificationFilterService.kt`
+- Mecánica Técnica: No obliga al usuario a convertir a SmishingGuard en su aplicación predeterminada de SMS. El servicio se enlaza mediante el permiso del sistema `BIND_NOTIFICATION_LISTENER_SERVICE` y monitorea los eventos `onNotificationPosted`.
+- Si el paquete emisor coincide con aplicaciones de mensajería conocidas (Google Messages, Samsung Messages, AOSP, MIUI, etc.), extrae el título (remitente) y el texto.
+- Ejecuta una corrutina en `Dispatchers.IO` evaluando el mensaje en `SmishDetectorEngine`. Si la puntuación supera el umbral de cuarentena, cancela inmediatamente la notificación del sistema (`cancelNotification(sbn.key)`), impidiendo que el usuario vea la vista previa del mensaje o pulse enlaces peligrosos en la pantalla de bloqueo.
+
+B. Modo Defensivo por Broadcast (SMS_RECEIVED / SMS_DELIVER):
+- Archivo: `android-smishguard/app/src/main/java/com/antiphishing/smishguard/receiver/SmsBroadcastReceiver.kt`
+- Mecánica Técnica: Se registra con prioridad máxima (`android:priority="999"`). Recibe los fragmentos PDU a través de `Telephony.Sms.Intents.getMessagesFromIntent`, ensambla mensajes multipartes en una cadena unificada y utiliza `goAsync()` para no bloquear el hilo de ejecución principal del sistema (evitando Application Not Responding - ANR).
+- Si el mensaje es clasificado como malicioso y la difusión es de tipo ordenada (`isOrderedBroadcast`), invoca `abortBroadcast()`, deteniendo la entrega del SMS hacia otras aplicaciones de mensajería menos seguras.
+
+C. Filtrado Oficial de Llamadas Telefónicas (CallScreeningService):
+- Archivo: `android-smishguard/app/src/main/java/com/antiphishing/smishguard/service/CallScreeningServiceImpl.kt`
+- Mecánica Técnica: Disponible en Android 10+ (API 29+). Se integra de forma nativa en el subsistema Telecom del sistema operativo mediante el rol de sistema `ROLE_CALL_SCREENING`.
+- Al entrar una llamada, el sistema operativo invoca `onScreenCall(callDetails: Call.Details)`. SmishingGuard analiza el número en `CallDetectorEngine` respetando el estricto presupuesto temporal de 5 segundos que impone Android.
+- Verifica el estado de autenticación criptográfica de la red móvil STIR/SHAKEN (`callDetails.callerNumberVerificationStatus == Connection.VERIFICATION_STATUS_FAILED` en Android 11+).
+- Si la llamada es identificada como fraude (Wangiri, llamada silenciosa, spoofing), responde al sistema con `CallResponse.Builder().setDisallowCall(true).setRejectCall(true).setSkipNotification(true).build()`, colgando la llamada en segundo plano antes de que el terminal empiece a timbrar.
+- En terminales antiguos (API 26-28), el sistema cuenta con el respaldo de `CallStateReceiver.kt`, que escucha `TelephonyManager.ACTION_PHONE_STATE_CHANGED` para registrar la llamada y alertar al usuario mediante una notificación de alta prioridad.
+
+6.2. La Bóveda Honeypot Aislada:
+- A diferencia de los filtros convencionales que simplemente eliminan mensajes, SmishingGuard implementa una Bóveda Honeypot (`QuarantineScreen.kt`).
+- Principio de Contención y Neutralización (Defanging): Cualquier SMS en cuarentena es transformado mediante `SmishDetectorEngine.defangText()` antes de renderizarse en la interfaz. Todas las URLs son neutralizadas sustituyendo los protocolos por `hxxp://` o `hxxps://` y encerrando los puntos en corchetes `[.]`. Asimismo, las direcciones IP se alteran sintácticamente (ejemplo: `192[.]168[.]1[.]1`). Esto imposibilita que el motor de Jetpack Compose interprete el texto como un enlace clickeable, previniendo la ejecución involuntaria por parte de la víctima.
+- Funcionalidades Forenses en Bóveda: El usuario puede pulsar sobre cualquier mensaje aislado para ver la fecha/hora, el desglose pormenorizado de los factores de riesgo identificados, restaurar el mensaje en caso de falso positivo o agregar al remitente directamente a la lista blanca.
+
+====================================================================================================
+7. LÓGICA DE NEGOCIO, MOTORES HEURÍSTICOS Y ALGORITMOS DE DETECCIÓN
+====================================================================================================
+
+7.1. Motor Heurístico Web: PhishGuard Colombia (`src/analyzer/`):
+El pipeline analítico opera bajo una arquitectura de ponderación aditiva con multiplicadores de correlación:
+
+A. Extracción Canónica y Normalización (`normalizador-url.ts` y `extractor-caracteristicas.ts`):
+1. Normalización de Esquema: Si una URL no contiene protocolo explícito, se le antepone `http://` para permitir el parsing mediante el objeto estándar `URL`.
+2. Extracción de Dominio e IP: Determina si el host es un nombre de dominio o una dirección IP numérica directa (`REGEX_IPV4` o `REGEX_IPV6`).
+3. Jerarquía de Subdominios: Contempla sufijos de dominio de segundo nivel específicos de Colombia y la región (`com.co`, `gov.co`, `edu.co`, `org.co`, `mil.co`, `co.uk`, etc.), evitando fragmentar incorrectamente dominios principales.
+4. Identificación de Vectores Léxicos: Búsqueda cruzada contra tres diccionarios especializados:
+   - `PALABRAS_AUTENTICACION` (login, verificación, clave, actualizar-datos, token, etc.).
+   - `PALABRAS_BANCARIAS` (banco, bancolombia, nequi, daviplata, pse, transfiya, sucursal, etc.).
+   - `PALABRAS_URGENCIA_Y_ENGANO` (multa, fotomulta, comparendo, simit, dian, embargo, paquete, 4-72).
+
+B. Algoritmo de Homoglifos y Distancia Levenshtein (`homoglifos.ts`):
+1. Desofuscación Punycode (RFC 3492): Implementación pura de decodificación Punycode sin dependencias externas (`decodificarEtiquetaPunycode`). Convierte etiquetas internacionales que inician por `xn--` a sus representaciones reales en caracteres Unicode.
+2. Detección de Alfabeto Mixto (Script Spoofing): Analiza si dentro de una misma etiqueta existen caracteres del alfabeto latino mezclados con caracteres cirílicos (como `а`, `е`, `о`, `р`, `с`) o griegos (`α`, `ο`, `ρ`), técnica frecuentemente usada para crear dominios visualmente indistinguibles de marcas reales.
+3. Desofuscación Leetspeak y Homoglifos Numéricos: Aplica un mapa de sustitución inverso (`0` -> `o`, `1` -> `l`, `|` -> `l`, `3` -> `e`, `4` -> `a`, `@` -> `a`, `5` -> `s`, `7` -> `t`, `8` -> `b`, `9` -> `g`, `rn` -> `m`, `vv` -> `w`, `cl` -> `d`).
+4. Medición de Similitud con Distancia Levenshtein: Calcula el costo de edición (inserciones, eliminaciones, sustituciones) entre los tokens del dominio y un catálogo de 49 marcas colombianas e internacionales (`MARCAS_OBJETIVO`). Si la distancia está entre 1 y 2 cambios, y el porcentaje de similitud es >= 75% en palabras de longitud >= 4 caracteres, se clasifica como Typosquatting.
+
+C. Catálogo de 7 Reglas Modulares de Riesgo (`src/rules/`):
+- `ReglaSuplantacionMarca`: Severidad CRÍTICA (+45 a +85 pts). Se activa si una marca es detectada en un dominio que no corresponde a su dominio oficial legítimo. Mapeo MITRE: T1036.007 (Masquerading: Homoglyph).
+- `ReglaPunycodeHomografo`: Severidad CRÍTICA (+85 a +95 pts). Detecta presencia de Punycode o mezcla de alfabetos con términos bancarios o financieros. Mapeo MITRE: T1036.007.
+- `ReglaIpHost`: Severidad ALTA (+35 a +55 pts). Detecta acceso directo por dirección IPv4 o IPv6 sin DNS. Si contiene rutas de autenticación, suma penalización extra. Mapeo MITRE: T1071.001.
+- `ReglaSeguridadProtocolo`: Severidad MEDIA (+15 a +35 pts). Detecta uso de protocolo HTTP no cifrado. Excluye automáticamente entornos de desarrollo local (`localhost`, `127.0.0.1`, `.local`). Si se manejan datos bancarios o de autenticación sin TLS, eleva la severidad. Mapeo MITRE: T1040.
+- `ReglaEstructuraUrl`: Severidad ALTA (+20 a +45 pts). Evalúa la presencia de credenciales embebidas con carácter `@` (+35 pts), exceso de subdominios anidados (>= 3), exceso de guiones (>= 3), longitud de dominio excesiva (> 45 caracteres) y alto porcentaje de codificación hexadecimal (%20, %2F > 25%). Mapeo MITRE: T1566.002.
+- `ReglaTldSospechoso`: Severidad MEDIA (+20 a +45 pts). Comprueba si el TLD pertenece a una lista de 24 extensiones con historial de abuso masivo (.top, .xyz, .tk, .ml, .ga, .cf, .gq, .fit, .surf, .click, .cam, .work, .icu, etc.). Mapeo MITRE: T1583.001.
+- `ReglaPalabrasSospechosas`: Severidad MEDIA (+10 a +30 pts). Evalúa la densidad léxica de ingeniería social, penalizando fuertemente la combinación cruzada de autenticación con urgencia o banca. Mapeo MITRE: T1566.002.
+
+D. Orquestación y Factor de Correlación (`motor-riesgo.ts`):
+- Consulta de Reputación Local: Si el host está en la lista negra local -> Puntuación forzada a 95 puntos (MALICIOSO). Si está en la lista blanca y NO contiene arroba `@` -> Puntuación forzada a 0 puntos (SEGURO).
+- Multiplicadores de Correlación:
+  * Si coinciden 2 reglas: la suma de puntos se incrementa en un factor de 1.1x (+10%).
+  * Si coinciden 3 o más reglas: la suma de puntos se incrementa en un factor de 1.25x (+25%).
+- La puntuación se acota estrictamente en el intervalo [0, 100].
+
+7.2. Motor Heurístico Móvil: SmishingGuard (`android-smishguard/`):
+El motor móvil complementa el análisis léxico con heurística especializada de telecomunicaciones:
+
+A. Detección de Anomalías en Remitente (`SenderFraudAnalyzer.kt`):
+- Remitente Alfanumérico Suplantado: Los remitentes de texto plano (ejemplo: "Bancolombia", "Dian", "Correos") carecen de autenticación criptográfica en las redes SMS globales (SS7/Diameter). Si un remitente alfanumérico entrega un mensaje que incluye enlaces maliciosos, se penaliza con +25 pts.
+- Línea Celular Privada para Banca: Los bancos oficiales utilizan códigos cortos certificados (Shortcodes de 4 a 6 dígitos). Si un número móvil particular estándar (+57 3xx... o +34 6xx...) emite notificaciones bancarias con enlaces, se penaliza con +35 pts.
+- Prefijos Internacionales de Fraude Transfronterizo: Penaliza mensajes provenientes de numeraciones con alta incidencia de campañas de smishing (+234 Nigeria, +229 Benín, +225 Costa de Marfil, +212 Marruecos, +247 Isla Ascensión, +675 Papúa Nueva Guinea, +881/+882 Satelitales, etc.) con +30 pts.
+
+B. Análisis Semántico y Mitigación de Falsos Positivos (`PatternRuleEngine.kt`):
+- Reglas de Ataque: Evalúa 13 categorías refinadas con expresiones regulares compiladas: Fraude Bancario, Estafa de Paquetería, Suplantación de Organismo Público, Extracción de Credenciales, Extracción de OTP/Token, Tácticas de Urgencia, Falsas Recompensas, Falsos Préstamos (Gota a Gota), Suplantación de Billeteras Digitales, Fraude Fiscal, Falso Débito PSE, Suplantación de Operador Móvil / Bloqueo IMEI y Suplantación Familiar.
+- Mitigación de Falsos Positivos en Códigos OTP: Los bancos legítimos envían mensajes que contienen palabras como "clave", "seguridad", "código", lo cual podría detonar alarmas falsas. `PatternRuleEngine` identifica patrones defensivos oficiales ("no comparta este código con nadie", "nunca le pediremos su clave", "válido por 5 minutos").
+- Blindaje contra Evasión: Para evitar que un atacante añada frases defensivas a un fraude real, se definieron categorías "no neutralizables" (`NON_NEUTRALIZABLE_CATEGORIES`). Si el mensaje contiene tácticas duras como suplantación familiar o extracción forzada de credenciales, el atenuador de OTP se anula por completo.
+
+C. Análisis de Enlaces y DGA en Smishing (`UrlThreatAnalyzer.kt`):
+- Extracción Exhaustiva: Regex universal capaz de extraer URLs completas, enlaces acortados (bit.ly, tinyurl, wa.me, etc.), dominios desnudos sin protocolo y direcciones IP crudas.
+- Entropía de Shannon:
+  \[
+  H(X) = -\sum_{i=1}^{n} P(x_i) \log_2 P(x_i)
+  \]
+  Calcula la aleatoriedad de las etiquetas de dominio. Si la entropía \( H > 3.8 \) en nombres de más de 12 caracteres, o si presenta aglomeraciones de 6 o más consonantes consecutivas, se identifica como un algoritmo de generación aleatoria de dominios (DGA).
+- Detección de Túneles y Alojamiento Gratuito: Penaliza enlaces en servicios frecuentemente abusados (`duckdns.org`, `ngrok.io`, `firebaseapp.com`, `000webhostapp.com`, `vercel.app`, `pages.dev`, `loca.lt`, `translate.goog`).
+
+D. Motor de Llamadas Fraudulentas (`CallDetectorEngine.kt`):
+- Números de Emergencia Autorizados: Permite siempre llamadas de auxilio público (123, 112, 911, 155, 106, etc.) con 0 de riesgo.
+- Wangiri / Ping Calls: Detección de prefijos internacionales de tarificación especial o llamadas de un solo repique orientadas a inducir la rellamada de la víctima (+247, +229, +881 Satelital).
+- Identificador Malformado: Detección de números con múltiples símbolos `+`, caracteres ilegales o longitudes anómalas incompatibles con la recomendación ITU-T E.164.
+- Neighbor Spoofing: Compara los primeros 6 dígitos del número entrante con el número de teléfono del usuario para detectar números que falsifican el prefijo de área o central local para generar una falsa percepción de proximidad.
+- Verificación STIR/SHAKEN: Integra el estado de verificación criptográfica de red provisto por Android 11+ (`Connection.VERIFICATION_STATUS_FAILED`).
+
+====================================================================================================
+8. ANÁLISIS EXHAUSTIVO DEL MODELO DE DATOS Y PERSISTENCIA
+====================================================================================================
+
+8.1. Persistencia en PhishGuard Colombia:
+El subsistema web no utiliza un motor de base de datos relacional convencional en servidor. Utiliza la API nativa de Chromium `chrome.storage.local`, encapsulada bajo la clase estática `ServicioAlmacenamiento` (`src/storage/servicio-almacenamiento.ts`).
+
+Estructuras de Datos Almacenadas:
+1. `phishguard_configuracion` (Objeto JSON):
+   - `proteccionHabilitada` (boolean): Interruptor maestro de protección.
+   - `modoProteccion` ("ESTRICTO" | "EQUILIBRADO" | "PERMISIVO"): Nivel de tolerancia.
+   - `umbralSospechoso` (number): Puntos para clasificar como sospechoso (default: 30).
+   - `umbralMalicioso` (number): Puntos para clasificación maliciosa y bloqueo (default: 70).
+   - `bloquearMaliciososAutomaticamente` (boolean): Redirección defensiva automática.
+   - `advertirSospechosos` (boolean): Alertas preventivas.
+   - `listaBlancaPersonalizada` (string[]): Dominios excluidos por el usuario.
+   - `listaNegraPersonalizada` (string[]): Dominios bloqueados permanentemente por el usuario.
+   - `permitirBypassTemporal` (boolean): Habilitar botón de omisión en pantalla de bloqueo.
+
+2. `phishguard_estadisticas_sesion` (Objeto JSON):
+   - `sitiosAnalizados` (number): Contador acumulado de navegaciones inspeccionadas.
+   - `amenazasBloqueadas` (number): Total de bloqueos aplicados.
+   - `sitiosSospechososDetectados` (number): Total de alertas de advertencia.
+   - `ultimoSitioAnalizado` (RegistroSitioReciente): Registro del último artefacto web evaluado.
+
+Mecanismo de Resiliencia: Si el código se ejecuta fuera del entorno de extensión de Chromium (por ejemplo, en un navegador convencional o en el runner de pruebas Vitest), `ServicioAlmacenamiento` conmuta automáticamente hacia un diccionario en memoria RAM (`memoriaLocal: Record<string, unknown>`), evitando excepciones por `chrome.storage is undefined`.
+
+8.2. Base de Datos Relacional de SmishingGuard (Room / SQLite):
+El módulo móvil implementa un motor relacional local administrado por la biblioteca Room Database (`AppDatabase.kt`), persistido en el archivo `smishguard_vault.db`. La versión del esquema es 3, con política de migración destructiva configurada (`fallbackToDestructiveMigration()`).
+
+Tablas, Entidades y Restricciones:
+
+1. Tabla `sms_records` (`SmsRecordEntity.kt`):
+   - `id` (INTEGER, PrimaryKey, autoincrementable): Identificador único del registro.
+   - `sender` (TEXT): Remitente o número telefónico que originó el SMS.
+   - `rawBody` (TEXT): Cuerpo original del mensaje. Si el mensaje está en cuarentena, se almacena cifrado con AES-256-GCM. Si el mensaje es seguro, se almacena como cadena vacía por el principio de minimización de datos.
+   - `sanitizedBody` (TEXT): Mensaje neutralizado con defanging (`hxxp://`, `[.]`).
+   - `timestamp` (INTEGER): Marca temporal en milisegundos (`System.currentTimeMillis()`).
+   - `threatScore` (INTEGER): Puntuación de riesgo calculada (0 a 100).
+   - `threatLevel` (TEXT): Clasificación categórica ("SAFE", "SUSPICIOUS", "PHISHING").
+   - `isQuarantined` (INTEGER / Boolean): Indicador de aislamiento en bóveda.
+   - `factorsJson` (TEXT): Factores de riesgo serializados en formato delimitado `cat:::desc:::score:::snip|||...`.
+   - `extractedUrls` (TEXT): Lista de URLs extraídas delimitadas por comas.
+   - `wasRestored` (INTEGER / Boolean): Marca si el usuario rescató el mensaje de cuarentena.
+   * Índices:
+     - `index_sms_records_timestamp` sobre `timestamp`.
+     - `index_sms_records_isQuarantined` sobre `isQuarantined`.
+     - `index_sms_records_threatLevel` sobre `threatLevel`.
+
+2. Tabla `call_records` (`CallRecordEntity.kt`):
+   - `id` (INTEGER, PrimaryKey, autoincrementable): Identificador del registro.
+   - `phoneNumber` (TEXT): Número de teléfono entrante.
+   - `timestamp` (INTEGER): Marca temporal en milisegundos.
+   - `threatScore` (INTEGER): Puntuación de riesgo asignada a la llamada (0 a 100).
+   - `threatLevel` (TEXT): Nivel de amenaza.
+   - `isBlocked` (INTEGER / Boolean): Indicador de llamada rechazada por el sistema.
+   - `action` (TEXT): Acción ejecutada ("ALLOW", "WARN", "BLOCK").
+   - `countryOrOrigin` (TEXT, Nullable): País o procedencia inferida del prefijo telefónico.
+   - `factorsJson` (TEXT): Factores de riesgo serializados.
+   - `summaryReason` (TEXT): Resumen textual de la causa de clasificación.
+   * Índices:
+     - `index_call_records_timestamp` sobre `timestamp`.
+     - `index_call_records_isBlocked` sobre `isBlocked`.
+     - `index_call_records_threatLevel` sobre `threatLevel`.
+
+3. Tabla `whitelist_entries` (`WhitelistEntity.kt`):
+   - `senderOrNumber` (TEXT, PrimaryKey): Número o remitente de confianza.
+   - `contactName` (TEXT, Nullable): Nombre opcional del contacto asignado por el usuario.
+   - `addedTimestamp` (INTEGER): Fecha de adición.
+   * Índices:
+     - `index_whitelist_entries_senderOrNumber` (UNIQUE) sobre `senderOrNumber`.
+
+4. Tabla `custom_rules` (`CustomRuleEntity.kt`):
+   - `id` (INTEGER, PrimaryKey, autoincrementable): Identificador de la regla.
+   - `pattern` (TEXT): Cadena de texto o expresión regular definida por el usuario.
+   - `isRegex` (INTEGER / Boolean): Determina si el patrón debe compilarse como expresión regular.
+   - `description` (TEXT): Comentario o motivo de la regla.
+   - `isEnabled` (INTEGER / Boolean): Interruptor para activar/desactivar la regla sin borrarla.
+   * Índices:
+     - `index_custom_rules_isEnabled` sobre `isEnabled`.
+
+8.3. Cifrado a Nivel de Campo (Field-Level Encryption):
+- Archivo: `android-smishguard/app/src/main/java/com/antiphishing/smishguard/data/security/FieldCipher.kt`
+- Algoritmo: Cifrado simétrico AES-256 en modo GCM sin relleno (`AES/GCM/NoPadding`), con vector de inicialización (IV) de 12 bytes y etiqueta de autenticación (Tag) de 128 bits.
+- Almacenamiento de Clave: La clave secreta de 256 bits se genera mediante `KeyGenerator` dentro del proveedor seguro `AndroidKeyStore` bajo el alias `smishguard_field_key_v1`. La clave nunca puede ser extraída en memoria plana fuera del chip seguro de hardware y no se incluye en copias de seguridad de Android (`allowBackup="false"`).
+- Formato de Almacenamiento: Los textos cifrados se preceden por el prefijo versionado `enc1:` seguido por la concatenación del IV y el texto cifrado codificados en Base64 sin saltos de línea.
+- Resiliencia y Fallback: Si el Keystore no está disponible o falla la inicialización criptográfica, degrada limpiamente a texto plano para asegurar que los mensajes entrantes no se pierdan.
+
+====================================================================================================
+9. ANÁLISIS DE AUTENTICACIÓN, AUTORIZACIÓN Y GESTIÓN DE PRIVILEGIOS
+====================================================================================================
+
+9.1. Ausencia de Sesiones de Usuario y Credenciales Remotas:
+El sistema completo carece deliberadamente de tablas de usuarios, contraseñas, hashes bcrypt/argon2, tokens JWT o cookies de sesión. Esto obedece a su diseño como software de seguridad local para endpoint: el usuario legítimo es quien posee acceso físico al navegador o al dispositivo móvil.
+
+9.2. Permisos y Privilegios en WebExtension (Manifest V3):
+Declarados en `public/manifest.json`:
+- `webNavigation`: Requerido de forma indispensable para suscribirse a `chrome.webNavigation.onBeforeNavigate` e interceptar peticiones de red antes de que el motor de renderizado descargue el contenido web.
+- `storage`: Necesario para interactuar con `chrome.storage.local` para la persistencia de configuración y estadísticas.
+- `tabs`: Requerido para leer la URL de la pestaña activa en el Popup y para ejecutar redirecciones seguras (`chrome.tabs.update`) hacia la página de bloqueo.
+- `content_security_policy`: Configuración estricta `"script-src 'self'; object-src 'self';"`. Prohíbe la ejecución de scripts remotos, inyecciones de código dinámico (`eval`) o librerías CDN no empaquetadas en la extensión.
+
+9.3. Permisos y Privilegios en Android (`AndroidManifest.xml`):
+- `RECEIVE_SMS` y `READ_SMS`: Permisos peligrosos para capturar y leer mensajes entrantes en `SmsBroadcastReceiver`.
+- `POST_NOTIFICATIONS`: Requerido en Android 13+ (API 33+) para emitir notificaciones de advertencia en la barra de estado.
+- `READ_PHONE_STATE` y `READ_CALL_LOG`: Requeridos para obtener el número de teléfono en llamadas entrantes en `CallStateReceiver`.
+- `BIND_NOTIFICATION_LISTENER_SERVICE`: Permiso especial a nivel de sistema para `NotificationFilterService`. Permite interceptar y cancelar notificaciones de mensajes maliciosos generadas por aplicaciones de terceros.
+- `BIND_SCREENING_SERVICE`: Permiso a nivel de sistema para `CallScreeningServiceImpl`. Permite interactuar con el subsistema Telecom para silenciar y rechazar llamadas fraudulentas antes del timbrado.
+- `allowBackup="false"` y `usesCleartextTraffic="false"`: Previene la exfiltración de la base de datos mediante copias de seguridad de depuración adb y bloquea cualquier intento de tráfico de red no cifrado.
+
+====================================================================================================
+10. AUDITORÍA BÁSICA DE SEGURIDAD DEL SOFTWARE
+====================================================================================================
+
+10.1. Mitigaciones de Seguridad Implementadas:
+1. Protección contra Expresiones Regulares Catastróficas (ReDoS):
+   - Archivo: `android-smishguard/app/src/main/java/com/antiphishing/smishguard/util/SafeRegex.kt`.
+   - Problema Identificado: Un usuario malintencionado o una regla mal redactada podría crear una regex exponencial (ejemplo: `(a+)+$`) que congele el receptor de SMS o el servicio de llamadas, generando un error ANR (Application Not Responding).
+   - Solución Implementada: Clase envolvente `DeadlineCharSequence` que calcula un límite temporal en nanosegundos (`deadlineNanos`). Cada llamada a `get(index)` comprueba `System.nanoTime() > deadlineNanos` y lanza `RegexTimeoutException` si la búsqueda supera los 120 ms. Adicionalmente, el método `validateUserRule` ejecuta 4 pruebas de estrés contra patrones ReDoS con un límite estricto de 80 ms antes de admitir cualquier regla en la base de datos.
+2. Protección contra Ejecución Accidental de Enlaces en Honeypot (Defanging):
+   - Archivo: `SmishDetectorEngine.defangText()`.
+   - Todos los esquemas `http://` y `https://` son reescritos a `hxxp://` y `hxxps://`, y los puntos a `[.]`. Esto neutraliza la detección automática de hipervínculos en componentes visuales.
+3. Cifrado en Reposo de Cuerpos de SMS:
+   - Archivo: `FieldCipher.kt`.
+   - El texto plano de mensajes en cuarentena se cifra con AES-256-GCM en el almacenamiento local. Si un atacante extrae una copia física de la base de datos SQLite sin desbloquear el terminal, no podrá leer los cuerpos de los mensajes interceptados.
+4. Prevención de Bypasses mediante Carácter Arroba (@):
+   - Archivo: `src/analyzer/motor-riesgo.ts` y `src/rules/regla-estructura-url.ts`.
+   - Los atacantes suelen construir URLs como `http://bancolombia.com@servidor-malicioso.com` para engañar a listas blancas basadas en prefijo. PhishGuard Colombia invalida la lista blanca si la URL contiene `@` y penaliza la estructura con +35 puntos.
+5. Inyección SQL:
+   - En Android, Room utiliza internamente sentencias preparadas parametrizadas (`SQLiteStatement`), eliminando el vector de inyección SQL en consultas DAO. En la extensión web no hay SQL.
+
+10.2. Vulnerabilidades y Riesgos Identificados (Clasificación por Severidad):
+1. [SEVERIDAD MEDIA] Función Hash Insegura para Ficha Forense:
+   - Ubicación: `src/utils/cripto-forense.ts` (`calcularHashSha256Simple`).
+   - Evidencia: La función no implementa el algoritmo SHA-256 criptográfico estándar FIPS 180-4, sino un algoritmo de rotación y mezcla ad-hoc de enteros de 32 bits.
+   - Riesgo: No garantiza resistencia a colisiones ni preimagen. Un atacante podría generar URLs distintas que produzcan el mismo hash.
+   - Recomendación: Migrar a la API nativa del navegador `crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto))`.
+2. [SEVERIDAD MEDIA] Manejo de Datos en URL de Bloqueo:
+   - Ubicación: `src/background/service-worker.ts` (`construirUrlPaginaBloqueo`).
+   - Evidencia: Los motivos del bloqueo y la URL original se codifican en la cadena de consulta de la pestaña (`index.html?url=...&motivos=...`).
+   - Riesgo: Aunque la página es local (`chrome-extension://`), URLs excesivamente largas (> 2048 caracteres) pueden ser truncadas por el navegador o registrarse en el historial interno de navegación.
+   - Recomendación: Almacenar el reporte en la memoria de la sesión o en `chrome.storage.session` e indexarlo mediante un identificador de incidente corto (UUID).
+3. [SEVERIDAD BAJA] Inconsistencia en la Política de Destrucción de la Base de Datos Room:
+   - Ubicación: `AppDatabase.kt` (`fallbackToDestructiveMigration()`).
+   - Evidencia: Ante incrementos de versión de la base de datos sin archivo formal de migración, Room elimina y recrea todas las tablas SQLite.
+   - Riesgo: Pérdida del historial de cuarentena, lista blanca y reglas personalizadas del usuario ante una actualización de versión de la app.
+   - Recomendación: Implementar objetos de migración explícitos `Migration(1, 2)` con scripts `ALTER TABLE`.
+
+====================================================================================================
+11. GESTIÓN DE CONFIGURACIÓN Y VARIABLES DE ENTORNO
+====================================================================================================
+
+11.1. Ausencia de Archivos .env:
+El repositorio no cuenta con archivos `.env`, `.env.example` ni variables de entorno de servidor. Esta característica es coherente con la naturaleza de los componentes:
+- Una extensión Web de navegador empaqueta código del lado del cliente compilado en JavaScript plano. Cualquier variable de entorno inyectada durante la compilación sería visible inspeccionando el paquete `dist/`.
+- Una aplicación móvil Android empaqueta código bytecode en un APK/AAB que se ejecuta en el procesador del usuario.
+
+11.2. Parámetros de Configuración Gestionados:
+A. PhishGuard Colombia (`ConfiguracionExtension`):
+- Persistida en: `chrome.storage.local` con clave `phishguard_configuracion`.
+- Propiedades: `proteccionHabilitada`, `modoProteccion`, `umbralSospechoso`, `umbralMalicioso`, `bloquearMaliciososAutomaticamente`, `advertirSospechosos`, `listaBlancaPersonalizada`, `listaNegraPersonalizada`, `permitirBypassTemporal`.
+
+B. SmishingGuard Android (`SecuritySettingsRepository`):
+- Persistida en: `SharedPreferences` privado de la app (`smishguard_settings.xml`).
+- Propiedades:
+  * `protection_enabled` (boolean): Activa/desactiva la intercepción de SMS y llamadas.
+  * `quarantine_threshold` (int): Umbral de sensibilidad para aislamiento (20 a 80, default: 50).
+  * `aggressive_mode` (boolean): Reduce el umbral efectivo en 15 puntos para máxima protección.
+  * `silent_dismiss_notif` (boolean): Activa la cancelación silenciosa de notificaciones en `NotificationFilterService`.
+
+====================================================================================================
+12. COMUNICACIÓN INTER-COMPONENTES Y FLUJO DE DATOS
+====================================================================================================
+
+12.1. Comunicación en PhishGuard Colombia:
+- Toda la comunicación es local y se basa en el API `chrome.runtime.sendMessage` y `chrome.runtime.onMessage`:
+  * Mensaje `OBTENER_ANALISIS_PESTANA_ACTUAL`: Enviado desde el Popup al Service Worker para solicitar el veredicto técnico y ficha forense de la pestaña activa.
+  * Mensaje `ACTUALIZAR_CONFIGURACION`: Emitido desde la pantalla de opciones hacia el Service Worker para sincronizar en tiempo real los umbrales y listas sin recargar la extensión.
+  * Mensaje `PERMITIR_DOMINIO_TEMPORALMENTE`: Emitido desde la pantalla de bloqueo tras la confirmación de bypass del usuario para añadir el host a la lista de excepciones en memoria RAM.
+  * Mensaje `PROBAR_BLOQUEO_EN_VIVO`: Utilizado en el laboratorio de pruebas para abrir una pestaña simulando la redirección defensiva ante una URL generada.
+
+12.2. Comunicación en SmishingGuard Android:
+- Se basa en eventos del sistema operativo Android y el patrón Observer mediante Coroutines:
+  * Receptores de Sistema (`SmsBroadcastReceiver`, `CallStateReceiver`) capturan los Intents del sistema operativo.
+  * Los servicios consultan la caché en memoria sincronizada con mutex (`RuleCache`) para verificar la lista blanca en microsegundos.
+  * Si se clasifica una amenaza, se comunica con `ThreatNotificationManager` para levantar notificaciones visuales mediante canales de notificación de alta prioridad (`NotificationChannel.IMPORTANCE_HIGH`).
+  * Los `ViewModel` de Jetpack Compose observan `StateFlow` reactivos expuestos por Room DAO, actualizando la interfaz automáticamente cuando se añade un registro a la bóveda o se modifica una regla.
+
+====================================================================================================
+13. MANEJO DE EXCEPCIONES, ERRORES Y RESILIENCIA
+====================================================================================================
+
+13.1. Enfoque Defensivo en PhishGuard:
+- El Service Worker envuelve todo el procesamiento en bloques `try / catch` silenciosos para garantizar que ningún fallo en el parsing de una URL provoque la detención del navegador o impida la navegación del usuario (Fail-Open ante fallos internos de la extensión).
+- El normalizador de URLs (`normalizarYAnalizarUrl`) captura errores del constructor `new URL()` cuando la cadena es inválida, retornando un objeto seguro con bandera `urlValida: false` en lugar de propagar una excepción no controlada.
+
+13.2. Enfoque Defensivo en SmishingGuard:
+- `CallScreeningServiceImpl`: En caso de cualquier excepción inesperada dentro de la corrutina de análisis, el bloque `finally` garantiza la invocación obligatoria de `respondToCall(callDetails, responseBuilder.build())`. Esto previene que el sistema operativo mate el servicio por no responder dentro del plazo de 5 segundos.
+- `SafeRegex`: Captura `RegexTimeoutException`, `StackOverflowError` y `Exception` retornando `null`, lo que neutraliza cualquier intento de ataque por denegación de servicio mediante expresiones regulares complejas.
+- Tareas de Mantenimiento Desacopladas: La purga automática de registros con más de 30 días de antigüedad (`purgeExpiredRecords`) se ejecuta en una corrutina aislada con `SupervisorJob()` en `SmishGuardApp.onCreate()`, garantizando que si la base de datos está bloqueada temporalmente, la aplicación inicie sin inconvenientes.
+
+====================================================================================================
+14. RENDIMIENTO, COMPLEJIDAD COMPUTACIONAL Y ESCALABILIDAD
+====================================================================================================
+
+14.1. Análisis de Complejidad Temporal y Espacial:
+1. Distancia Levenshtein (`homoglifos.ts`):
+   - Complejidad: \( O(N \times M) \) en tiempo y \( O(N \times M) \) en espacio, donde \( N \) es la longitud del token de la URL y \( M \) es la longitud del nombre de la marca.
+   - Optimización: Solo se evalúan tokens con longitud \( \ge 3 \). Dado que las marcas y los tokens no suelen superar los 25 caracteres, la matriz requiere menos de 625 iteraciones en memoria, ejecutándose en fracciones de milisegundo (< 0.5 ms).
+2. Cálculo de Entropía de Shannon (`cripto-forense.ts` y `UrlThreatAnalyzer.kt`):
+   - Complejidad: \( O(L) \) donde \( L \) es la longitud de la cadena. Itera una única vez para construir el mapa de frecuencias y una segunda vez sobre los caracteres únicos para calcular el logaritmo base 2. En nombres de dominio de menos de 100 caracteres, el impacto en CPU es insignificante (< 0.1 ms).
+3. Caché en Memoria `RuleCache` (Android):
+   - Antes: Cada SMS o llamada realizaba múltiples consultas I/O a disco en SQLite y recompilaba cada regex del usuario.
+   - Ahora: Los patrones regex ya compilados residen en memoria RAM bajo un objeto `RuleCache` sincronizado con `Mutex`. La verificación de lista blanca es \( O(1) \) para búsquedas exactas y \( O(K) \) para sufijos numéricos telefónicos.
+
+14.2. Escalabilidad del Sistema:
+- Ambos sistemas operan bajo el paradigma de procesamiento en el cliente (Client-Side Computing). No existe un cuello de botella en un servidor central. Si el número de usuarios crece a un millón, la infraestructura de servidores no sufre ninguna carga computacional ni económica.
+- Límites de Crecimiento en Almacenamiento Local:
+  * En PhishGuard, `chrome.storage.local` tiene un límite por defecto de 10 MB (o ilimitado con permiso `unlimitedStorage`, el cual no está solicitado). El sistema almacena únicamente la configuración y contadores escalares de sesión, manteniendo el consumo en menos de 50 KB.
+  * En SmishingGuard, la base de datos Room podría crecer si se retienen miles de mensajes. La inclusión de la política de retención automática a 30 días (`purgeExpiredRecords`) asegura que la base de datos se mantenga compacta (< 5 MB).
+
+====================================================================================================
+15. CICLO DE VIDA, SCRIPTS, INSTALACIÓN Y DESPLIEGUE
+====================================================================================================
+
+15.1. Scripts y Comandos Disponibles:
+A. Módulo PhishGuard Colombia (raíz `package.json`):
+- `npm run dev`: Inicia el servidor de desarrollo Vite con Hot Module Replacement (HMR).
+- `npm run build`: Ejecuta el compilador de TypeScript (`tsc`) para verificar tipos y seguidamente compila los paquetes de producción mediante Vite (`vite build`) hacia la carpeta `dist/`.
+- `npm test`: Ejecuta la suite de pruebas unitarias una sola vez con Vitest (`vitest run`).
+- `npm run test:watch`: Ejecuta las pruebas unitarias en modo interactivo observando cambios en el código.
+- `npm run lint`: Ejecuta ESLint sobre los archivos `.ts` y `.tsx`.
+- `npm run format`: Aplica formateo automático con Prettier.
+- `node scripts/generar-iconos.js`: Script utilitario en Node.js que genera los iconos PNG oficiales en tamaños 16, 32, 48 y 128 píxeles dibujando un escudo defensivo vectorial.
+- `node scripts/procesar-csv.js`: Parser para convertir datasets masivos de phishing en formato CSV hacia arreglos JSON de reputación.
+
+B. Módulo SmishingGuard Android (`android-smishguard/`):
+- `./gradlew assembleDebug`: Compila el código fuente Kotlin y genera el paquete de depuración APK (`app-debug.apk`).
+- `./gradlew assembleRelease`: Compila el APK firmado y optimizado con R8/Proguard para producción.
+- `./gradlew test`: Ejecuta la suite de pruebas unitarias JUnit en la máquina virtual Java local sin necesidad de emulador Android.
+- `./gradlew connectedAndroidTest`: Ejecuta las pruebas de instrumentación en un emulador o dispositivo físico conectado por ADB.
+
+15.2. Guía de Instalación para Nuevo Desarrollador (Paso a Paso):
+Requisitos Previos:
+- Node.js versión 18 LTS o superior.
+- Java Development Kit (JDK) versión 17 (requerido por Gradle y Android compileOptions).
+- Android Studio Jellyfish (2023.3.1) o superior con Android SDK Platform 34 instalado.
+- Navegador Google Chrome, Microsoft Edge o Brave.
+
+Pasos para Levantar PhishGuard Colombia:
+1. Abrir terminal en la raíz del proyecto (`D:\Seguridad`).
+2. Instalar dependencias: `npm install`
+3. Ejecutar suite de pruebas: `npm test` (deben pasar los 57 tests).
+4. Generar artefactos de producción: `npm run build`
+5. Abrir el navegador Chromium e ingresar a `chrome://extensions`.
+6. Habilitar la casilla "Modo de desarrollador" en la esquina superior derecha.
+7. Pulsar el botón "Cargar descomprimida" (Load unpacked).
+8. Seleccionar la carpeta generada: `D:\Seguridad\dist`.
+9. La extensión queda activa protegiendo la navegación en tiempo real.
+
+Pasos para Levantar SmishingGuard Android:
+1. Abrir Android Studio.
+2. Seleccionar "Open" y navegar hasta la carpeta: `D:\Seguridad\android-smishguard`.
+3. Aguardar la sincronización del proyecto con Gradle y la descarga de dependencias.
+4. Conectar un dispositivo físico con depuración USB activada o iniciar un Emulador Android (AVD) con API 26 o superior (recomendado API 34).
+5. Ejecutar las pruebas unitarias en terminal: `./gradlew test` (o desde el panel de pruebas de Android Studio).
+6. Presionar "Run 'app'" (Shift + F10) para compilar e instalar en el dispositivo.
+7. Al iniciar la aplicación en el dispositivo, aceptar los permisos solicitados (SMS, Teléfono, Notificaciones) y conceder el rol de Filtrado de Llamadas cuando el sistema operativo lo solicite.
+
+====================================================================================================
+16. PATRONES DE DISEÑO Y CALIDAD DE SOFTWARE
+====================================================================================================
+
+16.1. Patrones de Diseño Identificados en el Código:
+1. Patrón Strategy (Estrategia) + Registry (Registro):
+   - Ubicación: `src/rules/base-regla.ts`, `src/rules/registro-reglas.ts`.
+   - Problema Resuelto: Permite agregar nuevas reglas heurísticas de detección (ejemplo: nueva regla de certificados TLS o TLDs emergentes) sin modificar el motor principal `MotorRiesgo`. Cada regla encapsula su propia lógica en el método `evaluar(caracteristicas)` y se auto-registra en el mapa del catálogo.
+2. Patrón Repository (Repositorio):
+   - Ubicación: `SmsRepository.kt`, `CallRepository.kt`, `SecuritySettingsRepository.kt`.
+   - Problema Resuelto: Media entre la capa de dominio/presentación y las fuentes de persistencia subyacentes (Room DAOs, SharedPreferences, FieldCipher).
+3. Patrón Observer / Reactive Flow:
+   - Ubicación: Room DAOs retornando `Flow<List<T>>` consumidos en ViewModels mediante `stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ...)`.
+   - Problema Resuelto: Mantiene la interfaz de usuario actualizada de forma reactiva y en tiempo real sin requerir consultas activas o temporizadores periódicos (polling).
+4. Patrón Decorator / Proxy de Tiempo:
+   - Ubicación: `SafeRegex.kt` (`DeadlineCharSequence`).
+   - Problema Resuelto: Decora una secuencia de caracteres estándar (`CharSequence`) interceptando las llamadas de acceso por índice para verificar el tiempo transcurrido en nanosegundos, cancelando búsquedas con retroceso catastrófico.
+5. Patrón Singleton:
+   - Ubicación: Objetos de Kotlin (`SmishDetectorEngine`, `CallDetectorEngine`, `HomographDetector`, `FieldCipher`) e instancia única de base de datos en `AppDatabase.getInstance(context)`.
+   - Problema Resuelto: Garantiza que los mapas de expresiones regulares y la conexión SQLite se instancien una sola vez en memoria.
+
+16.2. Evaluación de Calidad de Código:
+- Fortalezas:
+  * Alto nivel de desacoplamiento y cohesión en la lógica heurística.
+  * Cobertura de pruebas unitarias robusta: 57 tests unitarios en TypeScript y 4 suites exhaustivas en Kotlin cubriendo casos de borde, ofuscación y prevención de falsos positivos.
+  * Código limpio, autodocumentado y con nomenclatura semántica clara en español y en inglés según el subsistema.
+- Áreas de Atención Técnica:
+  * El método `AppDatabase.getInstance` utiliza `fallbackToDestructiveMigration()`, lo cual puede provocar pérdida de datos en actualizaciones de producción.
+  * Falta de inyección de dependencias formal (como Dagger Hilt) en Android; actualmente se gestiona de forma manual instanciando los repositorios en la clase `SmishGuardApp`.
+
+====================================================================================================
+17. FLUJO COMPLETO DE CASOS DE USO PRINCIPALES
+====================================================================================================
+
+CU-01: Intercepción y Bloqueo Defensivo de Navegación Web (PhishGuard)
+1. Actor: Usuario navegante web / Navegador Chromium.
+2. Precondición: Extensión instalada y protección habilitada.
+3. Flujo Técnico:
+   a. El usuario hace clic en un enlace de phishing (ej: `http://banc0l0mbia-login-verificacion.xyz/portal`).
+   b. Chromium dispara el evento `chrome.webNavigation.onBeforeNavigate`.
+   c. El Service Worker recibe el evento y llama a `procesarNavegacion(tabId, url)`.
+   d. `MotorRiesgo` invoca `normalizarYAnalizarUrl()` y `extraerCaracteristicasUrl()`.
+   e. Se consulta `ProveedorReputacionLocal`.
+   f. El `RegistroReglas` ejecuta concurrentemente sus 7 reglas activas. Se activan:
+      - `ReglaSuplantacionMarca` (+85 pts por imitar a Bancolombia mediante homoglifo `0`).
+      - `ReglaTldSospechoso` (+45 pts por TLD `.xyz` combinado con términos bancarios).
+      - `ReglaPalabrasSospechosas` (+30 pts por login + portal).
+      - `ReglaSeguridadProtocolo` (+35 pts por HTTP plano en login).
+   g. Al activarse 4 reglas, se aplica el factor multiplicador 1.25x. Total: 100 puntos (MALICIOSO).
+   h. El Service Worker genera la URL interna hacia `bloqueado/index.html` con las evidencias.
+   i. Se invoca `chrome.tabs.update()` redirigiendo la pestaña.
+   j. El usuario visualiza la pantalla roja de advertencia con la ficha técnica del incidente. La navegación hacia el servidor malicioso es abortada.
+
+CU-02: Intercepción de SMS Fraudulento y Aislamiento en Bóveda Honeypot (SmishGuard)
+1. Actor: Red de telecomunicaciones móvil / Remitente atacante.
+2. Precondición: Aplicación SmishingGuard instalada con permisos concedidos.
+3. Flujo Técnico:
+   a. Llega un SMS al teléfono: "Nequi: Su cuenta ha sido bloqueada. Ingrese a https://nequi-desbloqueo.pages.dev/login".
+   b. `SmsBroadcastReceiver` captura la difusión del sistema `SMS_RECEIVED`.
+   c. Se solicita ejecución asíncrona mediante `goAsync()` y se lanza corrutina en `Dispatchers.IO`.
+   d. `SmishDetectorEngine.analyze()` evalúa el mensaje:
+      - Detecta palabras de bloqueo y billetera digital (+40 pts).
+      - Extrae la URL y detecta alojamiento gratuito abusado `pages.dev` (+30 pts).
+      - Detecta suplantación de la marca Nequi en host no oficial (+35 pts).
+      - Aplica multiplicador por convergencia de URL maliciosa e ingeniería social. Puntuación final: 100% (PHISHING).
+   e. `SmsRepository.saveAnalysis()` cifra el cuerpo original con AES-256-GCM (`FieldCipher.encrypt`) y desinfecta el texto a `hxxps://nequi-desbloqueo[.]pages[.]dev/login`.
+   f. Se inserta el registro en la tabla `sms_records` de Room con `isQuarantined = true`.
+   g. `ThreatNotificationManager.showThreatAlert()` emite una notificación de advertencia de alta prioridad al usuario.
+   h. Si la difusión es ordenada, se aborta la propagación (`abortBroadcast()`). Paralelamente, `NotificationFilterService` cancela cualquier notificación nativa de la app de mensajería predeterminada.
+   i. El mensaje queda aislado en la Bóveda Honeypot, neutralizado para evitar clics accidentales.
+
+CU-03: Filtrado e Intercepción de Llamada Fraudulenta Wangiri (SmishGuard)
+1. Actor: Central telefónica atacante internacional.
+2. Precondición: Rol de filtrado de llamadas concedido a SmishingGuard en Android 10+.
+3. Flujo Técnico:
+   a. Entra una llamada telefónica internacional desde un número de un solo repique: `+247 123456` (Isla Ascensión).
+   b. El subsistema Telecom de Android invoca `CallScreeningServiceImpl.onScreenCall()`.
+   c. El servicio lanza una corrutina evaluando el número en `CallDetectorEngine.analyzeCall()`.
+   d. El motor verifica la lista blanca en memoria RAM en `RuleCache` (no coincide).
+   e. El motor analiza el prefijo internacional contra la tabla `WANGIRI_HIGH_RISK_DESTINATIONS`. Coincide con `+247` (Riesgo Crítico de Wangiri: +65 pts).
+   f. La puntuación supera el umbral de bloqueo (60). Acción determinada: `CallAction.BLOCK`.
+   g. Se guarda la auditoría en la tabla `call_records`.
+   h. El servicio responde a la llamada antes de que transcurran 200 ms: `CallResponse.Builder().setDisallowCall(true).setRejectCall(true).setSkipNotification(true).build()`.
+   i. La llamada se cuelga automáticamente en la red sin que el teléfono del usuario timbre.
+   j. Se notifica al usuario en barra de estado informando que una llamada de riesgo Wangiri fue bloqueada preventivamente.
+
+====================================================================================================
+18. ACTORES DEL SISTEMA Y MATRIZ DE CONTROL DE ACCESO
+====================================================================================================
+
+18.1. Actores:
+1. Usuario Navegante / Móvil: Opera la interfaz, consulta métricas, gestiona listas blancas/negras, define reglas y autoriza omisiones temporales (bypass).
+2. Chromium Navigation API (`chrome.webNavigation`): Subsistema del navegador que notifica intenciones de navegación y ejecuta redirecciones forzadas.
+3. Android Telephony / Telecom Subsystem: Subsistema del sistema operativo que entrega PDUs de mensajes SMS y despacha descriptores de llamadas entrantes.
+4. Android Keystore Hardware: Subsistema de seguridad criptográfica de hardware que resguarda la clave maestra de cifrado de campo.
+
+18.2. Matriz de Control de Acceso y Operaciones:
+
+| Operación / Funcionalidad | Actor Responsable | Capa de Control | Restricciones / Validación |
+| :--- | :--- | :--- | :--- |
+| Intercepción de Navegación | Chromium API / SW | Background / Service Worker | Exclusión de URLs internas del navegador |
+| Redirección a Bloqueo | Service Worker | Control del Navegador | Requiere clasificación MALICIOSO y bloqueo automático activo |
+| Omisión de Bloqueo (Bypass) | Usuario Final | UI / Service Worker | Confirmación explícita en modal de advertencia |
+| Inserción en Lista Blanca Web | Usuario Final | Opciones UI / Storage | Validación de formato canónico de dominio |
+| Inserción en Lista Negra Web | Usuario Final | Opciones UI / Storage | Validación de formato canónico de dominio |
+| Simulación en Laboratorio Web | Analista / Usuario | Opciones UI (Sandbox) | Ejecución en memoria sin alterar navegación |
+| Intercepción de SMS | Android OS / Receiver | BroadcastReceiver (API 26+) | Permiso RECEIVE_SMS |
+| Neutralización de Notificación | Android OS / Service | NotificationListenerService | Permiso especial BIND_NOTIFICATION_LISTENER |
+| Rechazo de Llamada Wangiri | Telecom OS / Service | CallScreeningService (API 29+) | Permiso BIND_SCREENING_SERVICE y Rol de Sistema |
+| Creación de Regla Regex Móvil | Usuario Final | UI / Settings / SafeRegex | Validación contra ReDoS y match de cadena vacía |
+| Restauración de SMS en Bóveda | Usuario Final | UI / Quarantine / Room DAO | Modifica wasRestored a true en SQLite |
+| Cifrado de Cuerpos de SMS | Repositorio / Room | Data Security (FieldCipher) | Cifrado AES-256-GCM con Android Keystore |
+
+====================================================================================================
+19. DESCRIPCIÓN TÉCNICA DEL SISTEMA (FORMATO ACADÉMICO / PROFESIONAL)
+====================================================================================================
+
+El proyecto "Ecosistema Defensivo Integrado contra Ingeniería Social: PhishGuard Colombia & SmishingGuard Android" constituye una solución integral de software diseñada para mitigar los vectores contemporáneos de cibercrimen dirigidos contra el eslabón humano: la suplantación de identidad web (Phishing), el fraude por mensajería móvil (Smishing) y la extorsión o tarificación telefónica abusiva (Vishing / Wangiri).
+
+Desde una perspectiva arquitectónica de la Ingeniería de Sistemas, el proyecto destaca por rechazar deliberadamente el paradigma convencional de seguridad dependiente de la nube (Cloud-Centric Security), implementando un modelo de Procesamiento en el Borde Totalmente Desconectado (Fully Offline Edge Computing). En lugar de transmitir historiales de navegación, contenidos de mensajes de texto privados o metadatos de llamadas hacia servidores remotos de telemetría —práctica que infringe principios esenciales de privacidad y normativas de protección de datos personales como el RGPD o la Ley 1581 de Colombia—, ambos sistemas ejecutan algoritmos deterministas, motores heurísticos léxicos y cálculo de métricas criptográficas localmente en el procesador del dispositivo cliente.
+
+El componente web, PhishGuard Colombia, se implementa sobre la especificación Google Chrome Extensions Manifest V3 utilizando TypeScript y React 18. Su núcleo operativo intercepta el ciclo de vida de navegación en el evento `onBeforeNavigate`, evaluando anomalías estructurales en URLs, decodificando punycode mediante RFC 3492 puro, midiendo la distancia Levenshtein contra marcas reconocidas del ecosistema bancario e institucional colombiano y calculando la Entropía de Shannon del nombre de host. Las evidencias son correlacionadas dinámicamente y mapeadas al estándar internacional MITRE ATT&CK, emitiendo redirecciones defensivas inmediatas hacia una pantalla de contención local ante sitios maliciosos.
+
+El componente móvil, SmishingGuard, está construido de forma nativa en Kotlin para el sistema operativo Android utilizando Jetpack Compose, Arquitectura Limpia (Clean Architecture) y el patrón MVVM. La aplicación opera a través de dos servicios del sistema de bajo nivel: un servicio de escucha de notificaciones (`NotificationListenerService`) que suprime en tiempo real las alertas de SMS fraudulentos sin obligar al usuario a sustituir su gestor de mensajería nativo, y un servicio oficial de control de llamadas (`CallScreeningService`) que rechaza automáticamente llamadas procedentes de numeraciones de alto costo internacional (fraude Wangiri) o con identificadores malformados. Los mensajes capturados son aislados en una Bóveda Honeypot local donde los hipervínculos son sometidos a un proceso de neutralización sintáctica (defanging), y los cuerpos originales son cifrados en reposo utilizando el algoritmo AES-256-GCM con claves resguardadas por hardware en el Android Keystore System.
+
+Ambas soluciones convergen en una arquitectura resiliente, modular y de alto rendimiento, optimizada contra ataques de denegación de servicio por expresiones regulares catastróficas (ReDoS) y diseñada bajo los más rigurosos estándares de seguridad del software.
+
+====================================================================================================
+20. FUNCIONAMIENTO Y LÓGICA DEL SISTEMA
+====================================================================================================
+
+El funcionamiento interno del sistema se rige por un principio de inspección profunda y desacoplada que se activa exclusivamente ante eventos del entorno:
+
+20.1. Dinámica Operativa en PhishGuard:
+1. Disparador del Evento: El usuario interactúa con el navegador (introduce una URL, pulsa un hipervínculo en un correo o es redirigido por un script).
+2. Intercepción Temprana: Antes de que Chromium establezca el socket TCP/TLS o envíe la cabecera HTTP GET, el Service Worker captura la URL candidata a través de `chrome.webNavigation.onBeforeNavigate`.
+3. Sanitización y Descomposición: El normalizador analiza la sintaxis, valida si se trata de una IPv4/IPv6 cruda, aísla el dominio principal respetando sufijos de dos niveles (`.com.co`, `.gov.co`) y segmenta los subdominios y la ruta.
+4. Decodificación Forense y Homoglifos: Si el dominio presenta codificación Punycode (`xn--`), el algoritmo RFC 3492 decodifica la representación internacional a Unicode. Se analiza si existen caracteres confusables mezclados de distintos alfabetos o sustituciones numéricas de tipo leetspeak (`banc0l0mbia`).
+5. Extracción Léxica: Se buscan coincidencias en diccionarios locales para determinar la presencia de palabras de autenticación, banca o urgencia.
+6. Consulta de Reputación y Evaluación de Reglas:
+   - Se revisan las listas blancas y negras locales.
+   - Las reglas activas evalúan concurrentemente las características extraídas.
+   - Cada regla activada genera una evidencia estructurada, asigna una puntuación y vincula la técnica correspondiente de MITRE ATT&CK.
+7. Agregación Ponderada: Si múltiples reglas heurísticas se activan simultáneamente, el motor aplica multiplicadores de correlación (1.1x para dos reglas, 1.25x para tres o más).
+8. Dictamen y Acción:
+   - Riesgo < 30: Clasificado como SEGURO. Se permite la navegación continua y se actualiza la insignia a color verde ("OK").
+   - 30 <= Riesgo < 70: Clasificado como SOSPECHOSO. Se actualiza la insignia a color ámbar ("RIESGO").
+   - Riesgo >= 70: Clasificado como MALICIOSO. Se aborta la navegación cancelando la carga y redirigiendo a la pantalla local `bloqueado/index.html`.
+
+20.2. Dinámica Operativa en SmishingGuard:
+1. Recepción del Mensaje / Llamada: La antena del teléfono recibe una trama celular entrante.
+2. Captura en Segundo Plano:
+   - Para SMS: `SmsBroadcastReceiver` toma la PDU o `NotificationFilterService` toma el paquete de la barra de estado.
+   - Para Llamadas: `CallScreeningServiceImpl` intercepta el objeto `Call.Details` en el subsistema Telecom.
+3. Evaluación Heurística:
+   - En llamadas: Se comprueba la lista blanca en RAM (`RuleCache`). Se analiza si el prefijo internacional corresponde a destinos Wangiri (+247, +229, etc.), si es una línea de sobrecoste o si falló la verificación STIR/SHAKEN.
+   - En SMS: Se ejecuta la desofuscación de homoglifos y espaciados artificiales. Se extraen todas las URLs y se evalúa su entropía y dominios. Se evalúa el remitente (celular privado simulando banco, remitente alfanumérico). Se analizan los patrones de ingeniería social. Se comprueban atenuadores de confianza de códigos OTP legítimos.
+4. Ejecución de Medidas Defensivas:
+   - Si la llamada es maliciosa: El servicio responde con rechazo forzado y supresión de timbre (`CallAction.BLOCK`).
+   - Si el SMS es malicioso: Se cancela la notificación del sistema, se cifra el texto original en la base de datos Room mediante `FieldCipher`, se defanguea el mensaje y se aísla en la bóveda, alertando al usuario mediante una notificación de alarma.
+
+====================================================================================================
+21. ARQUITECTURA DEL SISTEMA
+====================================================================================================
+
+La arquitectura general del ecosistema puede modelarse conceptualmente en capas integradas:
+
+```
++---------------------------------------------------------------------------------------------------+
+|                                  CAPA DE INTERFAZ DE USUARIO (UI)                                  |
+|  [Extensión Chromium: React 18 / Lucide]            [App Android: Jetpack Compose / Material 3]   |
+|  - Popup (Métricas / Forense / Lab)                 - Dashboard (Estado del Escudo / Métricas)    |
+|  - Bloqueado (Ficha Incidente / Bypass)             - Bóveda Honeypot (Mensajes en Cuarentena)    |
+|  - Opciones (Ajuste Umbrales / Sandbox)             - Analizador Manual (Simulador de Ataques)    |
+|                                                     - Ajustes (Lista Blanca / Reglas Propias)     |
++---------------------------------------------------------------------------------------------------+
+                                                  |
++---------------------------------------------------------------------------------------------------+
+|                                 CAPA DE CONTROL Y SERVICIOS CORE                                  |
+|  [Service Worker Manifest V3]                       [Android Services & Broadcast Receivers]      |
+|  - chrome.webNavigation.onBeforeNavigate            - SmsBroadcastReceiver (priority=999)         |
+|  - chrome.tabs / chrome.runtime Messages            - NotificationFilterService (Listener)        |
+|  - dominiosExcepcionTemporal (RAM)                  - CallScreeningServiceImpl (Telecom API 29+)  |
+|                                                     - ThreatNotificationManager (Alertas)         |
++---------------------------------------------------------------------------------------------------+
+                                                  |
++---------------------------------------------------------------------------------------------------+
+|                                 CAPA DE MOTORES HEURÍSTICOS LOCALES                               |
+|  [MotorRiesgo Web]                                  [SmishDetectorEngine & CallDetectorEngine]    |
+|  - ExtractorCaracteristicasUrl                      - HomographDetector (Leet / Invisible / Bidi) |
+|  - Homoglifos (Levenshtein / RFC 3492)              - UrlThreatAnalyzer (DGA / Shannon / TLD)     |
+|  - CriptoForense (Shannon / SHA-256 / MITRE)        - PatternRuleEngine (13 Reglas / OTP Filter)  |
+|  - RegistroReglas (7 Reglas Heurísticas)            - SenderFraudAnalyzer (Spoofing / Shortcodes) |
++---------------------------------------------------------------------------------------------------+
+                                                  |
++---------------------------------------------------------------------------------------------------+
+|                                   CAPA DE DATOS Y PERSISTENCIA                                    |
+|  [Almacenamiento Web]                               [Persistencia Móvil Segura]                   |
+|  - chrome.storage.local                             - Room Database (SQLite v3: smishguard_vault) |
+|  - ServicioAlmacenamiento (Config / Estadísticas)   - FieldCipher (AES-256-GCM / Android Keystore)|
+|  - ProveedorReputacionLocal (Memoria)               - RuleCache (RAM con Kotlin Mutex)            |
++---------------------------------------------------------------------------------------------------+
+```
+
+====================================================================================================
+22. MODELO DE DATOS
+====================================================================================================
+
+El modelo de datos relacional y declarativo implementado en el sistema se describe a continuación:
+
+22.1. Entidades del Módulo SmishingGuard (Room Database):
+- `sms_records`: Almacena el historial y la evidencia forense de los SMS procesados.
+  * `id` (PK, Int64, Autoincrement)
+  * `sender` (String, Not Null)
+  * `rawBody` (String, Not Null) [Cifrado con prefijo `enc1:` si `isQuarantined == true`]
+  * `sanitizedBody` (String, Not Null) [Texto con defanging]
+  * `timestamp` (Int64, Indexed)
+  * `threatScore` (Int32)
+  * `threatLevel` (String, Indexed)
+  * `isQuarantined` (Boolean, Indexed)
+  * `factorsJson` (String) [Factores delimitados por `:::`, `|||`]
+  * `extractedUrls` (String)
+  * `wasRestored` (Boolean, Default false)
+
+- `call_records`: Almacena el historial y los veredictos de llamadas telefónicas inspeccionadas.
+  * `id` (PK, Int64, Autoincrement)
+  * `phoneNumber` (String, Not Null)
+  * `timestamp` (Int64, Indexed)
+  * `threatScore` (Int32)
+  * `threatLevel` (String, Indexed)
+  * `isBlocked` (Boolean, Indexed)
+  * `action` (String, Not Null)
+  * `countryOrOrigin` (String, Nullable)
+  * `factorsJson` (String)
+  * `summaryReason` (String)
+
+- `whitelist_entries`: Registra las excepciones autorizadas por el usuario.
+  * `senderOrNumber` (PK, String, Unique Index)
+  * `contactName` (String, Nullable)
+  * `addedTimestamp` (Int64)
+
+- `custom_rules`: Registra los filtros y expresiones regulares definidas por el usuario.
+  * `id` (PK, Int64, Autoincrement)
+  * `pattern` (String, Not Null)
+  * `isRegex` (Boolean, Not Null)
+  * `description` (String)
+  * `isEnabled` (Boolean, Indexed, Default true)
+
+22.2. Entidades del Módulo PhishGuard (TypeScript / JSON Storage):
+- `ConfiguracionExtension`: Configuración de umbrales y listas en `chrome.storage.local`.
+- `EstadisticasSesion`: Contadores globales de amenazas bloqueadas y sitios seguros.
+- `FichaForenseIncidente`: Modelo de reporte pericial en memoria que consolida la huella hash SHA-256, entropía de Shannon, técnicas MITRE ATT&CK (id, nombre, táctica, URL) y vectores de coerción psicológica identificados.
+
+====================================================================================================
+23. REQUISITOS FUNCIONALES IDENTIFICADOS (IMPLEMENTADOS VS NO IMPLEMENTADOS)
+====================================================================================================
+
+23.1. Requisitos Funcionales Plenamente Implementados:
+- [RF-01] Intercepción Temprana de Navegación Web: Interceptar solicitudes de navegación antes de la descarga de contenido mediante `onBeforeNavigate`. (Ubicación: `src/background/service-worker.ts`, L150-156).
+- [RF-02] Análisis Heurístico de URLs en Tiempo Real: Extracción de tokens, cálculo de entropía de Shannon, verificación de IPs directas y TLDs de alto riesgo. (Ubicación: `src/analyzer/extractor-caracteristicas.ts`).
+- [RF-03] Detección de Ataques Homógrafos y Punycode: Decodificación RFC 3492 y detección de alfabetos mixtos sin librerías externas. (Ubicación: `src/analyzer/homoglifos.ts`, L163-220).
+- [RF-04] Detección de Typosquatting sobre Marcas Colombianas: Cálculo de distancia Levenshtein comparada contra 49 entidades institucionales y financieras. (Ubicación: `src/analyzer/homoglifos.ts`, L398-479).
+- [RF-05] Bloqueo Defensivo y Pantalla de Contención: Redirección inmediata a página interna con reporte técnico de motivos. (Ubicación: `src/background/service-worker.ts`, L47-63; `src/pages/bloqueado/bloqueado.tsx`).
+- [RF-06] Omisión Temporal Informada (Bypass): Permitir al usuario navegar bajo su responsabilidad mediante un modal de consentimiento. (Ubicación: `src/pages/bloqueado/bloqueado.tsx`, L66-88).
+- [RF-07] Inspección Forense y Exportación en Markdown: Generar informe pericial con huella digital, técnicas MITRE y descarga de archivo `.md`. (Ubicación: `src/utils/cripto-forense.ts`, L101-163).
+- [RF-08] Sandbox de Simulación en Laboratorio: Módulo visual para generar vectores sintéticos de ataque y probar la efectividad del motor. (Ubicación: `src/pages/opciones/opciones.tsx`, L47-128).
+- [RF-09] Captura e Intercepción de SMS Maliciosos en Android: Captura mediante `SmsBroadcastReceiver` y cancelación selectiva de difusiones. (Ubicación: `receiver/SmsBroadcastReceiver.kt`, L21-82).
+- [RF-10] Modo Guardián No Invasivo sin App Predeterminada: Cancelación de notificaciones de smishing mediante `NotificationListenerService`. (Ubicación: `service/NotificationFilterService.kt`, L37-77).
+- [RF-11] Bóveda Honeypot con Neutralización de Enlaces (Defanging): Aislamiento seguro de mensajes desarmando URLs e IPs a formatos no ejecutables. (Ubicación: `SmishDetectorEngine.kt`, L216-240; `ui/quarantine/`).
+- [RF-12] Cifrado de Mensajes en Reposo con Hardware Keystore: Cifrado AES-256-GCM de textos originales almacenados en Room. (Ubicación: `data/security/FieldCipher.kt`).
+- [RF-13] Filtrado Nativo de Llamadas Fraudulentas (Call Screening): Intercepción de llamadas no deseadas, Wangiri y spoofing antes del timbrado en Android 10+. (Ubicación: `service/CallScreeningServiceImpl.kt`).
+- [RF-14] Prevención de Denegación de Servicio por ReDoS en Reglas de Usuario: Validación y ejecución acotada a 120 ms mediante deadline de nanosegundos. (Ubicación: `util/SafeRegex.kt`).
+- [RF-15] Normalización Flexible de Números Telefónicos: Algoritmo de coincidencia de sufijos telefónicos en listas blancas. (Ubicación: `util/SenderKey.kt`).
+- [RF-16] Purga Automática por Retención Local: Mantenimiento de almacenamiento borrando registros seguros de más de 30 días. (Ubicación: `SmishGuardApp.kt`, L58-65; `SmsRepository.kt`, L138-141).
+
+23.2. Requisitos Funcionales Parcialmente Implementados:
+- [RF-P01] Verificación STIR/SHAKEN de Telefonía:
+  * Estado: Implementado parcialmente.
+  * Evidencia: `CallScreeningServiceImpl.kt` (L41-43) consulta `callDetails.callerNumberVerificationStatus == Connection.VERIFICATION_STATUS_FAILED`.
+  * Observación: Depende de que el operador móvil del usuario soporte e implemente la cabecera criptográfica a nivel de IMS/red celular.
+- [RF-P02] Reporte de Falsos Positivos a Central de Ciberseguridad:
+  * Estado: Simulado en la interfaz.
+  * Evidencia: `src/pages/bloqueado/bloqueado.tsx` (L60-64) actualiza un estado local `setReporteEnviado(true)` sin realizar ninguna petición HTTP de red hacia un servidor central o CSIRT.
+
+23.3. Funcionalidades No Implementadas o Pendientes (Planeadas pero Inexistentes en Código):
+- [RF-NO01] Sincronización en la Nube de Reglas o Listas entre la Extensión Web y la App Móvil: No existe ningún mecanismo ni API para compartir la lista blanca del navegador con el smartphone.
+- [RF-NO02] Actualización Remota Dinámica de Listas Negras (Feed de Inteligencia de Amenazas): Las listas de dominios legítimos y de prueba están codificadas estáticamente en el código fuente (`src/reputation/reputacion-local.ts`). No existe un mecanismo de actualización remota vía HTTPS.
+- [RF-NO03] Descifrado y Reescritura Real en el Gestor de SMS Predeterminado: Al restaurar un mensaje en la Bóveda Honeypot de Android (`restoreMessage`), solo se cambia el estado en la base de datos local `wasRestored = true`. No se reinserta el SMS en el ContentProvider del sistema Android (`Telephony.Sms.Inbox`).
+
+====================================================================================================
+24. REQUISITOS NO FUNCIONALES IDENTIFICADOS (VERIFICABLES VS RECOMENDADOS)
+====================================================================================================
+
+24.1. Requisitos No Funcionales Comprobables en Código:
+- [RNF-01] Privacidad Absoluta (Zero Telemetry): Comprobado en la auditoría de código. Cero llamadas a APIs de red remotas (`fetch`, `XMLHttpRequest`, `OkHttpClient`).
+- [RNF-02] Rendimiento de Inspección en Navegación: El pipeline heurístico completo de PhishGuard se ejecuta en menos de 10 milisegundos por URL analizada (cronometrado con `performance.now()` en `motor-riesgo.ts`).
+- [RNF-03] Compatibilidad con Estándares Web: Empaquetamiento Manifest V3 válido y verificado en Chrome 130+.
+- [RNF-04] Resiliencia ante Ataques ReDoS: Garantía matemática de terminación en menos de 120 ms en regex personalizadas mediante `SafeRegex.kt`.
+- [RNF-05] Seguridad Criptográfica de Claves en Dispositivo Móvil: Clave simétrica de 256 bits resguardada en Android Keystore con bloqueo de exportación.
+- [RNF-06] Cobertura de Pruebas Automatizadas: 100% de éxito en 57 pruebas unitarias de Vitest en el módulo Web y pruebas completas en JUnit para Android.
+
+24.2. Recomendaciones como Futuros Requisitos No Funcionales:
+- [RNF-REC01] Formalización de Algoritmo Criptográfico FIPS: Sustituir la función hash casera de 32 bits de `cripto-forense.ts` por SHA-256 nativo de la API Web Crypto (`crypto.subtle`).
+- [RNF-REC02] Migración de Esquema Room No Destructiva: Implementar objetos `Migration` formales para garantizar la preservación de datos entre versiones del APK.
+- [RNF-REC03] Internacionalización Completa (i18n): Parametrizar las cadenas de texto del módulo web (actualmente estáticas en español en los archivos TSX).
+
+====================================================================================================
+25. SEGURIDAD DEL SISTEMA
+====================================================================================================
+
+25.1. Mecanismos de Protección Existentes:
+- Aislamiento de Procesos: El Service Worker y las páginas de opciones/popup residen en contextos de ejecución aislados del DOM de las páginas web visitadas. El content-script (`src/content/content-script.ts`) no inyecta HTML arbitrario ni ejecuta scripts remotos.
+- Content Security Policy (CSP): La política `"script-src 'self'; object-src 'self';"` estipulada en `manifest.json` bloquea ataques de Cross-Site Scripting (XSS) e inyección de librerías externas.
+- Neutralización de Enlaces (Defanging): Convierte cadenas activas en representaciones inertes en interfaces de usuario (`hxxp://`, `[.]`).
+- Cifrado en Reposo: Integración de AES-256-GCM y Android Keystore.
+- Protección de Rutas Críticas contra ReDoS: Aborto preventivo de expresiones regulares que excedan el presupuesto temporal mediante `SafeRegex`.
+
+25.2. Problemas Encontrados y Clasificación de Riesgo:
+1. Función Hash Simple No Estándar (Severidad Media): En `cripto-forense.ts`. No debe usarse para peritajes forenses legales hasta no ser reemplazada por SHA-256 criptográfico real.
+2. Parámetros Sensibles en Query String (Severidad Media): En `src/background/service-worker.ts`, al redirigir hacia `bloqueado/index.html?url=...`. Debe migrarse a almacenamiento de sesión.
+3. Destrucción de Base de Datos en Migración (Severidad Media): En `AppDatabase.kt`, uso de `fallbackToDestructiveMigration()`. Riesgo de borrado de la bóveda ante cambios de versión.
+
+====================================================================================================
+26. LIMITACIONES ACTUALES DEL SISTEMA
+====================================================================================================
+
+1. Desconexión de Inteligencia en Vivo (Listas Estáticas): Los dominios legítimos y de prueba están "quemados" (hardcoded) en el código. No hay suscripción a listas de reputación comunitarias dinámicas (PhishTank, OpenPhish, VirusTotal, CSIRT Nacional).
+2. Sin Inspección del Contenido DOM de Páginas Web: PhishGuard evalúa las características sintácticas y léxicas de la URL, pero no analiza el código HTML renderizado dentro de la página (por ejemplo, formularios de login ocultos, favicons clonados o scripts JavaScript maliciosos dentro del cuerpo).
+3. Restricciones del Sistema Operativo Android para SMS: Para que una aplicación móvil pueda eliminar un SMS recibido de forma transparente en Android moderno, el sistema operativo exige que la aplicación sea seleccionada como la aplicación predeterminada de SMS del dispositivo. SmishingGuard mitiga esto mediante `NotificationFilterService`, pero el mensaje continúa físicamente en la bandeja de entrada de la aplicación de mensajería nativa, requiriendo que el usuario no la abra deliberadamente si no configuró SmishingGuard como predeterminada.
+4. Soporte Operativo de Filtrado de Llamadas: `CallScreeningService` requiere Android 10 (API 29) o superior. En versiones anteriores (Android 8 y 9), la aplicación solo puede alertar de forma pasiva mediante `CallStateReceiver`, pero no puede rechazar la llamada antes de que comience a sonar.
+
+====================================================================================================
+27. POSIBLES MEJORAS (NECESARIAS VS OPCIONALES)
+====================================================================================================
+
+27.1. Mejoras Necesarias (Deben implementarse para resolver problemas concretos):
+1. Reemplazo del Hash SHA-256 Simulado:
+   - Problema Concreto: `calcularHashSha256Simple` en `src/utils/cripto-forense.ts` genera colisiones con facilidad.
+   - Solución Requerida: Implementar `window.crypto.subtle.digest('SHA-256', ...)`.
+2. Migraciones Declarativas en Room:
+   - Problema Concreto: `AppDatabase.kt` borra los datos del usuario al cambiar la versión de la base de datos debido a `fallbackToDestructiveMigration()`.
+   - Solución Requerida: Crear clases de migración explícitas `Migration(3, 4)` que preserven los registros existentes.
+3. Almacenamiento en Sesión de Incidentes Web:
+   - Problema Concreto: Parámetros muy largos en la URL de bloqueo pueden ser truncados por Chromium.
+   - Solución Requerida: Utilizar `chrome.storage.session` para transferir los objetos `FichaForenseIncidente` entre el Service Worker y la página de bloqueo.
+
+27.2. Mejoras Opcionales (Optimizaciones y nuevas capacidades de valor):
+1. Ingesta de Listas de Amenazas Dinámicas: Habilitar un worker periódico que descargue feeds locales cifrados de dominios maliciosos actualizados por autoridades de ciberseguridad.
+2. Inyección de Dependencias Formal en Android: Migrar de la instanciación manual en `SmishGuardApp` hacia Dagger Hilt.
+3. Análisis Semántico mediante Modelos On-Device SLM (Small Language Models): Incorporar inferencia local mediante TensorFlow Lite o Gemini Nano on-device en Android para clasificar lenguaje de ingeniería social sin depender de patrones regex.
+
+====================================================================================================
+28. TABLA DE INVENTARIO TÉCNICO
+====================================================================================================
+
+| Elemento | Ubicación en el Proyecto | Función Principal | Tecnología Utilizada | Dependencia Clave | Importancia | Observaciones Técnicas |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `service-worker.ts` | `src/background/` | Intercepción de navegación y bloqueo | TypeScript / WebExt | `chrome.webNavigation` | Crítica | Punto de entrada del componente web en Manifest V3 |
+| `motor-riesgo.ts` | `src/analyzer/` | Orquestador de riesgo y ponderación | TypeScript | Interna | Crítica | Aplica multiplicadores 1.1x y 1.25x por correlación |
+| `homoglifos.ts` | `src/analyzer/` | Decodificador Punycode y Levenshtein | TypeScript | Algorítmica pura | Crítica | Decodificación RFC 3492 nativa sin dependencias |
+| `extractor-caracteristicas.ts` | `src/analyzer/` | Parser léxico y sintáctico de URLs | TypeScript | Interna | Crítica | Extrae tokens, TLDs y busca en diccionarios |
+| `registro-reglas.ts` | `src/rules/` | Catálogo de reglas heurísticas | TypeScript | Patrón Strategy | Crítica | Contiene las 7 reglas modulares de inspección |
+| `reputacion-local.ts` | `src/reputation/` | Base de datos de dominios legítimos | TypeScript | Map / Set en RAM | Alta | Previene falsos positivos en entidades colombianas |
+| `servicio-almacenamiento.ts` | `src/storage/` | Persistencia desacoplada de la extensión| TypeScript | `chrome.storage.local`| Alta | Incluye fallback transparente a RAM para tests |
+| `cripto-forense.ts` | `src/utils/` | Entropía, ficha MITRE y exportación | TypeScript | KaTeX / Markdown | Media | Contiene hash SHA-256 no criptográfico |
+| `popup.tsx` | `src/pages/popup/` | UI de control y visualizador forense | React 18 / Lucide | Vite / React-DOM | Alta | SPA con 3 pestañas: general, forense y demo |
+| `bloqueado.tsx` | `src/pages/bloqueado/` | Pantalla de alerta y bypass informado | React 18 / Lucide | Vite / React-DOM | Crítica | Interfaz de contención mostrada al usuario |
+| `opciones.tsx` | `src/pages/opciones/` | Configuración, listas y Sandbox | React 18 / Lucide | Vite / React-DOM | Alta | Incorpora simulador de vectores de ataque |
+| `SmishGuardApp.kt` | `app/src/main/.../` | Clase Application e inicialización | Kotlin | AndroidX Core | Crítica | Contenedor de dependencias e inicio de purga |
+| `AppDatabase.kt` | `data/local/` | Base de datos SQLite Room | Room Database v3 | Android SQLite | Crítica | Contiene 4 entidades con índices optimizados |
+| `FieldCipher.kt` | `data/security/` | Cifrado de cuerpos de SMS | Kotlin / JCE | Android Keystore | Crítica | Cifrado simétrico AES-256-GCM con fallback |
+| `SmsRepository.kt` | `data/repository/` | Repositorio de mensajería y bóveda | Kotlin Coroutines | Room DAOs / Cipher | Crítica | Maneja la persistencia y serialización de factores |
+| `RuleCache.kt` | `data/repository/` | Caché en memoria para alta concurrencia | Kotlin Coroutines | `kotlinx.sync.Mutex` | Alta | Evita consultas de disco en el filtrado de llamadas |
+| `SmishDetectorEngine.kt` | `domain/detector/` | Motor heurístico de Smishing | Kotlin | Regex / Dominios | Crítica | Bounded input a 4000 caracteres contra ReDoS |
+| `CallDetectorEngine.kt` | `domain/detector/` | Motor de detección de Vishing y Wangiri| Kotlin | ITU-T E.164 | Crítica | Detecta prefijos satelitales y spoofing |
+| `UrlThreatAnalyzer.kt` | `domain/detector/` | Análisis de URLs, DGA y acortadores | Kotlin | Math / Entropía | Crítica | Detección de Shannon y clusters de consonantes |
+| `PatternRuleEngine.kt` | `domain/detector/` | Reglas semánticas de fraude y OTPs | Kotlin | Java Pattern | Crítica | 13 patrones de fraude y atenuador de OTP legítimo |
+| `SenderFraudAnalyzer.kt` | `domain/detector/` | Detección de spoofing de remitente | Kotlin | Telecom Regex | Alta | Detecta celulares privados simulando bancos |
+| `HomographDetector.kt` | `domain/detector/` | Normalizador de confusables y leetspeak| Kotlin | Unicode Tables | Alta | Neutraliza caracteres invisibles y bidi |
+| `SafeRegex.kt` | `util/` | Ejecución acotada contra ReDoS | Kotlin | CharSequence Proxy | Crítica | Aborta búsquedas que excedan 120 ms |
+| `SenderKey.kt` | `util/` | Comparador flexible de teléfonos | Kotlin | Algorítmica de texto| Alta | Compara números con coincidencia de 7 sufijos |
+| `SmsBroadcastReceiver.kt` | `receiver/` | Receptor del sistema para SMS entrantes| Android Broadcast | `Telephony.Sms` | Crítica | Prioridad 999 y abortBroadcast() |
+| `NotificationFilterService.kt`| `service/` | Cancelador de alertas de smishing | Android Service | `NotificationListener`| Crítica | Modo Guardián No Invasivo sin app predeterminada |
+| `CallScreeningServiceImpl.kt` | `service/` | Rechazador de llamadas en Telecom | Android Service (Q+) | Telecom Framework | Crítica | Descarta llamadas antes del timbrado |
+| `ThreatNotificationManager.kt`| `service/` | Gestor de notificaciones de alarma | AndroidX Core App | Android Notification | Alta | Canales con alta prioridad y vibración |
+| `MainActivity.kt` | `ui/` | Actividad raíz y gestión de permisos | AndroidX Activity | Jetpack Compose | Alta | Gestiona permisos y rol de call screening |
+| `AppNavigation.kt` | `ui/navigation/` | Enrutador de pantallas Compose | Jetpack Navigation | Compose Navigation | Alta | BottomBar reactiva con contador de cuarentena |
+
+====================================================================================================
+29. MATRIZ DE TRAZABILIDAD TÉCNICA
+====================================================================================================
+
+| Funcionalidad Principal | Módulo Frontend / UI | Controlador / Backend / Servicio | Base de Datos / Persistencia | Servicio Externo Involucrado |
+| :--- | :--- | :--- | :--- | :--- |
+| Intercepción de Phishing Web | `bloqueado.tsx` / `popup.tsx` | `service-worker.ts` -> `MotorRiesgo` | `chrome.storage.local` (Estadísticas) | Ninguno (100% Local) |
+| Bypass de Bloqueo Web | Modal en `bloqueado.tsx` | `service-worker.ts` (`PERMITIR_DOMINIO_TEMPORALMENTE`)| Conjunto RAM `dominiosExcepcionTemporal` | Ninguno (100% Local) |
+| Análisis Manual de URL Web | Pestaña 3 en `popup.tsx` | `popup.tsx` -> `MotorRiesgo.analizarUrl()` | Ninguna (Cálculo en memoria) | Ninguno (100% Local) |
+| Simulación en Sandbox Web | Laboratorio en `opciones.tsx`| `opciones.tsx` -> `motorRiesgoSandbox` | Ninguna (Cálculo en memoria) | Ninguno (100% Local) |
+| Gestión de Listas Web | Tablas en `opciones.tsx` | `opciones.tsx` -> `ServicioAlmacenamiento` | `chrome.storage.local` (`phishguard_configuracion`)| Ninguno (100% Local) |
+| Captura de SMS (Modo Predet.) | Notificación en barra | `SmsBroadcastReceiver` -> `SmishDetectorEngine`| Room SQLite (`sms_records`) + `FieldCipher` | Red Celular GSM/LTE (SMS) |
+| Supresión Silenciosa de SMS | Notificación en barra | `NotificationFilterService` -> `SmishDetector` | Room SQLite (`sms_records`) + `FieldCipher` | Notificaciones del SO Android |
+| Aislamiento Bóveda Honeypot | `QuarantineScreen.kt` | `QuarantineViewModel` -> `SmsRepository` | Room SQLite (`sms_records`) | Ninguno (100% Local) |
+| Restauración de Falso Positivo| Botón en `QuarantineScreen.kt`| `SmsRepository.restoreQuarantinedMessage()` | Room SQLite (`sms_records.wasRestored=true`)| Ninguno (100% Local) |
+| Análisis Manual de SMS Móvil | `ManualAnalyzerScreen.kt` | `ManualAnalyzerViewModel` -> `SmishDetector` | Ninguna (Cálculo en memoria) | Ninguno (100% Local) |
+| Rechazo de Llamada Wangiri | Notificación de llamada | `CallScreeningServiceImpl` -> `CallDetector` | Room SQLite (`call_records`) | Telecom Framework / STIR-SHAKEN |
+| Gestión de Lista Blanca Móvil| `WhitelistScreen.kt` | `SmsRepository` -> `WhitelistDao` | Room SQLite (`whitelist_entries`) + `RuleCache`| Ninguno (100% Local) |
+| Reglas Regex Personalizadas | `CustomRulesScreen.kt` | `SmsRepository` -> `SafeRegex` -> `CustomRuleDao`| Room SQLite (`custom_rules`) + `RuleCache` | Ninguno (100% Local) |
+
+====================================================================================================
+30. RESUMEN TÉCNICO PARA DOCUMENTACIÓN ACADÉMICA / PROFESIONAL
+====================================================================================================
+
+El proyecto analizado representa un caso de estudio paradigmático de Ingeniería de Software Aplicada a la Ciberseguridad Defensiva. Aborda un problema de alta criticidad en Colombia y la región: los ataques de ingeniería social multicanal (Web, SMS y Telefonía celular).
+
+Desde la perspectiva de diseño de sistemas, el proyecto adopta una decisión arquitectónica fundamental: el rechazo de la dependencia de servidores centrales o APIs en la nube. Todas las operaciones de análisis sintáctico, normalización, cálculo de entropía de Shannon, evaluación de distancia Levenshtein, verificación de expresiones regulares y toma de decisiones se realizan directamente en los endpoints (navegador del usuario o dispositivo móvil). Esto resuelve de raíz los problemas habituales de latencia de red, costos de infraestructura en la nube y, fundamentalmente, elimina cualquier riesgo de fuga de privacidad o infracción de leyes de protección de datos personales.
+
+En el componente web (PhishGuard Colombia), la solución aprovecha al máximo las capacidades de Google Chrome Extensions Manifest V3 mediante un Service Worker eficiente y reactivo, complementado con 7 reglas heurísticas modulares extensibles bajo el patrón Strategy. El componente móvil (SmishingGuard) implementa con rigor los principios de Clean Architecture y MVVM en Kotlin 2.0 y Jetpack Compose, incorporando defensas avanzadas contra DoS (algoritmo SafeRegex con timeout de nanosegundos contra ReDoS), almacenamiento de claves de hardware en Android Keystore para cifrar cuerpos de SMS aislados con AES-256-GCM y servicios nativos de bajo nivel para neutralizar notificaciones de smishing (`NotificationListenerService`) e interceptar llamadas fraudulentas en el subsistema Telecom de Android (`CallScreeningService`).
+
+El código evidencia una elevada madurez técnica, modularidad, separación de responsabilidades y una suite de pruebas automatizadas rigurosa (57 tests unitarios en Vitest y suites exhaustivas en JUnit), configurando una base de código sólida y verificable apta para sustentar un trabajo de grado universitario y servir como referencia profesional de ingeniería de software segura.
+====================================================================================================
+FIN DEL DOCUMENTO DE ANÁLISIS TÉCNICO INTEGRAL
+====================================================================================================

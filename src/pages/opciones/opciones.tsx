@@ -20,6 +20,7 @@ import {
 } from "../../storage/servicio-almacenamiento";
 import { MotorRiesgo } from "../../analyzer/motor-riesgo";
 import { ResultadoAnalisisUrl } from "../../types/analisis";
+import { normalizarDominioOUrl } from "../../reputation/reputacion-local";
 import "./opciones.css";
 
 const motorRiesgoSandbox = new MotorRiesgo();
@@ -165,11 +166,16 @@ export const ComponenteOpciones: React.FC = () => {
 
   const agregarListaBlanca = (e: React.FormEvent): void => {
     e.preventDefault();
-    const dominioLimpio = nuevoDominioBlanco.trim().toLowerCase().replace(/^https?:\/\//, "");
+    const dominioLimpio = normalizarDominioOUrl(nuevoDominioBlanco);
     if (!dominioLimpio || configuracion.listaBlancaPersonalizada.includes(dominioLimpio)) return;
 
-    const nuevaLista = [...configuracion.listaBlancaPersonalizada, dominioLimpio];
-    const nuevaConfig = { ...configuracion, listaBlancaPersonalizada: nuevaLista };
+    const nuevaListaBlanca = [...configuracion.listaBlancaPersonalizada, dominioLimpio];
+    const nuevaListaNegra = configuracion.listaNegraPersonalizada.filter((d) => d !== dominioLimpio);
+    const nuevaConfig = {
+      ...configuracion,
+      listaBlancaPersonalizada: nuevaListaBlanca,
+      listaNegraPersonalizada: nuevaListaNegra,
+    };
     persistirConfiguracion(nuevaConfig);
     setNuevoDominioBlanco("");
   };
@@ -182,11 +188,16 @@ export const ComponenteOpciones: React.FC = () => {
 
   const agregarListaNegra = (e: React.FormEvent): void => {
     e.preventDefault();
-    const dominioLimpio = nuevoDominioNegro.trim().toLowerCase().replace(/^https?:\/\//, "");
+    const dominioLimpio = normalizarDominioOUrl(nuevoDominioNegro);
     if (!dominioLimpio || configuracion.listaNegraPersonalizada.includes(dominioLimpio)) return;
 
-    const nuevaLista = [...configuracion.listaNegraPersonalizada, dominioLimpio];
-    const nuevaConfig = { ...configuracion, listaNegraPersonalizada: nuevaLista };
+    const nuevaListaNegra = [...configuracion.listaNegraPersonalizada, dominioLimpio];
+    const nuevaListaBlanca = configuracion.listaBlancaPersonalizada.filter((d) => d !== dominioLimpio);
+    const nuevaConfig = {
+      ...configuracion,
+      listaNegraPersonalizada: nuevaListaNegra,
+      listaBlancaPersonalizada: nuevaListaBlanca,
+    };
     persistirConfiguracion(nuevaConfig);
     setNuevoDominioNegro("");
   };

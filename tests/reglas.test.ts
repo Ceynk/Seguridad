@@ -83,4 +83,16 @@ describe("Reglas Individuales de Detección de Riesgo", () => {
     const resSub = regla.evaluar(carSubdominios);
     expect(resSub.activada).toBe(true);
   });
+
+  it("ReglaPunycodeHomografo: debe emitir severidad CRÍTICA y puntaje de bloqueo (>=85) ante letras raras", () => {
+    const regla = new ReglaPunycodeHomografo();
+    const carLetrasRaras = extraerCaracteristicasUrl("https://b\u0430ncolombi\u0430.com/login");
+    const res = regla.evaluar(carLetrasRaras);
+
+    expect(res.activada).toBe(true);
+    expect(res.severidad).toBe("CRITICA");
+    expect(res.puntuacion).toBeGreaterThanOrEqual(85);
+    expect(res.evidencias.some((e) => e.campo === "alfabetoMixto")).toBe(true);
+  });
 });
+

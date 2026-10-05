@@ -80,6 +80,10 @@ export interface CaracteristicasUrl {
   similitudMarcas: ResultadoSimilitudMarca[];
   entropiaShannon: number;
   vectoresIngenieriaSocial: VectorIngenieriaSocial[];
+  dominioDecodificadoUnicode?: string;
+  tieneLetrasRarasHomoglifos: boolean;
+  tieneAlfabetoMixto: boolean;
+  desgloseLetrasRaras: SustitucionCaracterVisual[];
 }
 
 export interface FichaForenseIncidente {

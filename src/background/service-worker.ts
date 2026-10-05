@@ -1,4 +1,5 @@
 import { MotorRiesgo } from "../analyzer/motor-riesgo";
+import { decodificarDominioPunycode } from "../analyzer/homoglifos";
 import { ServicioAlmacenamiento, CONFIGURACION_PREDETERMINADA } from "../storage/servicio-almacenamiento";
 import { ResultadoAnalisisUrl } from "../types/analisis";
 import { ConfiguracionExtension } from "../types/configuracion";
@@ -61,8 +62,45 @@ function construirUrlPaginaBloqueo(urlOriginal: string, host: string, resultado:
   );
 }
 
+function esDominioExcluidoTemporalmente(host: string): boolean {
+  if (dominiosExcepcionTemporal.has(host)) return true;
+  for (const d of dominiosExcepcionTemporal) {
+    if (
+      host === d ||
+      host.endsWith(`.${d}`) ||
+      (d.startsWith("www.") && host === d.slice(4)) ||
+      (host.startsWith("www.") && host.slice(4) === d)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+let promesaInicializacion: Promise<void> | null = null;
+
+async function inicializarServiceWorker(): Promise<void> {
+  try {
+    const config = await ServicioAlmacenamiento.obtenerConfiguracion();
+    configuracionEnMemoria = config;
+    motorRiesgo.actualizarConfiguracion(config);
+  } catch {
+    configuracionEnMemoria = CONFIGURACION_PREDETERMINADA;
+  }
+}
+
+async function asegurarInicializado(): Promise<void> {
+  if (!promesaInicializacion) {
+    promesaInicializacion = inicializarServiceWorker();
+  }
+  await promesaInicializacion;
+}
+
+promesaInicializacion = inicializarServiceWorker();
+
 async function procesarNavegacion(idPestana: number, urlTexto: string): Promise<boolean> {
   if (esUrlExcluida(urlTexto)) return false;
+  await asegurarInicializado();
   if (!configuracionEnMemoria.proteccionHabilitada) return false;
   if (pestanasEnProcesoBloqueo.has(idPestana)) return false;
 
@@ -75,7 +113,7 @@ async function procesarNavegacion(idPestana: number, urlTexto: string): Promise<
     }
 
     const host = urlObj.hostname.toLowerCase();
-    if (dominiosExcepcionTemporal.has(host)) return false;
+    if (esDominioExcluidoTemporalmente(host)) return false;
 
     const resultado = await motorRiesgo.analizarUrl(urlTexto);
     mapaResultadosPorPestana.set(idPestana, resultado);
@@ -108,18 +146,6 @@ async function procesarNavegacion(idPestana: number, urlTexto: string): Promise<
 
   return false;
 }
-
-async function inicializarServiceWorker(): Promise<void> {
-  try {
-    const config = await ServicioAlmacenamiento.obtenerConfiguracion();
-    configuracionEnMemoria = config;
-    motorRiesgo.actualizarConfiguracion(config);
-  } catch {
-    configuracionEnMemoria = CONFIGURACION_PREDETERMINADA;
-  }
-}
-
-inicializarServiceWorker();
 
 if (typeof chrome !== "undefined" && chrome.webNavigation && chrome.webNavigation.onBeforeNavigate) {
   chrome.webNavigation.onBeforeNavigate.addListener((detalles) => {
@@ -172,7 +198,14 @@ if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessage)
 
         case "PERMITIR_DOMINIO_TEMPORALMENTE": {
           if (mensaje.dominio) {
-            dominiosExcepcionTemporal.add(mensaje.dominio.toLowerCase());
+            const dominioLimpio = mensaje.dominio.toLowerCase();
+            dominiosExcepcionTemporal.add(dominioLimpio);
+            try {
+              const dominioUnicode = decodificarDominioPunycode(dominioLimpio);
+              dominiosExcepcionTemporal.add(dominioUnicode.toLowerCase());
+            } catch {
+              // Sin acción si no aplica
+            }
             responder({ exito: true });
           }
           break;

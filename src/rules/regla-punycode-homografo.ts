@@ -4,11 +4,11 @@ import { BaseReglaRiesgo } from "./base-regla";
 
 export class ReglaPunycodeHomografo extends BaseReglaRiesgo {
   readonly id = "REGLA_PUNYCODE_HOMOGRAFO";
-  readonly nombre = "Uso de Dominio Internacionalizado (Punycode)";
+  readonly nombre = "Ataque Homógrafo y Falsificación por Letras Raras";
   readonly descripcion =
-    "Detecta nombres de dominio codificados en Punycode (prefijo 'xn--').";
-  readonly severidad: SeveridadRegla = "ALTA";
-  readonly puntuacionBase = 35;
+    "Detecta dominios engañosos con letras raras (caracteres cirílicos, griegos o confusables) y codificación Punycode que simulan ser sitios web legítimos.";
+  readonly severidad: SeveridadRegla = "CRITICA";
+  readonly puntuacionBase = 85;
   readonly tecnicaMitre: TecnicaMitreAttack = {
     id: "T1036.007",
     nombre: "Masquerading: IDN Homograph Attacks",
@@ -17,33 +17,64 @@ export class ReglaPunycodeHomografo extends BaseReglaRiesgo {
   };
 
   evaluar(caracteristicas: CaracteristicasUrl): ResultadoEvaluacionRegla {
-    if (!caracteristicas.esPunycode) {
+    const tieneHomoglifos = caracteristicas.tieneLetrasRarasHomoglifos;
+    const esPunycode = caracteristicas.esPunycode;
+    const tieneAlfabetoMixto = caracteristicas.tieneAlfabetoMixto;
+
+    // Si no es Punycode ni tiene letras raras o alfabeto mixto, no se activa
+    if (!esPunycode && !tieneHomoglifos && !tieneAlfabetoMixto) {
       return this.crearResultadoNoActivado();
     }
 
-    const evidencias: EvidenciaRiesgo[] = [
-      {
-        campo: "nombreHost",
-        valorEncontrado: caracteristicas.nombreHost,
-        descripcion: `El dominio utiliza codificación Punycode (${caracteristicas.nombreHost}).`,
-      },
-    ];
-
+    const evidencias: EvidenciaRiesgo[] = [];
     let puntuacion = this.puntuacionBase;
 
-    if (
-      caracteristicas.contienePalabrasAutenticacion.length > 0 ||
-      caracteristicas.contienePalabrasBancarias.length > 0 ||
-      caracteristicas.similitudMarcas.length > 0
-    ) {
-      puntuacion += 25;
+    if (tieneAlfabetoMixto) {
       evidencias.push({
-        campo: "punycodeConMarca",
-        valorEncontrado: "Punycode + Entidad Sensible",
-        descripcion: "El dominio Punycode coincide con patrones bancarios o de autenticación.",
+        campo: "alfabetoMixto",
+        valorEncontrado: "Mezcla de alfabetos (Script Spoofing)",
+        descripcion:
+          "El dominio combina letras del alfabeto latino con caracteres no latinos (cirílicos o griegos) para aparentar que el texto es legítimo a simple vista.",
+      });
+    }
+
+    if (caracteristicas.desgloseLetrasRaras && caracteristicas.desgloseLetrasRaras.length > 0) {
+      const resumenLetras = caracteristicas.desgloseLetrasRaras
+        .slice(0, 5)
+        .map((d) => `'${d.caracterSospechoso}' (${d.tipo})`)
+        .join(", ");
+
+      evidencias.push({
+        campo: "letrasRarasDetectadas",
+        valorEncontrado: `${caracteristicas.desgloseLetrasRaras.length} caracteres confusables`,
+        descripcion: `Letras anómalas detectadas: ${resumenLetras}. Están colocadas para engañar visualmente al usuario.`,
+      });
+    }
+
+    if (esPunycode) {
+      const dominioDecodificado = caracteristicas.dominioDecodificadoUnicode || caracteristicas.nombreHost;
+      evidencias.push({
+        campo: "nombreHostPunycode",
+        valorEncontrado: caracteristicas.nombreHost,
+        descripcion: `El dominio utiliza codificación internacionalizada Punycode (${caracteristicas.nombreHost}), la cual traduce a: '${dominioDecodificado}'.`,
+      });
+    }
+
+    if (
+      caracteristicas.similitudMarcas.length > 0 ||
+      caracteristicas.contienePalabrasBancarias.length > 0 ||
+      caracteristicas.contienePalabrasAutenticacion.length > 0
+    ) {
+      puntuacion = 95;
+      evidencias.push({
+        campo: "homografoConMarcaOEntidad",
+        valorEncontrado: "Suplantación de Marca / Sector Financiero",
+        descripcion:
+          "El dominio utiliza letras sustitutas para fingir la identidad de una entidad bancaria, marca o servicio sensible.",
       });
     }
 
     return this.crearResultadoActivado(puntuacion, evidencias);
   }
 }
+

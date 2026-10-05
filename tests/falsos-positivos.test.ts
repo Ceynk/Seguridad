@@ -19,6 +19,11 @@ describe("Prevención de Falsos Positivos en Sitios Legítimos", () => {
     "https://www.4-72.com.co/servicios-postales-nacionales",
     "https://aws.amazon.com/es/console/?nc2=h_m_c",
     "https://www.netflix.com/co/login",
+    "https://www.spotify.com/co/account/overview/",
+    "https://www.twitch.tv/directory",
+    "https://www.airbnb.com.co/s/homes?tab_id=home_tab&refinement_paths%5B%5D=%2Fhomes&query=bogot%C3%A1&place_id=ChIJB3UJ2yYA8pYR0V4K0l6g5Q4&checkin=2024-07-01&checkout=2024-07-05&adults=2&children=0&infants=0&search_type=filter_change",
+    "https://www.booking.com/searchresults.es.html?aid=304142&label=gen173nr-1FCAEoggI46AdIM1gEaLsBiAEBmAExuAEHyAEM2AEB6AEB-AECiAIBqAIDuALY7J6MBsACAdICJDRjYjEwYzY",
+    "https://www.instagram.com/"
   ];
 
   it.each(sitiosLegitimos)(

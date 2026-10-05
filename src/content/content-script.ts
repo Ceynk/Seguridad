@@ -1,3 +1,10 @@
+declare const chrome: {
+  runtime?: {
+    id?: string;
+    sendMessage: (message: { tipo: string; url: string }) => void;
+  };
+};
+
 (function inicializarScriptContenido() {
   if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) {
     return;

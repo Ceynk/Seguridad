@@ -12,6 +12,10 @@ export const DOMINIOS_CONFIABLES_LOCALES: EntradaReputacion[] = [
   { dominio: "apple.com", tipo: "BLANCA", categoria: "Tecnología", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Apple" },
   { dominio: "amazon.com", tipo: "BLANCA", categoria: "Comercio", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Amazon" },
   { dominio: "netflix.com", tipo: "BLANCA", categoria: "Entretenimiento", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Netflix" },
+  { dominio: "facebook.com", tipo: "BLANCA", categoria: "Redes Sociales", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Facebook" },
+  { dominio: "instagram.com", tipo: "BLANCA", categoria: "Redes Sociales", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Instagram" },
+  { dominio: "cdninstagram.com", tipo: "BLANCA", categoria: "Redes Sociales", fechaRegistro: "2026-01-01", descripcion: "CDN oficial de Instagram" },
+  { dominio: "whatsapp.com", tipo: "BLANCA", categoria: "Mensajería", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de WhatsApp" },
 
   { dominio: "bancolombia.com", tipo: "BLANCA", categoria: "Banca Colombia", fechaRegistro: "2026-01-01", descripcion: "Portal oficial Bancolombia" },
   { dominio: "nequi.com.co", tipo: "BLANCA", categoria: "Banca Digital", fechaRegistro: "2026-01-01", descripcion: "Portal oficial Nequi Colombia" },
@@ -69,6 +73,17 @@ export const DOMINIOS_MALICIOSOS_PRUEBA: EntradaReputacion[] = [
   },
 ];
 
+export function normalizarDominioOUrl(entrada: string): string {
+  let limpio = entrada.trim().toLowerCase();
+  // Quitar protocolo http/https/ftp y barras iniciales
+  limpio = limpio.replace(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//, "").replace(/^\/\//, "");
+  // Quitar ruta, parámetros de consulta y hash
+  limpio = limpio.replace(/[/?#].*$/, "");
+  // Quitar puerto si existe (ej. :8080)
+  limpio = limpio.replace(/:\d+$/, "");
+  return limpio;
+}
+
 export class ProveedorReputacionLocal implements ProveedorReputacion {
   private mapaReputacion: Map<string, EntradaReputacion> = new Map();
   private listaBlancaUsuario: Set<string> = new Set();
@@ -88,33 +103,58 @@ export class ProveedorReputacionLocal implements ProveedorReputacion {
   }
 
   public actualizarListasUsuario(listaBlanca: string[], listaNegra: string[]): void {
-    this.listaBlancaUsuario = new Set(listaBlanca.map((d) => d.toLowerCase().trim()));
-    this.listaNegraUsuario = new Set(listaNegra.map((d) => d.toLowerCase().trim()));
+    this.listaBlancaUsuario = new Set(
+      listaBlanca
+        .map((d) => normalizarDominioOUrl(d))
+        .filter((d) => d.length > 0)
+    );
+    this.listaNegraUsuario = new Set(
+      listaNegra
+        .map((d) => normalizarDominioOUrl(d))
+        .filter((d) => d.length > 0)
+    );
   }
 
   public async consultarDominio(dominio: string): Promise<ResultadoReputacion> {
-    const dominioMinusculas = dominio.toLowerCase().trim();
+    const dominioMinusculas = normalizarDominioOUrl(dominio);
 
-    if (this.listaNegraUsuario.has(dominioMinusculas)) {
-      return {
-        encontrado: true,
-        tipo: "NEGRA",
-        categoria: "Lista Negra Personalizada",
-        descripcion: "Dominio bloqueado manualmente por el usuario.",
-        confianza: 100,
-      };
+    // 1. Revisar lista negra personalizada (coincidencia directa, subdominio o www)
+    for (const domNegro of this.listaNegraUsuario) {
+      if (
+        dominioMinusculas === domNegro ||
+        dominioMinusculas.endsWith(`.${domNegro}`) ||
+        (domNegro.startsWith("www.") && dominioMinusculas === domNegro.slice(4)) ||
+        (dominioMinusculas.startsWith("www.") && dominioMinusculas.slice(4) === domNegro)
+      ) {
+        return {
+          encontrado: true,
+          tipo: "NEGRA",
+          categoria: "Lista Negra Personalizada",
+          descripcion: "Dominio bloqueado manualmente por el usuario.",
+          confianza: 100,
+        };
+      }
     }
 
-    if (this.listaBlancaUsuario.has(dominioMinusculas)) {
-      return {
-        encontrado: true,
-        tipo: "BLANCA",
-        categoria: "Lista Blanca Personalizada",
-        descripcion: "Dominio permitido manualmente por el usuario.",
-        confianza: 100,
-      };
+    // 2. Revisar lista blanca personalizada (coincidencia directa, subdominio o www)
+    for (const domBlanco of this.listaBlancaUsuario) {
+      if (
+        dominioMinusculas === domBlanco ||
+        dominioMinusculas.endsWith(`.${domBlanco}`) ||
+        (domBlanco.startsWith("www.") && dominioMinusculas === domBlanco.slice(4)) ||
+        (dominioMinusculas.startsWith("www.") && dominioMinusculas.slice(4) === domBlanco)
+      ) {
+        return {
+          encontrado: true,
+          tipo: "BLANCA",
+          categoria: "Lista Blanca Personalizada",
+          descripcion: "Dominio permitido manualmente por el usuario.",
+          confianza: 100,
+        };
+      }
     }
 
+    // 3. Revisar lista de reputación por defecto (coincidencia directa)
     const entradaDirecta = this.mapaReputacion.get(dominioMinusculas);
     if (entradaDirecta) {
       return {
@@ -126,8 +166,14 @@ export class ProveedorReputacionLocal implements ProveedorReputacion {
       };
     }
 
+    // 4. Revisar subdominios de entidades de reputación por defecto
     for (const [dominioRegistrado, entrada] of this.mapaReputacion.entries()) {
-      if (entrada.tipo === "BLANCA" && dominioMinusculas.endsWith(`.${dominioRegistrado}`)) {
+      if (
+        entrada.tipo === "BLANCA" &&
+        (dominioMinusculas.endsWith(`.${dominioRegistrado}`) ||
+          (dominioRegistrado.startsWith("www.") && dominioMinusculas === dominioRegistrado.slice(4)) ||
+          (dominioMinusculas.startsWith("www.") && dominioMinusculas.slice(4) === dominioRegistrado))
+      ) {
         return {
           encontrado: true,
           tipo: "BLANCA",

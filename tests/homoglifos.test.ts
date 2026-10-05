@@ -3,6 +3,7 @@ import {
   calcularDistanciaLevenshtein,
   desofuscarHomoglifos,
   detectarSimilitudMarcas,
+  detectarLetrasRarasYAlfabetoMixto,
 } from "../src/analyzer/homoglifos";
 
 describe("Módulo de Homoglifos y Similitud de Marcas", () => {
@@ -64,5 +65,43 @@ describe("Módulo de Homoglifos y Similitud de Marcas", () => {
 
     const oficialesDian = detectarSimilitudMarcas("muisca.dian.gov.co", "dian.gov.co");
     expect(oficialesDian.length).toBe(0);
+
+    const oficialInstagram = detectarSimilitudMarcas("www.instagram.com", "instagram.com");
+    expect(oficialInstagram.length).toBe(0);
+  });
+
+  it("debe detectar suplantación de Instagram en dominios no oficiales", () => {
+    const similitudes = detectarSimilitudMarcas(
+      "instagram-verificacion-cuenta.xyz",
+      "instagram-verificacion-cuenta.xyz"
+    );
+
+    expect(similitudes.length).toBeGreaterThan(0);
+    expect(similitudes[0].marcaObjetivo).toBe("instagram");
+  });
+
+  it("debe detectar letras raras cirílicas que parecen latinas y marcar alfabeto mixto", () => {
+    // 'а' es \u0430 (cirílica), el resto latino
+    const hostFalso = "b\u0430ncolombi\u0430.com";
+    const resultado = desofuscarHomoglifos(hostFalso);
+    expect(resultado.textoDesofuscado).toBe("bancolombia.com");
+    expect(resultado.desgloseCaracteres.length).toBe(2);
+    expect(resultado.desgloseCaracteres[0].caracterLegitimo).toBe("a");
+    expect(resultado.desgloseCaracteres[0].tipo).toContain("Cirílico");
+  });
+
+  it("debe decodificar dominios Punycode a Unicode y detectar suplantación", () => {
+    // xn--bncolombi-e1a = bаncolombiа (con а cirílica)
+    const hostPunycode = "xn--bncolombi-e1a.com";
+    const similitudes = detectarSimilitudMarcas(hostPunycode, hostPunycode);
+    expect(similitudes.length).toBeGreaterThan(0);
+    expect(similitudes[0].marcaObjetivo).toBe("bancolombia");
+  });
+
+  it("debe detectar alfabeto mixto cuando conviven letras latinas con cirílicas o griegas", () => {
+    const analisis = detectarLetrasRarasYAlfabetoMixto("g\u043E\u043Egle.com"); // 'о' cirílica
+    expect(analisis.tieneLetrasRaras).toBe(true);
+    expect(analisis.tieneAlfabetoMixto).toBe(true);
+    expect(analisis.desglose.length).toBe(2);
   });
 });

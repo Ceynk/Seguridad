@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ShieldAlert, ArrowLeft, Flag, CheckCircle, Info, Download } from "lucide-react";
+import { ShieldAlert, ArrowLeft, Flag, CheckCircle, Info, Download, AlertTriangle, ExternalLink } from "lucide-react";
 import { exportarInformeMarkdown } from "../../utils/cripto-forense";
 import { FichaForenseIncidente, TecnicaMitreAttack } from "../../types/analisis";
 import "./bloqueado.css";
@@ -45,6 +45,9 @@ export const ComponenteBloqueado: React.FC = () => {
   const [mostrarReporte, setMostrarReporte] = useState<boolean>(false);
   const [comentarioReporte, setComentarioReporte] = useState<string>("");
   const [reporteEnviado, setReporteEnviado] = useState<boolean>(false);
+  const [mostrarModalConsentimiento, setMostrarModalConsentimiento] = useState<boolean>(false);
+  const [consentimientoAceptado, setConsentimientoAceptado] = useState<boolean>(false);
+  const [redireccionando, setRedireccionando] = useState<boolean>(false);
 
   const regresarASeguridad = (): void => {
     if (window.history.length > 1) {
@@ -58,6 +61,30 @@ export const ComponenteBloqueado: React.FC = () => {
     e.preventDefault();
     setReporteEnviado(true);
     setMostrarReporte(false);
+  };
+
+  const avanzarBajoConsentimiento = async (): Promise<void> => {
+    if (!consentimientoAceptado || redireccionando) return;
+    setRedireccionando(true);
+
+    try {
+      if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
+        await new Promise<void>((resolve) => {
+          chrome.runtime.sendMessage(
+            { tipo: "PERMITIR_DOMINIO_TEMPORALMENTE", dominio: nombreHost },
+            () => resolve()
+          );
+        });
+      }
+    } catch {
+      // Continuar incluso si no está en entorno chrome directo
+    }
+
+    if (urlBloqueada && urlBloqueada !== "Desconocida") {
+      window.location.href = urlBloqueada;
+    } else {
+      regresarASeguridad();
+    }
   };
 
   const descargarReporteForense = (): void => {
@@ -254,7 +281,74 @@ export const ComponenteBloqueado: React.FC = () => {
             )}
           </div>
         </footer>
+
+        <div className="zona-falso-positivo-opciones">
+          <button
+            type="button"
+            className="boton-avanzar-falso-positivo"
+            onClick={() => setMostrarModalConsentimiento(true)}
+          >
+            <ExternalLink size={13} />
+            Continuar al sitio web (si consideras que es un falso positivo)
+          </button>
+        </div>
       </main>
+
+      {mostrarModalConsentimiento && (
+        <div className="modal-superpuesto" role="dialog" aria-modal="true" aria-labelledby="titulo-consentimiento">
+          <div className="modal-consentimiento">
+            <div className="cabecera-modal-alerta">
+              <AlertTriangle size={26} color="#f59e0b" />
+              <h2 id="titulo-consentimiento">Confirmación de Acceso: Falso Positivo</h2>
+            </div>
+
+            <div className="cuerpo-modal-alerta">
+              <p>
+                Este sitio web (<strong>{nombreHost}</strong>) fue bloqueado preventivamente porque presenta indicadores de alto riesgo compatibles con <strong>suplantación de dominio o falsificación mediante letras raras</strong>.
+              </p>
+
+              <div className="caja-advertencia-critica">
+                <strong>Advertencia de Seguridad:</strong>
+                <br />
+                Si consideras que la detección es un falso positivo y decides continuar, hazlo bajo tu propio criterio y responsabilidad.
+                <strong> Nunca ingreses contraseñas, números de tarjeta ni datos bancarios</strong> si tienes alguna duda sobre la legitimidad del sitio.
+              </div>
+
+              <label className="fila-consentimiento-checkbox">
+                <input
+                  type="checkbox"
+                  checked={consentimientoAceptado}
+                  onChange={(e) => setConsentimientoAceptado(e.target.checked)}
+                />
+                <span>
+                  Declaro que comprendo los riesgos de fraude y suplantación de identidad, y doy mi consentimiento para acceder a este sitio bajo mi propia responsabilidad.
+                </span>
+              </label>
+            </div>
+
+            <div className="pie-modal-botones">
+              <button
+                type="button"
+                className="boton-seguro-cancelar"
+                onClick={() => {
+                  setMostrarModalConsentimiento(false);
+                  setConsentimientoAceptado(false);
+                }}
+              >
+                Permanecer Protegido
+              </button>
+              <button
+                type="button"
+                className="boton-peligro-continuar"
+                disabled={!consentimientoAceptado || redireccionando}
+                onClick={avanzarBajoConsentimiento}
+              >
+                {redireccionando ? "Accediendo..." : "Continuar al Sitio"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

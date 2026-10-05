@@ -20,6 +20,14 @@ describe("Proveedor de Reputación Local", () => {
     const resDian = await proveedor.consultarDominio("muisca.dian.gov.co");
     expect(resDian.encontrado).toBe(true);
     expect(resDian.tipo).toBe("BLANCA");
+
+    const resInstagram = await proveedor.consultarDominio("instagram.com");
+    expect(resInstagram.encontrado).toBe(true);
+    expect(resInstagram.tipo).toBe("BLANCA");
+
+    const resWwwInstagram = await proveedor.consultarDominio("www.instagram.com");
+    expect(resWwwInstagram.encontrado).toBe(true);
+    expect(resWwwInstagram.tipo).toBe("BLANCA");
   });
 
   it("debe reconocer dominios ficticios de prueba catalogados en la lista negra", async () => {
@@ -37,14 +45,29 @@ describe("Proveedor de Reputación Local", () => {
     expect(resDesconocido.encontrado).toBe(false);
   });
 
-  it("debe permitir añadir listas blancas y negras personalizadas del usuario", async () => {
+  it("debe permitir añadir listas blancas y negras personalizadas del usuario con soporte para URLs completas y subdominios", async () => {
     const proveedorConListas = new ProveedorReputacionLocal();
-    proveedorConListas.actualizarListasUsuario(["miempresa-interna.com"], ["sitio-molesto-bloqueado.xyz"]);
+    proveedorConListas.actualizarListasUsuario(
+      ["https://www.instagram.com/", "miempresa-interna.com"],
+      ["https://sitio-molesto-bloqueado.xyz/login"]
+    );
 
-    const resBlanca = await proveedorConListas.consultarDominio("miempresa-interna.com");
-    expect(resBlanca.encontrado).toBe(true);
-    expect(resBlanca.tipo).toBe("BLANCA");
+    // Debe coincidir con www.instagram.com
+    const resInstagramWww = await proveedorConListas.consultarDominio("www.instagram.com");
+    expect(resInstagramWww.encontrado).toBe(true);
+    expect(resInstagramWww.tipo).toBe("BLANCA");
 
+    // Debe coincidir con instagram.com (sin www)
+    const resInstagramBase = await proveedorConListas.consultarDominio("instagram.com");
+    expect(resInstagramBase.encontrado).toBe(true);
+    expect(resInstagramBase.tipo).toBe("BLANCA");
+
+    // Debe coincidir subdominio de miempresa-interna.com
+    const resSubempresa = await proveedorConListas.consultarDominio("portal.miempresa-interna.com");
+    expect(resSubempresa.encontrado).toBe(true);
+    expect(resSubempresa.tipo).toBe("BLANCA");
+
+    // Debe coincidir lista negra normalizada
     const resNegra = await proveedorConListas.consultarDominio("sitio-molesto-bloqueado.xyz");
     expect(resNegra.encontrado).toBe(true);
     expect(resNegra.tipo).toBe("NEGRA");
