@@ -11,14 +11,9 @@ import kotlin.math.min
 object CallDetectorEngine {
 
     const val DEFAULT_BLOCK_THRESHOLD = 60
-
-    /** Reducción del umbral cuando el usuario activa el modo heurístico agresivo. */
     const val AGGRESSIVE_THRESHOLD_DELTA = 15
     private const val MIN_THRESHOLD = 20
 
-    // Prefijos de alto riesgo internacional frecuentemente vinculados a estafas Wangiri (llamada perdida de un solo timbrazo)
-    // Se almacenan sin '+' y se comparan SOLO contra números en formato internacional (+XXX o 00XXX)
-    // para no confundir números nacionales (ej. área 212/225/229 de EE. UU. o fijos locales).
     private val WANGIRI_HIGH_RISK_DESTINATIONS = linkedMapOf(
         "247" to "Isla Ascensión (Fraude Wangiri frecuente)",
         "229" to "Benín (Fraude de tarificación internacional)",
@@ -43,14 +38,12 @@ object CallDetectorEngine {
         "690" to "Tokelau (Tarificación especial)"
     )
 
-    // Prefijos de tarificación adicional y líneas de sobrecoste
     private val PREMIUM_RATE_PATTERNS = listOf(
-        Regex("""^(?:\+34|0034)?(?:905|907|803|806|807)[0-9]{6}$"""), // España líneas de tarificación adicional
-        Regex("""^(?:\+57|0057)?(?:01900|01901|901)[0-9]{6,7}$"""),   // Colombia líneas especiales con cobro
-        Regex("""^(?:\+52|0052)?(?:01900|900)[0-9]{7}$""")            // México tarificación especial
+        Regex("""^(?:\+34|0034)?(?:905|907|803|806|807)[0-9]{6}$"""),
+        Regex("""^(?:\+57|0057)?(?:01900|01901|901)[0-9]{6,7}$"""),
+        Regex("""^(?:\+52|0052)?(?:01900|900)[0-9]{7}$""")
     )
 
-    // Números oficiales de emergencia y servicios de asistencia legítimos
     private val EMERGENCY_SHORT_NUMBERS = setOf(
         "123", "112", "911", "132", "144", "155", "106", "122", "165", "060", "091", "092", "141", "016", "024"
     )
@@ -69,9 +62,10 @@ object CallDetectorEngine {
         val cleanNumber = incomingNumber.trim().replace(CLEAN_CHARS, "")
         val effectiveThreshold = if (aggressiveMode) {
             max(MIN_THRESHOLD, blockThreshold - AGGRESSIVE_THRESHOLD_DELTA)
-        } else blockThreshold
+        } else {
+            blockThreshold
+        }
 
-        // 1. Verificación de Lista Blanca
         if (isWhitelisted) {
             return CallAnalysisResult(
                 phoneNumber = incomingNumber,
@@ -85,7 +79,6 @@ object CallDetectorEngine {
             )
         }
 
-        // 2. Números de Emergencia Autorizados
         if (EMERGENCY_SHORT_NUMBERS.contains(cleanNumber)) {
             return CallAnalysisResult(
                 phoneNumber = incomingNumber,
@@ -102,20 +95,19 @@ object CallDetectorEngine {
         val factors = mutableListOf<ThreatFactor>()
         var detectedCountryOrOrigin: String? = null
 
-        // 3. Número oculto / privado / desconocido
         if (cleanNumber.isEmpty()) {
+            val emptyScore = if (aggressiveMode) 70 else 30
             factors.add(
                 ThreatFactor(
                     category = "Número Oculto o Privado",
                     description = "La llamada no presenta identificador. Es una táctica habitual en extorsión y vishing.",
-                    severityScore = if (aggressiveMode) 70 else 30,
+                    severityScore = emptyScore,
                     matchedSnippet = null
                 )
             )
             detectedCountryOrOrigin = "Identificador oculto"
         }
 
-        // 4. Verificación de red STIR/SHAKEN (Android 11+): el operador indica que el identificador NO superó la verificación
         if (networkVerificationFailed) {
             factors.add(
                 ThreatFactor(
@@ -127,12 +119,14 @@ object CallDetectorEngine {
             )
         }
 
-        // 5. Detección de Wangiri / Prefijos Internacionales de Alto Riesgo (solo formato internacional explícito)
-        val internationalDigits = when {
-            cleanNumber.startsWith("+") -> cleanNumber.substring(1)
-            cleanNumber.startsWith("00") -> cleanNumber.substring(2)
-            else -> null
+        val internationalDigits = if (cleanNumber.startsWith("+")) {
+            cleanNumber.substring(1)
+        } else if (cleanNumber.startsWith("00")) {
+            cleanNumber.substring(2)
+        } else {
+            null
         }
+
         if (internationalDigits != null) {
             for ((prefix, description) in WANGIRI_HIGH_RISK_DESTINATIONS) {
                 if (internationalDigits.startsWith(prefix)) {
@@ -150,7 +144,6 @@ object CallDetectorEngine {
             }
         }
 
-        // 6. Detección de Líneas de Tarificación Especial / Sobrecoste
         for (pattern in PREMIUM_RATE_PATTERNS) {
             if (pattern.matches(cleanNumber)) {
                 factors.add(
@@ -165,12 +158,23 @@ object CallDetectorEngine {
             }
         }
 
-        // 7. Detección de Caller ID Spoofing y Malformación Estructural
         if (cleanNumber.isNotEmpty()) {
-            val hasMultiplePlus = cleanNumber.count { it == '+' } > 1 || cleanNumber.lastIndexOf('+') > 0
-            val hasInvalidChars = cleanNumber.any { !it.isDigit() && it != '+' }
-            val digitsOnly = cleanNumber.filter { it.isDigit() }
+            var plusCount = 0
+            var hasInvalidChars = false
+            val digitsBuilder = StringBuilder()
 
+            for (i in 0 until cleanNumber.length) {
+                val ch = cleanNumber[i]
+                if (ch == '+') {
+                    plusCount++
+                } else if (ch.isDigit()) {
+                    digitsBuilder.append(ch)
+                } else {
+                    hasInvalidChars = true
+                }
+            }
+
+            val hasMultiplePlus = plusCount > 1 || cleanNumber.lastIndexOf('+') > 0
             if (hasMultiplePlus || hasInvalidChars) {
                 factors.add(
                     ThreatFactor(
@@ -182,6 +186,7 @@ object CallDetectorEngine {
                 )
             }
 
+            val digitsOnly = digitsBuilder.toString()
             if (digitsOnly.length < 5 && !EMERGENCY_SHORT_NUMBERS.contains(digitsOnly)) {
                 factors.add(
                     ThreatFactor(
@@ -203,13 +208,11 @@ object CallDetectorEngine {
             }
         }
 
-        // 8. Detección de Neighbor Spoofing (Suplantación de proximidad)
-        if (!userNumber.isNullOrBlank() && cleanNumber.isNotEmpty()) {
+        if (userNumber != null && userNumber.isNotBlank() && cleanNumber.isNotEmpty()) {
             val cleanUser = userNumber.trim().replace(CLEAN_CHARS, "")
             if (cleanUser.length >= 8 && cleanNumber.length >= 8) {
-                // Si comparten el mismo prefijo de operador/área (primeros 6 dígitos) pero difieren en los últimos
-                val userPrefix = cleanUser.take(6)
-                val incomingPrefix = cleanNumber.take(6)
+                val userPrefix = cleanUser.substring(0, 6)
+                val incomingPrefix = cleanNumber.substring(0, 6)
                 if (userPrefix == incomingPrefix && cleanUser != cleanNumber) {
                     factors.add(
                         ThreatFactor(
@@ -223,7 +226,6 @@ object CallDetectorEngine {
             }
         }
 
-        // 9. Reglas Personalizadas del Usuario para Llamadas (ejecución acotada en tiempo contra ReDoS)
         if (cleanNumber.isNotEmpty()) {
             for (customRegex in customBlockPatterns) {
                 if (SafeRegex.containsMatch(customRegex, cleanNumber) == true) {
@@ -231,7 +233,6 @@ object CallDetectorEngine {
                         ThreatFactor(
                             category = "Regla de Bloqueo Telefónico Personalizada",
                             description = "Coincidencia con un filtro de llamadas configurado por el usuario (${customRegex.pattern}).",
-                            // Una regla explícita del usuario debe bloquear por sí sola
                             severityScore = 100,
                             matchedSnippet = customRegex.pattern
                         )
@@ -241,12 +242,14 @@ object CallDetectorEngine {
             }
         }
 
-        // 10. Puntuación y Clasificación
-        val totalScore = factors.sumOf { it.severityScore }
+        var totalScore = 0
+        for (factor in factors) {
+            totalScore += factor.severityScore
+        }
         val boundedScore = min(100, max(0, totalScore))
 
         val threatLevel = when {
-            boundedScore >= 60 -> ThreatLevel.PHISHING // Fraude telefónico / Vishing / Wangiri
+            boundedScore >= 60 -> ThreatLevel.PHISHING
             boundedScore >= 30 -> ThreatLevel.SUSPICIOUS
             else -> ThreatLevel.SAFE
         }
@@ -265,8 +268,14 @@ object CallDetectorEngine {
             CallAction.ALLOW -> "Número verificado sin anomalías de riesgo."
         }
 
+        val displayPhone = if (incomingNumber.isBlank()) {
+            "Número oculto"
+        } else {
+            incomingNumber
+        }
+
         return CallAnalysisResult(
-            phoneNumber = incomingNumber.ifBlank { "Número oculto" },
+            phoneNumber = displayPhone,
             threatScore = boundedScore,
             level = threatLevel,
             isBlocked = isBlocked,

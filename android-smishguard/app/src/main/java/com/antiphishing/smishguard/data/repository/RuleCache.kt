@@ -7,13 +7,6 @@ import com.antiphishing.smishguard.util.SenderKey
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/**
- * Caché en memoria de la lista blanca y de las reglas personalizadas ya compiladas.
- *
- * Antes, cada SMS/llamada entrante consultaba la BD y recompilaba todas las regex.
- * En la ruta de filtrado de llamadas (presupuesto de ~5 s impuesto por Android) eso es
- * latencia innecesaria. La caché se invalida explícitamente al modificar reglas o lista blanca.
- */
 class RuleCache(
     private val whitelistDao: WhitelistDao,
     private val customRuleDao: CustomRuleDao
@@ -24,23 +17,51 @@ class RuleCache(
     @Volatile private var customRegexes: List<Regex>? = null
 
     suspend fun isWhitelisted(senderOrNumber: String): Boolean {
-        if (senderOrNumber.isBlank()) return false
-        return SenderKey.matchesAny(senderOrNumber, getWhitelist())
+        if (senderOrNumber.isBlank()) {
+            return false
+        }
+        val currentWhitelist = getWhitelist()
+        return SenderKey.matchesAny(senderOrNumber, currentWhitelist)
     }
 
     suspend fun getWhitelist(): List<String> {
-        whitelist?.let { return it }
+        val cached = whitelist
+        if (cached != null) {
+            return cached
+        }
         return mutex.withLock {
-            whitelist ?: whitelistDao.getAllSenders().also { whitelist = it }
+            val current = whitelist
+            if (current != null) {
+                current
+            } else {
+                val fetched = whitelistDao.getAllSenders()
+                whitelist = fetched
+                fetched
+            }
         }
     }
 
     suspend fun getCustomRegexes(): List<Regex> {
-        customRegexes?.let { return it }
+        val cached = customRegexes
+        if (cached != null) {
+            return cached
+        }
         return mutex.withLock {
-            customRegexes ?: customRuleDao.getActiveRules()
-                .mapNotNull { SafeRegex.compileUserRule(it.pattern, it.isRegex) }
-                .also { customRegexes = it }
+            val current = customRegexes
+            if (current != null) {
+                current
+            } else {
+                val activeRules = customRuleDao.getActiveRules()
+                val compiledList = mutableListOf<Regex>()
+                for (rule in activeRules) {
+                    val regex = SafeRegex.compileUserRule(rule.pattern, rule.isRegex)
+                    if (regex != null) {
+                        compiledList.add(regex)
+                    }
+                }
+                customRegexes = compiledList
+                compiledList
+            }
         }
     }
 

@@ -32,6 +32,23 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.antiphishing.smishguard.ui.theme.ThreatDangerRed
 
+class AppViewModelFactory(private val app: SmishGuardApp) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return when {
+            modelClass.isAssignableFrom(DashboardViewModel::class.java) ->
+                DashboardViewModel(app.smsRepository, app.settingsRepository) as T
+            modelClass.isAssignableFrom(QuarantineViewModel::class.java) ->
+                QuarantineViewModel(app.smsRepository) as T
+            modelClass.isAssignableFrom(ManualAnalyzerViewModel::class.java) ->
+                ManualAnalyzerViewModel(app.smsRepository) as T
+            modelClass.isAssignableFrom(SettingsViewModel::class.java) ->
+                SettingsViewModel(app.settingsRepository, app.smsRepository, app.callRepository) as T
+            else -> throw IllegalArgumentException("ViewModel no reconocido")
+        }
+    }
+}
+
 @Composable
 fun AppNavigation(
     navController: NavHostController,
@@ -40,38 +57,11 @@ fun AppNavigation(
     initialSharedSender: String = "",
     initialSharedBody: String = ""
 ) {
-    val dashboardViewModel: DashboardViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return DashboardViewModel(app.smsRepository, app.settingsRepository) as T
-            }
-        }
-    )
-    val quarantineViewModel: QuarantineViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return QuarantineViewModel(app.smsRepository) as T
-            }
-        }
-    )
-    val analyzerViewModel: ManualAnalyzerViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return ManualAnalyzerViewModel(app.smsRepository) as T
-            }
-        }
-    )
-    val settingsViewModel: SettingsViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return SettingsViewModel(app.settingsRepository, app.smsRepository, app.callRepository) as T
-            }
-        }
-    )
+    val factory = remember { AppViewModelFactory(app) }
+    val dashboardViewModel: DashboardViewModel = viewModel(factory = factory)
+    val quarantineViewModel: QuarantineViewModel = viewModel(factory = factory)
+    val analyzerViewModel: ManualAnalyzerViewModel = viewModel(factory = factory)
+    val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
 
     LaunchedEffect(initialSharedBody) {
         if (initialSharedBody.isNotBlank()) {
@@ -85,18 +75,20 @@ fun AppNavigation(
 
     Scaffold(
         bottomBar = {
-            if (Screen.bottomNavItems.any { it.route == currentRoute }) {
+            val isBottomNavScreen = Screen.bottomNavItems.any { it.route == currentRoute }
+            if (isBottomNavScreen) {
                 NavigationBar(
                     containerColor = DarkSurface,
                     tonalElevation = 8.dp
                 ) {
-                    Screen.bottomNavItems.forEach { screen ->
+                    for (screen in Screen.bottomNavItems) {
                         val selected = currentRoute == screen.route
                         NavigationBarItem(
                             selected = selected,
                             onClick = {
                                 navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
+                                    val startDestId = navController.graph.findStartDestination().id
+                                    popUpTo(startDestId) {
                                         saveState = true
                                     }
                                     launchSingleTop = true
@@ -116,9 +108,9 @@ fun AppNavigation(
                                         }
                                     }
                                 ) {
-                                    screen.icon?.let {
+                                    if (screen.icon != null) {
                                         Icon(
-                                            imageVector = it,
+                                            imageVector = screen.icon,
                                             contentDescription = screen.title
                                         )
                                     }

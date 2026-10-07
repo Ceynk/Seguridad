@@ -151,7 +151,7 @@ fun SettingsScreen(
 
         item {
             var showClearDialog by remember { mutableStateOf(false) }
-            var clearType by remember { mutableStateOf("") } // "VAULT" or "ALL"
+            var clearType by remember { mutableStateOf("") }
 
             Card(
                 modifier = Modifier.fillMaxWidth(),

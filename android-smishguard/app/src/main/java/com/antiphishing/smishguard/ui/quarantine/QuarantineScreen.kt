@@ -31,20 +31,27 @@ fun QuarantineScreen(
 ) {
     val messages by viewModel.quarantinedMessages.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf("ALL") } // "ALL", "CRITICAL", "SUSPICIOUS"
+    var selectedFilter by remember { mutableStateOf("ALL") }
 
     val filteredMessages = remember(messages, searchQuery, selectedFilter) {
-        messages.filter { msg ->
-            val matchesSearch = searchQuery.isBlank() ||
+        val resultList = mutableListOf<SmsMessageData>()
+        val hasSearch = searchQuery.isNotBlank()
+        for (msg in messages) {
+            val matchesSearch = !hasSearch ||
                 msg.sender.contains(searchQuery, ignoreCase = true) ||
                 msg.body.contains(searchQuery, ignoreCase = true)
+
             val matchesFilter = when (selectedFilter) {
                 "CRITICAL" -> msg.threatScore >= 60
                 "SUSPICIOUS" -> msg.threatScore < 60
                 else -> true
             }
-            matchesSearch && matchesFilter
+
+            if (matchesSearch && matchesFilter) {
+                resultList.add(msg)
+            }
         }
+        resultList
     }
 
     LazyColumn(
@@ -280,8 +287,13 @@ fun QuarantinedMessageCard(
                 modifier = Modifier.align(Alignment.End),
                 contentPadding = PaddingValues(0.dp)
             ) {
+                val buttonText = if (isExpanded) {
+                    "Ocultar desglose forense"
+                } else {
+                    "Ver factores de amenaza (${message.threatFactors.size})"
+                }
                 Text(
-                    text = if (isExpanded) "Ocultar desglose forense" else "Ver factores de amenaza (${message.threatFactors.size})",
+                    text = buttonText,
                     color = CyberCyan,
                     fontSize = 12.sp
                 )
@@ -306,28 +318,30 @@ fun QuarantinedMessageCard(
 
                     OutlinedButton(
                         onClick = {
-                            val report = buildString {
-                                appendLine("=== REPORTE DE INCIDENTE SMISHGUARD ===")
-                                appendLine("Fecha: ${dateFormat.format(Date(message.timestamp))}")
-                                appendLine("Remitente: ${message.sender}")
-                                appendLine("Puntuación de Amenaza: ${message.threatScore}% (${message.threatLevel.name})")
-                                appendLine("Mensaje Neutralizado: ${message.body}")
-                                if (message.threatFactors.isNotEmpty()) {
-                                    appendLine("Factores Detectados:")
-                                    for (f in message.threatFactors) {
-                                        appendLine(" - [${f.category}] ${f.description} (+${f.severityScore} pts)")
-                                    }
+                            val reportBuilder = StringBuilder()
+                            reportBuilder.append("=== REPORTE DE INCIDENTE SMISHGUARD ===\n")
+                            reportBuilder.append("Fecha: ").append(dateFormat.format(Date(message.timestamp))).append("\n")
+                            reportBuilder.append("Remitente: ").append(message.sender).append("\n")
+                            reportBuilder.append("Puntuación de Amenaza: ").append(message.threatScore).append("% (").append(message.threatLevel.name).append(")\n")
+                            reportBuilder.append("Mensaje Neutralizado: ").append(message.body).append("\n")
+                            if (message.threatFactors.isNotEmpty()) {
+                                reportBuilder.append("Factores Detectados:\n")
+                                for (f in message.threatFactors) {
+                                    reportBuilder.append(" - [").append(f.category).append("] ")
+                                        .append(f.description).append(" (+")
+                                        .append(f.severityScore).append(" pts)\n")
                                 }
                             }
-                            clipboardManager.setText(AnnotatedString(report))
+                            clipboardManager.setText(AnnotatedString(reportBuilder.toString()))
                             reportCopied = true
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = CyberCyan),
                         shape = RoundedCornerShape(8.dp)
                     ) {
+                        val iconVector = if (reportCopied) Icons.Default.Check else Icons.Default.ContentCopy
                         Icon(
-                            if (reportCopied) Icons.Default.Check else Icons.Default.ContentCopy,
+                            iconVector,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
@@ -406,9 +420,9 @@ fun ThreatFactorItem(factor: ThreatFactor) {
                     fontSize = 11.sp,
                     color = TextSecondary
                 )
-                factor.matchedSnippet?.let { snippet ->
+                if (factor.matchedSnippet != null) {
                     Text(
-                        text = "Detectado: \"$snippet\"",
+                        text = "Detectado: \"${factor.matchedSnippet}\"",
                         fontSize = 10.sp,
                         fontFamily = FontFamily.Monospace,
                         color = CyberCyan

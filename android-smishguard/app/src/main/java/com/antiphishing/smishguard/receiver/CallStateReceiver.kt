@@ -20,21 +20,32 @@ class CallStateReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != TelephonyManager.ACTION_PHONE_STATE_CHANGED) return
+        if (intent.action != TelephonyManager.ACTION_PHONE_STATE_CHANGED) {
+            return
+        }
 
         val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
-        if (state != TelephonyManager.EXTRA_STATE_RINGING) return
+        if (state != TelephonyManager.EXTRA_STATE_RINGING) {
+            return
+        }
 
         @Suppress("DEPRECATION")
-        val incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER) ?: return
-        if (incomingNumber.isBlank()) return
+        val incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
+        if (incomingNumber == null || incomingNumber.isBlank()) {
+            return
+        }
 
-        val app = context.applicationContext as? SmishGuardApp ?: return
-        val settingsRepo = app.settingsRepository
-        if (!settingsRepo.isProtectionEnabled) return
+        val application = context.applicationContext
+        if (application !is SmishGuardApp) {
+            return
+        }
+        val settingsRepo = application.settingsRepository
+        if (!settingsRepo.isProtectionEnabled) {
+            return
+        }
 
-        val callRepo = app.callRepository
-        val smsRepo = app.smsRepository
+        val callRepo = application.callRepository
+        val smsRepo = application.smsRepository
 
         val pendingResult = goAsync()
 

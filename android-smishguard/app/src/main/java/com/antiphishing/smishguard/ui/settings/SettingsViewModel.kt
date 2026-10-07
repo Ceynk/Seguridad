@@ -70,13 +70,16 @@ class SettingsViewModel(
     ) {
         viewModelScope.launch {
             val error = smsRepository.addCustomRule(pattern, isRegex, description)
-            onResult?.invoke(error)
+            if (onResult != null) {
+                onResult(error)
+            }
         }
     }
 
     fun toggleCustomRule(rule: CustomRuleEntity) {
         viewModelScope.launch {
-            smsRepository.updateCustomRule(rule.copy(isEnabled = !rule.isEnabled))
+            val updated = rule.copy(isEnabled = !rule.isEnabled)
+            smsRepository.updateCustomRule(updated)
         }
     }
 
@@ -89,7 +92,10 @@ class SettingsViewModel(
     fun clearAllRecords() {
         viewModelScope.launch {
             smsRepository.clearAllRecords()
-            callRepository?.clearAllCallRecords()
+            val callRepo = callRepository
+            if (callRepo != null) {
+                callRepo.clearAllCallRecords()
+            }
         }
     }
 

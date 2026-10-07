@@ -7,6 +7,8 @@ import com.antiphishing.smishguard.data.local.entity.CallRecordEntity
 import com.antiphishing.smishguard.domain.model.CallAnalysisResult
 import com.antiphishing.smishguard.domain.model.ThreatFactor
 import kotlinx.coroutines.flow.Flow
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 class CallRepository(
     private val callDao: CallDao,
@@ -15,12 +17,25 @@ class CallRepository(
     private val ruleCache: RuleCache
 ) {
 
-    fun getAllCallRecords(): Flow<List<CallRecordEntity>> = callDao.getAllCallRecords()
-    fun getBlockedCalls(): Flow<List<CallRecordEntity>> = callDao.getBlockedCalls()
-    fun getTotalCallsCount(): Flow<Int> = callDao.getTotalCallsCount()
-    fun getBlockedCallsCount(): Flow<Int> = callDao.getBlockedCallsCount()
+    fun getAllCallRecords(): Flow<List<CallRecordEntity>> {
+        return callDao.getAllCallRecords()
+    }
 
-    suspend fun isNumberWhitelisted(number: String): Boolean = ruleCache.isWhitelisted(number)
+    fun getBlockedCalls(): Flow<List<CallRecordEntity>> {
+        return callDao.getBlockedCalls()
+    }
+
+    fun getTotalCallsCount(): Flow<Int> {
+        return callDao.getTotalCallsCount()
+    }
+
+    fun getBlockedCallsCount(): Flow<Int> {
+        return callDao.getBlockedCallsCount()
+    }
+
+    suspend fun isNumberWhitelisted(number: String): Boolean {
+        return ruleCache.isWhitelisted(number)
+    }
 
     suspend fun saveCallAnalysis(analysis: CallAnalysisResult): Long {
         val entity = CallRecordEntity(
@@ -46,37 +61,67 @@ class CallRepository(
     }
 
     suspend fun purgeExpiredRecords(retentionDays: Int = 30): Int {
-        val cutoff = System.currentTimeMillis() - (retentionDays.toLong() * 24L * 60L * 60L * 1000L)
+        val daysInMillis = retentionDays.toLong() * 24L * 60L * 60L * 1000L
+        val cutoff = System.currentTimeMillis() - daysInMillis
         return callDao.deleteOlderThan(cutoff)
     }
 
     private fun serializeFactors(factors: List<ThreatFactor>): String {
-        return factors.joinToString("|||") { factor ->
-            val cat = java.net.URLEncoder.encode(factor.category, "UTF-8")
-            val desc = java.net.URLEncoder.encode(factor.description, "UTF-8")
-            val snip = java.net.URLEncoder.encode(factor.matchedSnippet ?: "", "UTF-8")
-            "$cat:::$desc:::${factor.severityScore}:::$snip"
+        val items = mutableListOf<String>()
+        for (factor in factors) {
+            val cat = URLEncoder.encode(factor.category, "UTF-8")
+            val desc = URLEncoder.encode(factor.description, "UTF-8")
+            val snippet = if (factor.matchedSnippet != null) factor.matchedSnippet else ""
+            val snip = URLEncoder.encode(snippet, "UTF-8")
+            items.add("$cat:::$desc:::${factor.severityScore}:::$snip")
         }
+        return items.joinToString("|||")
     }
 
     fun deserializeFactors(raw: String): List<ThreatFactor> {
-        if (raw.isBlank()) return emptyList()
-        return raw.split("|||").mapNotNull { entry ->
+        if (raw.isBlank()) {
+            return emptyList()
+        }
+        val result = mutableListOf<ThreatFactor>()
+        val entries = raw.split("|||")
+        for (entry in entries) {
             val parts = entry.split(":::")
             if (parts.size >= 3) {
-                val cat = try { java.net.URLDecoder.decode(parts[0], "UTF-8") } catch (e: Exception) { parts[0] }
-                val desc = try { java.net.URLDecoder.decode(parts[1], "UTF-8") } catch (e: Exception) { parts[1] }
-                val score = parts[2].toIntOrNull() ?: 10
-                val snip = parts.getOrNull(3)?.let {
-                    try { java.net.URLDecoder.decode(it, "UTF-8") } catch (e: Exception) { it }
-                }?.takeIf { it.isNotBlank() }
-                ThreatFactor(
-                    category = cat,
-                    description = desc,
-                    severityScore = score,
-                    matchedSnippet = snip
-                )
-            } else null
+                var cat = parts[0]
+                try {
+                    cat = URLDecoder.decode(parts[0], "UTF-8")
+                } catch (e: Exception) {
+                    cat = parts[0]
+                }
+
+                var desc = parts[1]
+                try {
+                    desc = URLDecoder.decode(parts[1], "UTF-8")
+                } catch (e: Exception) {
+                    desc = parts[1]
+                }
+
+                val parsedScore = parts[2].toIntOrNull()
+                val score = if (parsedScore != null) parsedScore else 10
+
+                var snip: String? = null
+                if (parts.size > 3) {
+                    try {
+                        snip = URLDecoder.decode(parts[3], "UTF-8")
+                    } catch (e: Exception) {
+                        snip = parts[3]
+                    }
+                }
+
+                val cleanedSnip = if (snip != null && snip.isNotBlank()) {
+                    snip
+                } else {
+                    null
+                }
+
+                result.add(ThreatFactor(cat, desc, score, cleanedSnip))
+            }
         }
+        return result
     }
 }

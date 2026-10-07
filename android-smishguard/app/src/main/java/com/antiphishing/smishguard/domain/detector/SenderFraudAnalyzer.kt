@@ -12,22 +12,19 @@ object SenderFraudAnalyzer {
     )
 
     private val HIGH_RISK_PREFIXES = listOf(
-        "+234", // Nigeria
-        "+229", // Benín
-        "+225", // Costa de Marfil
-        "+212", // Marruecos
-        "+247", // Isla Ascensión
-        "+675", // Papúa Nueva Guinea
-        "+881", // Satelital
-        "+882", // Satelital
-        "+7",   // Rusia / Kazajistán
-        "+880"  // Bangladés
+        "+234",
+        "+229",
+        "+225",
+        "+212",
+        "+247",
+        "+675",
+        "+881",
+        "+882",
+        "+7",
+        "+880"
     )
 
-    // Expresión regular para números celulares estándar (Colombia: +57 3xx, España: +34 6xx/7xx, etc.)
     private val MOBILE_PHONE_REGEX = Regex("""^(?:\+?57)?3[0-9]{9}$|^(?:\+?34)?[67][0-9]{8}$""")
-
-    // Expresión regular para códigos cortos bancarios/empresariales legítimos (ej: 85454, 89000, etc.)
     private val SHORTCODE_REGEX = Regex("""^[0-9]{4,6}$""")
 
     fun analyzeSender(
@@ -40,12 +37,23 @@ object SenderFraudAnalyzer {
         val factors = mutableListOf<ThreatFactor>()
         val cleanSender = sender.trim().lowercase()
 
-        // 1. Remitente alfanumérico que imita marcas reconocidas
-        val isAlphanumeric = cleanSender.any { it.isLetter() }
-        val matchesKnownBrand = REPUTABLE_ALPHANUMERIC_SENDERS.any { cleanSender.contains(it) }
+        var isAlphanumeric = false
+        for (i in 0 until cleanSender.length) {
+            if (cleanSender[i].isLetter()) {
+                isAlphanumeric = true
+                break
+            }
+        }
+
+        var matchesKnownBrand = false
+        for (brand in REPUTABLE_ALPHANUMERIC_SENDERS) {
+            if (cleanSender.contains(brand)) {
+                matchesKnownBrand = true
+                break
+            }
+        }
 
         if (isAlphanumeric && matchesKnownBrand) {
-            // Solo se marca como suplantación si viene acompañado de URLs maliciosas o solicitudes sospechosas
             if (hasMaliciousUrl) {
                 factors.add(
                     ThreatFactor(
@@ -56,12 +64,10 @@ object SenderFraudAnalyzer {
                     )
                 )
             }
-            // Si no tiene URLs maliciosas y es un OTP legítimo, NO se penaliza (es el canal oficial)
         }
 
-        // 2. Número celular privado haciéndose pasar por entidad bancaria / oficial
-        // Si el remitente es un teléfono móvil particular pero en el cuerpo simula ser un banco o institución
-        if (MOBILE_PHONE_REGEX.matches(sender.replace("\\s+".toRegex(), "")) && mentionsFinancialEntityInBody && !isLegitimateOtpOrDefensive) {
+        val normalizedPhone = sender.replace("\\s+".toRegex(), "")
+        if (MOBILE_PHONE_REGEX.matches(normalizedPhone) && mentionsFinancialEntityInBody && !isLegitimateOtpOrDefensive) {
             factors.add(
                 ThreatFactor(
                     category = "Uso de Línea Celular Privada para Notificación Bancaria",
@@ -72,7 +78,6 @@ object SenderFraudAnalyzer {
             )
         }
 
-        // 3. Prefijos telefónicos internacionales de alto riesgo (fraude transfronterizo)
         for (prefix in HIGH_RISK_PREFIXES) {
             if (sender.startsWith(prefix)) {
                 factors.add(
@@ -87,8 +92,20 @@ object SenderFraudAnalyzer {
             }
         }
 
-        // 4. Identificador con anomalías estructurales
-        if (sender.count { it == '+' } > 1 || (sender.length in 1..3 && !sender.all { it.isDigit() })) {
+        var plusCount = 0
+        var allDigits = true
+        for (i in 0 until sender.length) {
+            val ch = sender[i]
+            if (ch == '+') {
+                plusCount++
+            }
+            if (!ch.isDigit()) {
+                allDigits = false
+            }
+        }
+
+        val isTooShortAndNonDigit = (sender.length in 1..3) && !allDigits
+        if (plusCount > 1 || isTooShortAndNonDigit) {
             factors.add(
                 ThreatFactor(
                     category = "Identificador de Remitente Anómalo",
@@ -102,9 +119,6 @@ object SenderFraudAnalyzer {
         return factors
     }
 
-    /**
-     * Retorna verdadero si el remitente parece ser un código corto empresarial (ej. 85454).
-     */
     fun isCertifiedShortcode(sender: String): Boolean {
         return SHORTCODE_REGEX.matches(sender.trim())
     }

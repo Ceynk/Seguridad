@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ShieldAlert, ArrowLeft, Flag, CheckCircle, Info, Download, AlertTriangle, ExternalLink } from "lucide-react";
+import { 
+  ShieldAlert, 
+  ArrowLeft, 
+  Flag, 
+  CheckCircle, 
+  Info, 
+  Download, 
+  AlertTriangle, 
+  Lock
+} from "lucide-react";
 import { exportarInformeMarkdown } from "../../utils/cripto-forense";
 import { FichaForenseIncidente, TecnicaMitreAttack } from "../../types/analisis";
 import "./bloqueado.css";
@@ -104,21 +113,8 @@ export const ComponenteBloqueado: React.FC = () => {
           tactica: "Initial Access",
           enlace: "https://attack.mitre.org/techniques/T1566/002/",
         },
-        {
-          id: "T1036.007",
-          nombre: "Masquerading: Homoglyph Attack",
-          tactica: "Defense Evasion",
-          enlace: "https://attack.mitre.org/techniques/T1036/007/",
-        },
       ],
-      vectoresIngenieriaSocial: [
-        {
-          principioCoercion: "AUTORIDAD_INSTITUCIONAL",
-          titulo: "Suplantación de Entidad",
-          descripcion: "Intento de engaño aprovechando la confianza en marcas establecidas.",
-          terminosIdentificados: ["banco", "portal", "seguridad"],
-        },
-      ],
+      vectoresIngenieriaSocial: [],
       reglasDetonadas: motivos.map((m) => ({
         nombre: m.nombre,
         severidad: "CRITICA",
@@ -132,7 +128,7 @@ export const ComponenteBloqueado: React.FC = () => {
         ],
       })),
       resumenTecnico: `El artefacto '${nombreHost}' fue bloqueado preventivamente por coincidencia con firmas de fraude.`,
-      recomendacionRespuesta: `1. Aislar sesión.\n2. Notificar a CSIRT.\n3. Aplicar regla perimetral de bloqueo en DNS.`,
+      recomendacionRespuesta: `1. Aislar sesión.\n2. Notificar a CSIRT.`,
     };
 
     const markdown = exportarInformeMarkdown(fichaSimulada);
@@ -146,204 +142,158 @@ export const ComponenteBloqueado: React.FC = () => {
   };
 
   return (
-    <div className="contenedor-bloqueo">
-      <header className="franja-alerta">
-        <ShieldAlert className="icono-alerta-grande" size={44} />
-        <div className="titulos-alerta">
-          <h1>Sitio Bloqueado por Seguridad</h1>
-          <p>Se detectaron señales compatibles con suplantación de identidad o fraude.</p>
-        </div>
-      </header>
-
-      <main className="cuerpo-bloqueo">
-        <div className="seccion-dato">
-          <span className="etiqueta-dato">Dirección Web Analizada</span>
-          <div className="caja-url">{urlBloqueada}</div>
-        </div>
-
-        <div className="fila-metricas-riesgo">
-          <div className="tarjeta-metrica">
-            <span className="etiqueta-dato">Nivel de Riesgo</span>
-            <div className="valor-metrica valor-rojo">MALICIOSO</div>
+    <div className="block-page-container">
+      <div className="block-card">
+        
+        <header className="block-header">
+          <div className="block-icon-wrapper">
+            <ShieldAlert size={48} className="block-icon" />
           </div>
-          <div className="tarjeta-metrica">
-            <span className="etiqueta-dato">Índice Calculado</span>
-            <div className="valor-metrica valor-rojo">{puntuacionRiesgo} / 100</div>
-          </div>
-          <div className="tarjeta-metrica">
-            <span className="etiqueta-dato">MITRE ATT&CK</span>
-            <div className="valor-metrica" style={{ fontSize: "14px", color: "#60a5fa", marginTop: "4px" }}>
-              T1566.002
-            </div>
-          </div>
-        </div>
+          <h1 className="block-title">Página bloqueada por seguridad</h1>
+          <p className="block-subtitle">PhishGuard ha impedido el acceso a este sitio debido a indicadores de riesgo críticos.</p>
+        </header>
 
-        <div className="seccion-dato">
-          <span className="etiqueta-dato">Motivos Técnicos de la Detección</span>
-          <div className="lista-motivos">
-            {motivos.map((motivo, indice) => (
-              <div key={indice} className="item-motivo">
-                <div className="titulo-motivo">
-                  <span>{motivo.nombre}</span>
-                  <span style={{ color: "#ef4444", fontSize: "11px" }}>
-                    +{motivo.puntuacion} pts ({motivo.severidad})
-                  </span>
-                </div>
-                <p className="descripcion-motivo">{motivo.descripcion}</p>
+        <main className="block-content">
+          <div className="info-section">
+            <div className="info-group">
+              <span className="info-label">Dominio / URL</span>
+              <div className="info-value url-box">
+                <Lock size={14} />
+                <span className="truncate">{urlBloqueada}</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="aviso-educativo">
-          <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-            <Info size={18} style={{ flexShrink: 0, marginTop: "2px" }} />
-            <div>
-              <strong>Motivo de bloqueo preventivo:</strong>
-              <br />
-              El sitio utiliza un nombre o estructura engañosa similar a entidades conocidas (bancos, pasarelas de pago o portales públicos) para intentar capturar contraseñas o datos financieros.
             </div>
           </div>
-        </div>
 
-        {reporteEnviado && (
-          <div
-            style={{
-              backgroundColor: "rgba(16, 185, 129, 0.15)",
-              border: "1px solid #10b981",
-              borderRadius: "8px",
-              padding: "12px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              color: "#34d399",
-              fontSize: "12px",
-            }}
-          >
-            <CheckCircle size={16} />
-            El reporte ha sido registrado para revisión.
-          </div>
-        )}
-
-        {mostrarReporte && !reporteEnviado && (
-          <form onSubmit={enviarReporteFalsoPositivo} className="formulario-reporte">
-            <span className="etiqueta-dato">Reportar Falso Positivo</span>
-            <p style={{ fontSize: "12px", color: "#9ca3af" }}>
-              Si confirmas que {nombreHost} es un sitio legítimo, indícanos el motivo:
-            </p>
-            <textarea
-              className="textarea-reporte"
-              rows={3}
-              placeholder="Explica brevemente por qué consideras que este sitio es seguro..."
-              value={comentarioReporte}
-              onChange={(e) => setComentarioReporte(e.target.value)}
-              required
-            />
-            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-              <button
-                type="button"
-                className="boton-enlace"
-                onClick={() => setMostrarReporte(false)}
-              >
-                Cancelar
-              </button>
-              <button type="submit" className="boton-principal">
-                Enviar Reporte
-              </button>
+          <div className="metrics-grid">
+            <div className="metric-box danger">
+              <span className="metric-label">Nivel de Peligro</span>
+              <span className="metric-value">MALICIOSO</span>
             </div>
-          </form>
-        )}
+            <div className="metric-box warning">
+              <span className="metric-label">Riesgo Calculado</span>
+              <span className="metric-value">{puntuacionRiesgo} / 100</span>
+            </div>
+          </div>
 
-        <footer className="acciones-bloqueo">
-          <button className="boton-principal" onClick={regresarASeguridad}>
-            <ArrowLeft size={16} />
-            Volver a un Sitio Seguro
-          </button>
+          <div className="info-section">
+            <span className="info-label">Motivos principales del bloqueo</span>
+            <div className="reasons-list">
+              {motivos.map((motivo, indice) => (
+                <div key={indice} className="reason-item">
+                  <div className="reason-header">
+                    <span className="reason-name">{motivo.nombre}</span>
+                    <span className="reason-score">+{motivo.puntuacion}</span>
+                  </div>
+                  <p className="reason-desc">{motivo.descripcion}</p>
+                </div>
+              ))}
+            </div>
+          </div>
 
-          <div style={{ display: "flex", gap: "8px" }}>
-            <button
-              className="boton-principal"
-              style={{ backgroundColor: "#1e293b", border: "1px solid #374151" }}
-              onClick={descargarReporteForense}
-              title="Descargar Ficha Técnica de Incidente"
-            >
-              <Download size={14} /> Ficha Forense (.md)
+          <div className="educational-banner">
+            <Info size={20} className="edu-icon" />
+            <div className="edu-text">
+              <strong>Prevención de fraude</strong>
+              <p>Este sitio utiliza una estructura o nombre engañoso para intentar capturar contraseñas o datos financieros. Te recomendamos no continuar.</p>
+            </div>
+          </div>
+
+          {reporteEnviado && (
+            <div className="success-banner">
+              <CheckCircle size={18} />
+              <span>Reporte de falso positivo enviado correctamente.</span>
+            </div>
+          )}
+
+          {mostrarReporte && !reporteEnviado && (
+            <form onSubmit={enviarReporteFalsoPositivo} className="report-form">
+              <span className="form-label">Reportar como sitio seguro</span>
+              <textarea
+                className="form-textarea"
+                rows={3}
+                placeholder="¿Por qué consideras que este sitio es legítimo?"
+                value={comentarioReporte}
+                onChange={(e) => setComentarioReporte(e.target.value)}
+                required
+              />
+              <div className="form-actions">
+                <button type="button" className="btn btn-text" onClick={() => setMostrarReporte(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-secondary">Enviar Reporte</button>
+              </div>
+            </form>
+          )}
+
+        </main>
+
+        <footer className="block-footer">
+          <div className="primary-actions">
+            <button className="btn btn-primary btn-large" onClick={regresarASeguridad}>
+              <ArrowLeft size={18} />
+              Regresar a un sitio seguro
+            </button>
+          </div>
+          
+          <div className="secondary-actions">
+            <button className="btn btn-outline" onClick={descargarReporteForense}>
+              <Download size={14} /> Ficha Forense
             </button>
 
             {!mostrarReporte && !reporteEnviado && (
-              <button
-                className="boton-enlace"
-                onClick={() => setMostrarReporte(true)}
-              >
-                <Flag size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: "4px" }} />
-                Reportar Falso Positivo
+              <button className="btn btn-text" onClick={() => setMostrarReporte(true)}>
+                <Flag size={14} /> Reportar falso positivo
               </button>
             )}
           </div>
+          
+          <div className="danger-zone">
+            <button 
+              className="btn-danger-link" 
+              onClick={() => setMostrarModalConsentimiento(true)}
+            >
+              Deseo continuar bajo mi propia responsabilidad
+            </button>
+          </div>
         </footer>
-
-        <div className="zona-falso-positivo-opciones">
-          <button
-            type="button"
-            className="boton-avanzar-falso-positivo"
-            onClick={() => setMostrarModalConsentimiento(true)}
-          >
-            <ExternalLink size={13} />
-            Continuar al sitio web (si consideras que es un falso positivo)
-          </button>
-        </div>
-      </main>
+      </div>
 
       {mostrarModalConsentimiento && (
-        <div className="modal-superpuesto" role="dialog" aria-modal="true" aria-labelledby="titulo-consentimiento">
-          <div className="modal-consentimiento">
-            <div className="cabecera-modal-alerta">
-              <AlertTriangle size={26} color="#f59e0b" />
-              <h2 id="titulo-consentimiento">Confirmación de Acceso: Falso Positivo</h2>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <AlertTriangle size={24} className="text-warning" />
+              <h2>Confirmación de acceso</h2>
             </div>
-
-            <div className="cuerpo-modal-alerta">
-              <p>
-                Este sitio web (<strong>{nombreHost}</strong>) fue bloqueado preventivamente porque presenta indicadores de alto riesgo compatibles con <strong>suplantación de dominio o falsificación mediante letras raras</strong>.
-              </p>
-
-              <div className="caja-advertencia-critica">
-                <strong>Advertencia de Seguridad:</strong>
-                <br />
-                Si consideras que la detección es un falso positivo y decides continuar, hazlo bajo tu propio criterio y responsabilidad.
-                <strong> Nunca ingreses contraseñas, números de tarjeta ni datos bancarios</strong> si tienes alguna duda sobre la legitimidad del sitio.
+            
+            <div className="modal-body">
+              <p>Estás a punto de acceder a <strong>{nombreHost}</strong>, un sitio clasificado como peligroso.</p>
+              
+              <div className="warning-box">
+                <strong>Advertencia:</strong> Si continúas, podrías exponer tus datos personales o financieros. No ingreses contraseñas ni números de tarjeta.
               </div>
 
-              <label className="fila-consentimiento-checkbox">
-                <input
-                  type="checkbox"
+              <label className="consent-checkbox">
+                <input 
+                  type="checkbox" 
                   checked={consentimientoAceptado}
                   onChange={(e) => setConsentimientoAceptado(e.target.checked)}
                 />
-                <span>
-                  Declaro que comprendo los riesgos de fraude y suplantación de identidad, y doy mi consentimiento para acceder a este sitio bajo mi propia responsabilidad.
-                </span>
+                <span>Comprendo los riesgos y deseo acceder bajo mi propia responsabilidad.</span>
               </label>
             </div>
 
-            <div className="pie-modal-botones">
-              <button
-                type="button"
-                className="boton-seguro-cancelar"
-                onClick={() => {
-                  setMostrarModalConsentimiento(false);
-                  setConsentimientoAceptado(false);
-                }}
-              >
-                Permanecer Protegido
+            <div className="modal-footer">
+              <button className="btn btn-primary" onClick={() => {
+                setMostrarModalConsentimiento(false);
+                setConsentimientoAceptado(false);
+              }}>
+                Mantenerme seguro
               </button>
-              <button
-                type="button"
-                className="boton-peligro-continuar"
+              <button 
+                className="btn btn-danger" 
                 disabled={!consentimientoAceptado || redireccionando}
                 onClick={avanzarBajoConsentimiento}
               >
-                {redireccionando ? "Accediendo..." : "Continuar al Sitio"}
+                {redireccionando ? "Accediendo..." : "Continuar de todos modos"}
               </button>
             </div>
           </div>

@@ -45,7 +45,7 @@
 24-->[androidx.core:core:1.13.1] C:\Users\Alejandro\.gradle\caches\transforms-4\cc20b05b9efda801471712c715258968\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
 25
 26    <application
-26-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:14:5-120:19
+26-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:14:5-116:19
 27        android:name="com.antiphishing.smishguard.SmishGuardApp"
 27-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:15:9-38
 28        android:allowBackup="false"
@@ -71,7 +71,7 @@
 39        android:usesCleartextTraffic="false" >
 39-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:24:9-45
 40        <activity
-40-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:27:9-55:20
+40-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:27:9-54:20
 41            android:name="com.antiphishing.smishguard.ui.MainActivity"
 41-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:28:13-44
 42            android:exported="true"
@@ -92,260 +92,254 @@
 49-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:35:17-77
 49-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:35:27-74
 50            </intent-filter>
-51
-52            <!-- Soporte para recibir texto compartido desde otras apps (WhatsApp, Mensajería, etc.) -->
-53            <intent-filter>
-53-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:39:13-43:29
-54                <action android:name="android.intent.action.SEND" />
-54-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:40:17-69
-54-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:40:25-66
+51            <intent-filter>
+51-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:38:13-42:29
+52                <action android:name="android.intent.action.SEND" />
+52-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:39:17-69
+52-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:39:25-66
+53
+54                <category android:name="android.intent.category.DEFAULT" />
+54-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:40:17-76
+54-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:40:27-73
 55
-56                <category android:name="android.intent.category.DEFAULT" />
-56-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-76
-56-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:27-73
-57
-58                <data android:mimeType="text/plain" />
-58-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:17-55
-58-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:23-52
-59            </intent-filter>
-60            <intent-filter>
-60-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:45:13-54:29
-61                <action android:name="android.intent.action.SEND" />
-61-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:40:17-69
-61-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:40:25-66
-62                <action android:name="android.intent.action.SENDTO" />
-62-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:47:17-71
-62-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:47:25-68
-63
-64                <category android:name="android.intent.category.DEFAULT" />
-64-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-76
-64-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:27-73
-65                <category android:name="android.intent.category.BROWSABLE" />
-65-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:49:17-78
-65-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:49:27-75
-66
-67                <data android:scheme="sms" />
-67-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:17-55
-67-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:50:23-43
-68                <data android:scheme="smsto" />
-68-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:17-55
-68-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:50:23-43
-69                <data android:scheme="mms" />
-69-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:17-55
-69-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:50:23-43
-70                <data android:scheme="mmsto" />
-70-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:17-55
-70-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:50:23-43
-71            </intent-filter>
-72        </activity>
-73
-74        <!-- Receptor de SMS en modo estándar (SMS_RECEIVED) y modo predeterminado (SMS_DELIVER) -->
-75        <receiver
-75-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:58:9-65:20
-76            android:name="com.antiphishing.smishguard.receiver.SmsBroadcastReceiver"
-76-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:59:13-58
-77            android:exported="true" >
-77-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:60:13-36
-78            <intent-filter android:priority="999" >
-78-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:61:13-64:29
-78-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:61:28-50
-79                <action android:name="android.provider.Telephony.SMS_DELIVER" />
-79-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:62:17-81
-79-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:62:25-78
-80                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
-80-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:63:17-82
-80-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:63:25-79
-81            </intent-filter>
-82        </receiver>
-83        <receiver
-83-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:67:9-75:20
-84            android:name="com.antiphishing.smishguard.receiver.MmsBroadcastReceiver"
-84-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:68:13-58
-85            android:exported="true"
-85-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:69:13-36
-86            android:permission="android.permission.BROADCAST_WAP_PUSH" >
-86-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:70:13-71
-87            <intent-filter>
-87-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:71:13-74:29
-88                <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
-88-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:72:17-86
-88-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:72:25-83
-89
-90                <data android:mimeType="application/vnd.wap.mms-message" />
-90-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:17-55
-90-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:23-52
-91            </intent-filter>
-92        </receiver>
-93
-94        <service
-94-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:77:9-89:19
-95            android:name="com.antiphishing.smishguard.receiver.HeadlessSmsSendService"
-95-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:78:13-60
-96            android:exported="true"
-96-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:79:13-36
-97            android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE" >
-97-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:80:13-77
-98            <intent-filter>
-98-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:81:13-88:29
-99                <action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
-99-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:82:17-84
-99-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:82:25-81
-100
-101                <category android:name="android.intent.category.DEFAULT" />
-101-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-76
-101-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:27-73
-102
-103                <data android:scheme="sms" />
-103-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:17-55
-103-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:50:23-43
-104                <data android:scheme="smsto" />
-104-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:17-55
-104-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:50:23-43
-105                <data android:scheme="mms" />
-105-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:17-55
-105-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:50:23-43
-106                <data android:scheme="mmsto" />
-106-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:42:17-55
-106-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:50:23-43
-107            </intent-filter>
-108        </service>
-109        <service
-109-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:91:9-99:19
-110            android:name="com.antiphishing.smishguard.service.NotificationFilterService"
-110-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:92:13-62
-111            android:exported="true"
-111-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:93:13-36
-112            android:label="@string/notification_service_label"
-112-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:94:13-63
-113            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" >
-113-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:95:13-87
-114            <intent-filter>
-114-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:96:13-98:29
-115                <action android:name="android.service.notification.NotificationListenerService" />
-115-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:97:17-99
-115-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:97:25-96
-116            </intent-filter>
-117        </service>
-118
-119        <!-- Servicio del sistema para filtrado e intercepción de llamadas maliciosas (Android 10+) -->
-120        <service
-120-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:102:9-109:19
-121            android:name="com.antiphishing.smishguard.service.CallScreeningServiceImpl"
-121-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:103:13-61
-122            android:exported="true"
-122-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:105:13-36
-123            android:permission="android.permission.BIND_SCREENING_SERVICE" >
-123-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:104:13-75
-124            <intent-filter>
-124-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:106:13-108:29
-125                <action android:name="android.telecom.CallScreeningService" />
-125-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:107:17-79
-125-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:107:25-76
-126            </intent-filter>
-127        </service>
-128
-129        <!-- Receptor de llamadas para versiones anteriores o registro de estado de telefonía -->
-130        <receiver
-130-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:112:9-118:20
-131            android:name="com.antiphishing.smishguard.receiver.CallStateReceiver"
-131-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:113:13-55
-132            android:exported="true" >
-132-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:114:13-36
-133            <intent-filter>
-133-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:115:13-117:29
-134                <action android:name="android.intent.action.PHONE_STATE" />
-134-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:116:17-76
-134-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:116:25-73
-135            </intent-filter>
-136        </receiver>
-137
-138        <provider
-138-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
-139            android:name="androidx.startup.InitializationProvider"
-139-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
-140            android:authorities="com.antiphishing.smishguard.androidx-startup"
-140-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
-141            android:exported="false" >
-141-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
+56                <data android:mimeType="text/plain" />
+56-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-55
+56-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:23-52
+57            </intent-filter>
+58            <intent-filter>
+58-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:44:13-53:29
+59                <action android:name="android.intent.action.SEND" />
+59-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:39:17-69
+59-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:39:25-66
+60                <action android:name="android.intent.action.SENDTO" />
+60-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:46:17-71
+60-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:46:25-68
+61
+62                <category android:name="android.intent.category.DEFAULT" />
+62-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:40:17-76
+62-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:40:27-73
+63                <category android:name="android.intent.category.BROWSABLE" />
+63-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:48:17-78
+63-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:48:27-75
+64
+65                <data android:scheme="sms" />
+65-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-55
+65-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:49:23-43
+66                <data android:scheme="smsto" />
+66-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-55
+66-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:49:23-43
+67                <data android:scheme="mms" />
+67-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-55
+67-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:49:23-43
+68                <data android:scheme="mmsto" />
+68-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-55
+68-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:49:23-43
+69            </intent-filter>
+70        </activity>
+71
+72        <receiver
+72-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:56:9-63:20
+73            android:name="com.antiphishing.smishguard.receiver.SmsBroadcastReceiver"
+73-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:57:13-58
+74            android:exported="true" >
+74-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:58:13-36
+75            <intent-filter android:priority="999" >
+75-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:59:13-62:29
+75-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:59:28-50
+76                <action android:name="android.provider.Telephony.SMS_DELIVER" />
+76-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:60:17-81
+76-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:60:25-78
+77                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+77-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:61:17-82
+77-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:61:25-79
+78            </intent-filter>
+79        </receiver>
+80        <receiver
+80-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:65:9-73:20
+81            android:name="com.antiphishing.smishguard.receiver.MmsBroadcastReceiver"
+81-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:66:13-58
+82            android:exported="true"
+82-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:67:13-36
+83            android:permission="android.permission.BROADCAST_WAP_PUSH" >
+83-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:68:13-71
+84            <intent-filter>
+84-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:69:13-72:29
+85                <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
+85-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:70:17-86
+85-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:70:25-83
+86
+87                <data android:mimeType="application/vnd.wap.mms-message" />
+87-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-55
+87-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:23-52
+88            </intent-filter>
+89        </receiver>
+90
+91        <service
+91-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:75:9-87:19
+92            android:name="com.antiphishing.smishguard.receiver.HeadlessSmsSendService"
+92-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:76:13-60
+93            android:exported="true"
+93-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:77:13-36
+94            android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE" >
+94-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:78:13-77
+95            <intent-filter>
+95-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:79:13-86:29
+96                <action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
+96-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:80:17-84
+96-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:80:25-81
+97
+98                <category android:name="android.intent.category.DEFAULT" />
+98-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:40:17-76
+98-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:40:27-73
+99
+100                <data android:scheme="sms" />
+100-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-55
+100-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:49:23-43
+101                <data android:scheme="smsto" />
+101-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-55
+101-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:49:23-43
+102                <data android:scheme="mms" />
+102-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-55
+102-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:49:23-43
+103                <data android:scheme="mmsto" />
+103-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:41:17-55
+103-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:49:23-43
+104            </intent-filter>
+105        </service>
+106        <service
+106-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:89:9-97:19
+107            android:name="com.antiphishing.smishguard.service.NotificationFilterService"
+107-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:90:13-62
+108            android:exported="true"
+108-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:91:13-36
+109            android:label="@string/notification_service_label"
+109-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:92:13-63
+110            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" >
+110-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:93:13-87
+111            <intent-filter>
+111-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:94:13-96:29
+112                <action android:name="android.service.notification.NotificationListenerService" />
+112-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:95:17-99
+112-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:95:25-96
+113            </intent-filter>
+114        </service>
+115        <service
+115-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:99:9-106:19
+116            android:name="com.antiphishing.smishguard.service.CallScreeningServiceImpl"
+116-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:100:13-61
+117            android:exported="true"
+117-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:102:13-36
+118            android:permission="android.permission.BIND_SCREENING_SERVICE" >
+118-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:101:13-75
+119            <intent-filter>
+119-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:103:13-105:29
+120                <action android:name="android.telecom.CallScreeningService" />
+120-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:104:17-79
+120-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:104:25-76
+121            </intent-filter>
+122        </service>
+123
+124        <receiver
+124-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:108:9-114:20
+125            android:name="com.antiphishing.smishguard.receiver.CallStateReceiver"
+125-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:109:13-55
+126            android:exported="true" >
+126-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:110:13-36
+127            <intent-filter>
+127-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:111:13-113:29
+128                <action android:name="android.intent.action.PHONE_STATE" />
+128-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:112:17-76
+128-->D:\Seguridad\android-smishguard\app\src\main\AndroidManifest.xml:112:25-73
+129            </intent-filter>
+130        </receiver>
+131
+132        <provider
+132-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
+133            android:name="androidx.startup.InitializationProvider"
+133-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
+134            android:authorities="com.antiphishing.smishguard.androidx-startup"
+134-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
+135            android:exported="false" >
+135-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
+136            <meta-data
+136-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
+137                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+137-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
+138                android:value="androidx.startup" />
+138-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
+139            <meta-data
+139-->[androidx.lifecycle:lifecycle-process:2.8.0] C:\Users\Alejandro\.gradle\caches\transforms-4\44c8bfbf6c3784fa195802bae75e1085\transformed\lifecycle-process-2.8.0\AndroidManifest.xml:29:13-31:52
+140                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+140-->[androidx.lifecycle:lifecycle-process:2.8.0] C:\Users\Alejandro\.gradle\caches\transforms-4\44c8bfbf6c3784fa195802bae75e1085\transformed\lifecycle-process-2.8.0\AndroidManifest.xml:30:17-78
+141                android:value="androidx.startup" />
+141-->[androidx.lifecycle:lifecycle-process:2.8.0] C:\Users\Alejandro\.gradle\caches\transforms-4\44c8bfbf6c3784fa195802bae75e1085\transformed\lifecycle-process-2.8.0\AndroidManifest.xml:31:17-49
 142            <meta-data
-142-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
-143                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-143-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
+142-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+143                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+143-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
 144                android:value="androidx.startup" />
-144-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Alejandro\.gradle\caches\transforms-4\93543b9b4b4b00fd2ff87dd1a6e6ac0d\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
-145            <meta-data
-145-->[androidx.lifecycle:lifecycle-process:2.8.0] C:\Users\Alejandro\.gradle\caches\transforms-4\44c8bfbf6c3784fa195802bae75e1085\transformed\lifecycle-process-2.8.0\AndroidManifest.xml:29:13-31:52
-146                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-146-->[androidx.lifecycle:lifecycle-process:2.8.0] C:\Users\Alejandro\.gradle\caches\transforms-4\44c8bfbf6c3784fa195802bae75e1085\transformed\lifecycle-process-2.8.0\AndroidManifest.xml:30:17-78
-147                android:value="androidx.startup" />
-147-->[androidx.lifecycle:lifecycle-process:2.8.0] C:\Users\Alejandro\.gradle\caches\transforms-4\44c8bfbf6c3784fa195802bae75e1085\transformed\lifecycle-process-2.8.0\AndroidManifest.xml:31:17-49
-148            <meta-data
-148-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
-149                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-149-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
-150                android:value="androidx.startup" />
-150-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
-151        </provider>
-152
-153        <activity
-153-->[androidx.compose.ui:ui-test-manifest:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\6a0ab0fcabedcd92d9bb548bf6a94afe\transformed\ui-test-manifest-1.6.7\AndroidManifest.xml:23:9-25:39
-154            android:name="androidx.activity.ComponentActivity"
-154-->[androidx.compose.ui:ui-test-manifest:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\6a0ab0fcabedcd92d9bb548bf6a94afe\transformed\ui-test-manifest-1.6.7\AndroidManifest.xml:24:13-63
-155            android:exported="true" />
-155-->[androidx.compose.ui:ui-test-manifest:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\6a0ab0fcabedcd92d9bb548bf6a94afe\transformed\ui-test-manifest-1.6.7\AndroidManifest.xml:25:13-36
-156        <activity
-156-->[androidx.compose.ui:ui-tooling-android:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\ffadee4d44a1b230f329829514f24135\transformed\ui-tooling-release\AndroidManifest.xml:23:9-25:39
-157            android:name="androidx.compose.ui.tooling.PreviewActivity"
-157-->[androidx.compose.ui:ui-tooling-android:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\ffadee4d44a1b230f329829514f24135\transformed\ui-tooling-release\AndroidManifest.xml:24:13-71
-158            android:exported="true" />
-158-->[androidx.compose.ui:ui-tooling-android:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\ffadee4d44a1b230f329829514f24135\transformed\ui-tooling-release\AndroidManifest.xml:25:13-36
-159
-160        <service
-160-->[androidx.room:room-runtime:2.6.1] C:\Users\Alejandro\.gradle\caches\transforms-4\75921dae8ccae60b95bc818ceeea1687\transformed\room-runtime-2.6.1\AndroidManifest.xml:24:9-28:63
-161            android:name="androidx.room.MultiInstanceInvalidationService"
-161-->[androidx.room:room-runtime:2.6.1] C:\Users\Alejandro\.gradle\caches\transforms-4\75921dae8ccae60b95bc818ceeea1687\transformed\room-runtime-2.6.1\AndroidManifest.xml:25:13-74
-162            android:directBootAware="true"
-162-->[androidx.room:room-runtime:2.6.1] C:\Users\Alejandro\.gradle\caches\transforms-4\75921dae8ccae60b95bc818ceeea1687\transformed\room-runtime-2.6.1\AndroidManifest.xml:26:13-43
-163            android:exported="false" />
-163-->[androidx.room:room-runtime:2.6.1] C:\Users\Alejandro\.gradle\caches\transforms-4\75921dae8ccae60b95bc818ceeea1687\transformed\room-runtime-2.6.1\AndroidManifest.xml:27:13-37
-164
-165        <receiver
-165-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
-166            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-166-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
-167            android:directBootAware="false"
-167-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
-168            android:enabled="true"
-168-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
-169            android:exported="true"
-169-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
-170            android:permission="android.permission.DUMP" >
-170-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+144-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+145        </provider>
+146
+147        <activity
+147-->[androidx.compose.ui:ui-test-manifest:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\6a0ab0fcabedcd92d9bb548bf6a94afe\transformed\ui-test-manifest-1.6.7\AndroidManifest.xml:23:9-25:39
+148            android:name="androidx.activity.ComponentActivity"
+148-->[androidx.compose.ui:ui-test-manifest:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\6a0ab0fcabedcd92d9bb548bf6a94afe\transformed\ui-test-manifest-1.6.7\AndroidManifest.xml:24:13-63
+149            android:exported="true" />
+149-->[androidx.compose.ui:ui-test-manifest:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\6a0ab0fcabedcd92d9bb548bf6a94afe\transformed\ui-test-manifest-1.6.7\AndroidManifest.xml:25:13-36
+150        <activity
+150-->[androidx.compose.ui:ui-tooling-android:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\ffadee4d44a1b230f329829514f24135\transformed\ui-tooling-release\AndroidManifest.xml:23:9-25:39
+151            android:name="androidx.compose.ui.tooling.PreviewActivity"
+151-->[androidx.compose.ui:ui-tooling-android:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\ffadee4d44a1b230f329829514f24135\transformed\ui-tooling-release\AndroidManifest.xml:24:13-71
+152            android:exported="true" />
+152-->[androidx.compose.ui:ui-tooling-android:1.6.7] C:\Users\Alejandro\.gradle\caches\transforms-4\ffadee4d44a1b230f329829514f24135\transformed\ui-tooling-release\AndroidManifest.xml:25:13-36
+153
+154        <service
+154-->[androidx.room:room-runtime:2.6.1] C:\Users\Alejandro\.gradle\caches\transforms-4\75921dae8ccae60b95bc818ceeea1687\transformed\room-runtime-2.6.1\AndroidManifest.xml:24:9-28:63
+155            android:name="androidx.room.MultiInstanceInvalidationService"
+155-->[androidx.room:room-runtime:2.6.1] C:\Users\Alejandro\.gradle\caches\transforms-4\75921dae8ccae60b95bc818ceeea1687\transformed\room-runtime-2.6.1\AndroidManifest.xml:25:13-74
+156            android:directBootAware="true"
+156-->[androidx.room:room-runtime:2.6.1] C:\Users\Alejandro\.gradle\caches\transforms-4\75921dae8ccae60b95bc818ceeea1687\transformed\room-runtime-2.6.1\AndroidManifest.xml:26:13-43
+157            android:exported="false" />
+157-->[androidx.room:room-runtime:2.6.1] C:\Users\Alejandro\.gradle\caches\transforms-4\75921dae8ccae60b95bc818ceeea1687\transformed\room-runtime-2.6.1\AndroidManifest.xml:27:13-37
+158
+159        <receiver
+159-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+160            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+160-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+161            android:directBootAware="false"
+161-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+162            android:enabled="true"
+162-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+163            android:exported="true"
+163-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+164            android:permission="android.permission.DUMP" >
+164-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+165            <intent-filter>
+165-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+166                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+166-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+166-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+167            </intent-filter>
+168            <intent-filter>
+168-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+169                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+169-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+169-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+170            </intent-filter>
 171            <intent-filter>
-171-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
-172                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-172-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
-172-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+171-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+172                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+172-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+172-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
 173            </intent-filter>
 174            <intent-filter>
-174-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
-175                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-175-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
-175-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+174-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+175                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+175-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+175-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
 176            </intent-filter>
-177            <intent-filter>
-177-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
-178                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-178-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
-178-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
-179            </intent-filter>
-180            <intent-filter>
-180-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
-181                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-181-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
-181-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\Alejandro\.gradle\caches\transforms-4\dc1e98290993768415b86e059d8e3386\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
-182            </intent-filter>
-183        </receiver>
-184    </application>
-185
-186</manifest>
+177        </receiver>
+178    </application>
+179
+180</manifest>

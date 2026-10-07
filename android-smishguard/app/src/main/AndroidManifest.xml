@@ -35,7 +35,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Soporte para recibir texto compartido desde otras apps (WhatsApp, Mensajería, etc.) -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -54,7 +53,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Receptor de SMS en modo estándar (SMS_RECEIVED) y modo predeterminado (SMS_DELIVER) -->
         <receiver
             android:name=".receiver.SmsBroadcastReceiver"
             android:exported="true">
@@ -98,7 +96,6 @@
             </intent-filter>
         </service>
 
-        <!-- Servicio del sistema para filtrado e intercepción de llamadas maliciosas (Android 10+) -->
         <service
             android:name=".service.CallScreeningServiceImpl"
             android:permission="android.permission.BIND_SCREENING_SERVICE"
@@ -108,7 +105,6 @@
             </intent-filter>
         </service>
 
-        <!-- Receptor de llamadas para versiones anteriores o registro de estado de telefonía -->
         <receiver
             android:name=".receiver.CallStateReceiver"
             android:exported="true">

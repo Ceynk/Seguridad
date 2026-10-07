@@ -12,7 +12,6 @@ object PatternRuleEngine {
         val severity: Int
     )
 
-    // Patrones de ataque malicioso refinados (sin falsos positivos de frases de advertencia legítimas)
     private val ATTACK_RULES = listOf(
         RuleDefinition(
             category = "Fraude Bancario y Financiero",
@@ -120,12 +119,10 @@ object PatternRuleEngine {
         )
     )
 
-    // Patrón de advertencias defensivas legítimas emitidas por bancos y servicios en OTPs
     private val LEGITIMATE_DEFENSIVE_PATTERN = Pattern.compile(
         """(?i)\b(?:no\s+(?:lo\s+)?comparta\s+(?:con\s+nadie)?|nunca\s+(?:le\s+)?pedir[aá]\s+este\s+c[oó]digo|por\s+su\s+seguridad\s+no\s+lo\s+entregue|v[aá]lid[oa]\s+por\s+\d+\s+minutos?|c[oó]digo\s+de\s+un\s+solo\s+uso)\b"""
     )
 
-    // Patrón para identificar códigos OTP informativos legítimos
     private val OTP_INFORMATIVE_PATTERN = Pattern.compile(
         """(?i)\b(?:es\s+tu\s+c[oó]digo\s+de\s+verificaci[oó]n|su\s+clave\s+din[aá]mica\s+es|su\s+c[oó]digo\s+es|c[oó]digo\s+de\s+seguridad:\s*\d{4,8}|G-\d{6}|[0-9]{3}-[0-9]{3}\s+es\s+tu\s+c[oó]digo)\b"""
     )
@@ -151,22 +148,15 @@ object PatternRuleEngine {
         return matchedFactors
     }
 
-    /**
-     * Determina si el mensaje corresponde a una notificación transaccional legítima (ej. OTP de banco)
-     * que contiene advertencias defensivas y un código, sin órdenes de redirección a páginas externas.
-     */
     fun isLegitimateOtpNotification(text: String, hasMaliciousUrls: Boolean): Boolean {
-        if (hasMaliciousUrls) return false
+        if (hasMaliciousUrls) {
+            return false
+        }
         val hasOtpInfo = OTP_INFORMATIVE_PATTERN.matcher(text).find()
         val hasDefensiveAdvice = LEGITIMATE_DEFENSIVE_PATTERN.matcher(text).find()
-
-        // Si tiene código OTP o advertencia defensiva oficial y no contiene enlaces maliciosos
         return hasOtpInfo || hasDefensiveAdvice
     }
 
-    /**
-     * Verifica si el texto contiene advertencias defensivas emitidas por una entidad oficial.
-     */
     fun hasDefensiveSecurityWarning(text: String): Boolean {
         return LEGITIMATE_DEFENSIVE_PATTERN.matcher(text).find()
     }

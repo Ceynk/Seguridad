@@ -119,8 +119,12 @@ fun ManualAnalyzerScreen(
                         placeholder = { Text("Pega el texto a analizar aquí...") },
                         trailingIcon = {
                             IconButton(onClick = {
-                                clipboardManager.getText()?.text?.let { text ->
-                                    if (text.isNotBlank()) viewModel.onBodyChange(text)
+                                val clip = clipboardManager.getText()
+                                if (clip != null) {
+                                    val text = clip.text
+                                    if (text.isNotBlank()) {
+                                        viewModel.onBodyChange(text)
+                                    }
                                 }
                             }) {
                                 Icon(Icons.Default.ContentPaste, contentDescription = "Pegar", tint = CyberCyan)
@@ -165,9 +169,10 @@ fun ManualAnalyzerScreen(
             }
         }
 
-        analysisResult?.let { result ->
+        val currentResult = analysisResult
+        if (currentResult != null) {
             item {
-                AnalysisResultCard(result = result)
+                AnalysisResultCard(result = currentResult)
             }
         }
     }
@@ -206,8 +211,9 @@ fun AnalysisResultCard(result: AnalysisResult) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val statusIcon = if (result.level == ThreatLevel.SAFE) Icons.Default.CheckCircle else Icons.Default.Warning
                     Icon(
-                        imageVector = if (result.level == ThreatLevel.SAFE) Icons.Default.CheckCircle else Icons.Default.Warning,
+                        imageVector = statusIcon,
                         contentDescription = null,
                         tint = levelColor,
                         modifier = Modifier.size(24.dp)
@@ -284,29 +290,32 @@ fun AnalysisResultCard(result: AnalysisResult) {
 
             OutlinedButton(
                 onClick = {
-                    val report = buildString {
-                        appendLine("=== DICTAMEN FORENSE SMISHGUARD ===")
-                        appendLine("Diagnóstico: ${result.level.label} (${result.threatScore}/100)")
-                        appendLine("Motivo: ${result.summaryReason}")
-                        if (result.extractedUrls.isNotEmpty()) {
-                            appendLine("Enlaces detectados: ${result.extractedUrls.joinToString(", ")}")
-                        }
-                        if (result.factors.isNotEmpty()) {
-                            appendLine("Factores activados:")
-                            for (f in result.factors) {
-                                appendLine(" - [${f.category}] ${f.description} (+${f.severityScore} pts)")
-                            }
+                    val reportBuilder = StringBuilder()
+                    reportBuilder.append("=== DICTAMEN FORENSE SMISHGUARD ===\n")
+                    reportBuilder.append("Diagnóstico: ").append(result.level.label)
+                        .append(" (").append(result.threatScore).append("/100)\n")
+                    reportBuilder.append("Motivo: ").append(result.summaryReason).append("\n")
+                    if (result.extractedUrls.isNotEmpty()) {
+                        reportBuilder.append("Enlaces detectados: ").append(result.extractedUrls.joinToString(", ")).append("\n")
+                    }
+                    if (result.factors.isNotEmpty()) {
+                        reportBuilder.append("Factores activados:\n")
+                        for (f in result.factors) {
+                            reportBuilder.append(" - [").append(f.category).append("] ")
+                                .append(f.description).append(" (+")
+                                .append(f.severityScore).append(" pts)\n")
                         }
                     }
-                    clipboardManager.setText(AnnotatedString(report))
+                    clipboardManager.setText(AnnotatedString(reportBuilder.toString()))
                     resultCopied = true
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = CyberCyan),
                 shape = RoundedCornerShape(10.dp)
             ) {
+                val copyIcon = if (resultCopied) Icons.Default.Check else Icons.Default.ContentCopy
                 Icon(
-                    if (resultCopied) Icons.Default.Check else Icons.Default.ContentCopy,
+                    copyIcon,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp)
                 )

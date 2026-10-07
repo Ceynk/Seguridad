@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.3.2" type="partial_results">
+    <map id="UnsafeIntentLaunch">
+            <map id="unprotected">
+                <entry
+                    name="com.antiphishing.smishguard.ui.MainActivity"
+                    boolean="true"/>
+                <entry
+                    name="com.antiphishing.smishguard.receiver.CallStateReceiver"
+                    boolean="true"/>
+                <entry
+                    name="com.antiphishing.smishguard.receiver.SmsBroadcastReceiver"
+                    boolean="true"/>
+            </map>
+    </map>
+    <map id="NotificationPermission">
+        <entry
+            name="source"
+            boolean="true"/>
+    </map>
+    <map id="UnusedResources">
+        <location id="R.color.surface_dark"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/colors.xml"
+            line="7"
+            column="12"
+            startOffset="242"
+            endLine="7"
+            endColumn="31"
+            endOffset="261"/>
+        <location id="R.string.app_tagline"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="3"
+            column="13"
+            startOffset="72"
+            endLine="3"
+            endColumn="31"
+            endOffset="90"/>
+        <location id="R.color.accent"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/colors.xml"
+            line="5"
+            column="12"
+            startOffset="151"
+            endLine="5"
+            endColumn="25"
+            endOffset="164"/>
+        <location id="R.string.channel_status_name"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="9"
+            column="13"
+            startOffset="648"
+            endLine="9"
+            endColumn="39"
+            endOffset="674"/>
+        <entry
+            name="model"
+            string="color[primary(D),primary_dark(D),accent(D),background_dark(U),surface_dark(D)],drawable[ic_shield(U)],string[app_name(U),notification_service_label(U),app_tagline(D),threat_detected_title(D),threat_detected_desc(D),channel_threats_name(U),channel_threats_desc(U),channel_status_name(D),channel_status_desc(D)],style[Theme_SmishGuard(U)],xml[data_extraction_rules(U)];f^3;;;"/>
+        <location id="R.color.primary_dark"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/colors.xml"
+            line="4"
+            column="12"
+            startOffset="104"
+            endLine="4"
+            endColumn="31"
+            endOffset="123"/>
+        <location id="R.string.threat_detected_title"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="5"
+            column="13"
+            startOffset="242"
+            endLine="5"
+            endColumn="41"
+            endOffset="270"/>
+        <location id="R.string.channel_status_desc"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="10"
+            column="13"
+            startOffset="716"
+            endLine="10"
+            endColumn="39"
+            endOffset="742"/>
+        <location id="R.string.threat_detected_desc"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="6"
+            column="13"
+            startOffset="321"
+            endLine="6"
+            endColumn="40"
+            endOffset="348"/>
+        <location id="R.color.primary"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/colors.xml"
+            line="3"
+            column="12"
+            startOffset="62"
+            endLine="3"
+            endColumn="26"
+            endOffset="76"/>
+    </map>
+
+</incidents>

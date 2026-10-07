@@ -1,46 +1,81 @@
 package com.antiphishing.smishguard.util
 
-/**
- * Normalización y comparación de remitentes/números.
- *
- * Un mismo número llega en formatos distintos ("+57 300 123 4567", "3001234567", "0057300...").
- * La lista blanca original comparaba cadenas exactas, por lo que un contacto de confianza
- * guardado en un formato no coincidía cuando la red lo entregaba en otro.
- */
 object SenderKey {
 
     private const val MIN_SUFFIX_DIGITS = 7
     private val NUMERIC_CHARS = setOf('+', '-', '(', ')', ' ', '.')
 
     fun isNumeric(raw: String): Boolean {
-        val t = raw.trim()
-        return t.isNotEmpty() && t.any { it.isDigit() } && t.all { it.isDigit() || it in NUMERIC_CHARS }
+        val trimmed = raw.trim()
+        if (trimmed.isEmpty()) {
+            return false
+        }
+        var hasDigits = false
+        var allValid = true
+        for (i in 0 until trimmed.length) {
+            val ch = trimmed[i]
+            if (ch.isDigit()) {
+                hasDigits = true
+            } else if (!NUMERIC_CHARS.contains(ch)) {
+                allValid = false
+            }
+        }
+        return hasDigits && allValid
     }
 
-    /** Clave canónica: solo dígitos para números, minúsculas para remitentes alfanuméricos. */
     fun normalize(raw: String): String {
-        val t = raw.trim()
-        return if (isNumeric(t)) t.filter { it.isDigit() }.removePrefix("00") else t.lowercase()
+        val trimmed = raw.trim()
+        if (isNumeric(trimmed)) {
+            val digitsBuilder = StringBuilder()
+            for (i in 0 until trimmed.length) {
+                val ch = trimmed[i]
+                if (ch.isDigit()) {
+                    digitsBuilder.append(ch)
+                }
+            }
+            val digits = digitsBuilder.toString()
+            return if (digits.startsWith("00")) {
+                digits.substring(2)
+            } else {
+                digits
+            }
+        } else {
+            return trimmed.lowercase()
+        }
     }
 
-    /**
-     * Dos números coinciden si uno es sufijo del otro con al menos 7 dígitos significativos
-     * (cubre la presencia/ausencia de prefijo de país). Los alfanuméricos coinciden sin distinguir mayúsculas.
-     */
     fun matches(a: String, b: String): Boolean {
         val na = normalize(a)
         val nb = normalize(b)
-        if (na.isEmpty() || nb.isEmpty()) return false
-        val aNum = isNumeric(a)
-        val bNum = isNumeric(b)
-        if (aNum != bNum) return false
-        if (!aNum) return na == nb
-        if (na == nb) return true
+        if (na.isEmpty() || nb.isEmpty()) {
+            return false
+        }
+
+        val aIsNum = isNumeric(a)
+        val bIsNum = isNumeric(b)
+        if (aIsNum != bIsNum) {
+            return false
+        }
+
+        if (!aIsNum) {
+            return na == nb
+        }
+
+        if (na == nb) {
+            return true
+        }
+
         val shorter = if (na.length <= nb.length) na else nb
         val longer = if (na.length <= nb.length) nb else na
         return shorter.length >= MIN_SUFFIX_DIGITS && longer.endsWith(shorter)
     }
 
-    fun matchesAny(sender: String, candidates: Collection<String>): Boolean =
-        candidates.any { matches(sender, it) }
+    fun matchesAny(sender: String, candidates: Collection<String>): Boolean {
+        for (candidate in candidates) {
+            if (matches(sender, candidate)) {
+                return true
+            }
+        }
+        return false
+    }
 }

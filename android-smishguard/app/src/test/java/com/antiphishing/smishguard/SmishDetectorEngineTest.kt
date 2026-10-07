@@ -320,7 +320,6 @@ class SmishDetectorEngineTest {
 
     @Test
     fun pruebaNoFalsoPositivoMarcasCortasIngYPse() {
-        // Dominios legítimos que contienen 'ing' o 'pse' como parte de palabras normales
         val legitimateUrls = listOf(
             "https://booking.com/hotel/123",
             "https://hosting.com/pricing",
@@ -367,8 +366,6 @@ class SmishDetectorEngineTest {
 
     @Test
     fun pruebaAtaqueConOtpFalsoYIngenieriaSocialNoSeNeutraliza() {
-        // Intento de evasión: atacar con suplantación de cuenta y enlace phishing,
-        // pero agregando "válido por 5 minutos" y "no lo comparta" para parecer un OTP legítimo
         val body = "Su cuenta Nequi ha sido bloqueada. Ingrese a https://nequi-desbloqueo.xyz para recuperar acceso. Codigo de seguridad 9182. Valido por 5 minutos, no lo comparta con nadie."
         val result = SmishDetectorEngine.analyze(sender = "Nequi", body = body)
 

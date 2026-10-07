@@ -14,6 +14,8 @@ import com.antiphishing.smishguard.domain.model.ThreatLevel
 import com.antiphishing.smishguard.util.SafeRegex
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 class SmsRepository(
     private val smsDao: SmsDao,
@@ -23,50 +25,82 @@ class SmsRepository(
 ) {
 
     fun getAllRecords(): Flow<List<SmsMessageData>> {
-        return smsDao.getAllRecords().map { list -> list.map { it.toDomain() } }
+        return smsDao.getAllRecords().map { entities ->
+            val domainList = mutableListOf<SmsMessageData>()
+            for (entity in entities) {
+                domainList.add(convertEntityToDomain(entity))
+            }
+            domainList
+        }
     }
 
     fun getQuarantinedRecords(): Flow<List<SmsMessageData>> {
-        return smsDao.getQuarantinedRecords().map { list -> list.map { it.toDomain() } }
+        return smsDao.getQuarantinedRecords().map { entities ->
+            val domainList = mutableListOf<SmsMessageData>()
+            for (entity in entities) {
+                domainList.add(convertEntityToDomain(entity))
+            }
+            domainList
+        }
     }
 
-    fun getTotalAnalyzedCount(): Flow<Int> = smsDao.getTotalAnalyzedCount()
-    fun getActiveQuarantinedCount(): Flow<Int> = smsDao.getActiveQuarantinedCount()
-    fun getPhishingDetectedCount(): Flow<Int> = smsDao.getPhishingDetectedCount()
+    fun getTotalAnalyzedCount(): Flow<Int> {
+        return smsDao.getTotalAnalyzedCount()
+    }
 
-    suspend fun isSenderWhitelisted(sender: String): Boolean = ruleCache.isWhitelisted(sender)
+    fun getActiveQuarantinedCount(): Flow<Int> {
+        return smsDao.getActiveQuarantinedCount()
+    }
 
-    fun getAllWhitelist(): Flow<List<WhitelistEntity>> = whitelistDao.getAllWhitelist()
+    fun getPhishingDetectedCount(): Flow<Int> {
+        return smsDao.getPhishingDetectedCount()
+    }
+
+    suspend fun isSenderWhitelisted(sender: String): Boolean {
+        return ruleCache.isWhitelisted(sender)
+    }
+
+    fun getAllWhitelist(): Flow<List<WhitelistEntity>> {
+        return whitelistDao.getAllWhitelist()
+    }
 
     suspend fun addToWhitelist(sender: String, name: String? = null) {
-        whitelistDao.insertWhitelist(WhitelistEntity(senderOrNumber = sender.trim(), contactName = name?.trim()))
+        val trimmedSender = sender.trim()
+        val trimmedName = if (name != null) name.trim() else null
+        val entry = WhitelistEntity(
+            senderOrNumber = trimmedSender,
+            contactName = trimmedName
+        )
+        whitelistDao.insertWhitelist(entry)
         ruleCache.invalidateWhitelist()
     }
 
     suspend fun removeFromWhitelist(sender: String) {
-        whitelistDao.deleteBySender(sender.trim())
+        val trimmedSender = sender.trim()
+        whitelistDao.deleteBySender(trimmedSender)
         ruleCache.invalidateWhitelist()
     }
 
-    fun getAllCustomRules(): Flow<List<CustomRuleEntity>> = customRuleDao.getAllRules()
+    fun getAllCustomRules(): Flow<List<CustomRuleEntity>> {
+        return customRuleDao.getAllRules()
+    }
 
-    suspend fun getActiveCustomRegexes(): List<Regex> = ruleCache.getCustomRegexes()
+    suspend fun getActiveCustomRegexes(): List<Regex> {
+        return ruleCache.getCustomRegexes()
+    }
 
-    /**
-     * Valida y agrega una regla personalizada de bloqueo.
-     * @return Mensaje de error legible si la regla es inválida o peligrosa, o null si fue exitosa.
-     */
     suspend fun addCustomRule(pattern: String, isRegex: Boolean, description: String): String? {
         val error = SafeRegex.validateUserRule(pattern, isRegex)
-        if (error != null) return error
+        if (error != null) {
+            return error
+        }
 
-        customRuleDao.insertRule(
-            CustomRuleEntity(
-                pattern = pattern.trim(),
-                isRegex = isRegex,
-                description = description.trim()
-            )
+        val rule = CustomRuleEntity(
+            pattern = pattern.trim(),
+            isRegex = isRegex,
+            description = description.trim()
         )
+        customRuleDao.insertRule(rule)
         ruleCache.invalidateRules()
         return null
     }
@@ -82,14 +116,10 @@ class SmsRepository(
     }
 
     suspend fun saveAnalysis(sender: String, rawBody: String, analysis: AnalysisResult): Long {
-        // Principio de minimización y protección de datos:
-        // Si el SMS está en cuarentena, ciframos el cuerpo original con AES-GCM (Keystore)
-        // para prevenir exfiltración en caso de extracción forense no autorizada.
-        // Si no está en cuarentena y es seguro, almacenamos el texto desarmado sin secretos.
         val storedRawBody = if (analysis.isQuarantined) {
             FieldCipher.encrypt(rawBody)
         } else {
-            "" // Minimización: no retener el texto original en claro de mensajes no maliciosos
+            ""
         }
 
         val entity = SmsRecordEntity(
@@ -107,13 +137,24 @@ class SmsRepository(
     }
 
     suspend fun restoreQuarantinedMessage(id: Long) {
-        val record = smsDao.getRecordById(id) ?: return
-        smsDao.updateRecord(record.copy(wasRestored = true))
+        val record = smsDao.getRecordById(id)
+        if (record == null) {
+            return
+        }
+        val updatedRecord = record.copy(wasRestored = true)
+        smsDao.updateRecord(updatedRecord)
     }
 
     suspend fun getDecryptedOriginalBody(id: Long): String? {
-        val record = smsDao.getRecordById(id) ?: return null
-        return if (record.rawBody.isBlank()) record.sanitizedBody else FieldCipher.decrypt(record.rawBody)
+        val record = smsDao.getRecordById(id)
+        if (record == null) {
+            return null
+        }
+        return if (record.rawBody.isBlank()) {
+            record.sanitizedBody
+        } else {
+            FieldCipher.decrypt(record.rawBody)
+        }
     }
 
     suspend fun deleteRecord(id: Long) {
@@ -132,58 +173,98 @@ class SmsRepository(
         smsDao.clearNonQuarantined()
     }
 
-    /**
-     * Limpieza automática por política de retención local (elimina registros antiguos para optimizar almacenamiento).
-     */
     suspend fun purgeExpiredRecords(retentionDays: Int = 30): Int {
-        val cutoff = System.currentTimeMillis() - (retentionDays.toLong() * 24L * 60L * 60L * 1000L)
+        val daysInMillis = retentionDays.toLong() * 24L * 60L * 60L * 1000L
+        val cutoff = System.currentTimeMillis() - daysInMillis
         return smsDao.deleteNonQuarantinedOlderThan(cutoff)
     }
 
     private fun serializeFactors(factors: List<ThreatFactor>): String {
-        return factors.joinToString("|||") { factor ->
-            val cat = java.net.URLEncoder.encode(factor.category, "UTF-8")
-            val desc = java.net.URLEncoder.encode(factor.description, "UTF-8")
-            val snip = java.net.URLEncoder.encode(factor.matchedSnippet ?: "", "UTF-8")
-            "$cat:::$desc:::${factor.severityScore}:::$snip"
+        val items = mutableListOf<String>()
+        for (factor in factors) {
+            val cat = URLEncoder.encode(factor.category, "UTF-8")
+            val desc = URLEncoder.encode(factor.description, "UTF-8")
+            val snippet = if (factor.matchedSnippet != null) factor.matchedSnippet else ""
+            val snip = URLEncoder.encode(snippet, "UTF-8")
+            items.add("$cat:::$desc:::${factor.severityScore}:::$snip")
         }
+        return items.joinToString("|||")
     }
 
     private fun deserializeFactors(raw: String): List<ThreatFactor> {
-        if (raw.isBlank()) return emptyList()
-        return raw.split("|||").mapNotNull { entry ->
+        if (raw.isBlank()) {
+            return emptyList()
+        }
+        val result = mutableListOf<ThreatFactor>()
+        val entries = raw.split("|||")
+        for (entry in entries) {
             val parts = entry.split(":::")
             if (parts.size >= 3) {
-                val cat = try { java.net.URLDecoder.decode(parts[0], "UTF-8") } catch (e: Exception) { parts[0] }
-                val desc = try { java.net.URLDecoder.decode(parts[1], "UTF-8") } catch (e: Exception) { parts[1] }
-                val score = parts[2].toIntOrNull() ?: 10
-                val snip = parts.getOrNull(3)?.let {
-                    try { java.net.URLDecoder.decode(it, "UTF-8") } catch (e: Exception) { it }
-                }?.takeIf { it.isNotBlank() }
-                ThreatFactor(
-                    category = cat,
-                    description = desc,
-                    severityScore = score,
-                    matchedSnippet = snip
-                )
-            } else null
+                var cat = parts[0]
+                try {
+                    cat = URLDecoder.decode(parts[0], "UTF-8")
+                } catch (e: Exception) {
+                    cat = parts[0]
+                }
+
+                var desc = parts[1]
+                try {
+                    desc = URLDecoder.decode(parts[1], "UTF-8")
+                } catch (e: Exception) {
+                    desc = parts[1]
+                }
+
+                val parsedScore = parts[2].toIntOrNull()
+                val score = if (parsedScore != null) parsedScore else 10
+
+                var snip: String? = null
+                if (parts.size > 3) {
+                    try {
+                        snip = URLDecoder.decode(parts[3], "UTF-8")
+                    } catch (e: Exception) {
+                        snip = parts[3]
+                    }
+                }
+
+                val cleanedSnip = if (snip != null && snip.isNotBlank()) {
+                    snip
+                } else {
+                    null
+                }
+
+                result.add(ThreatFactor(cat, desc, score, cleanedSnip))
+            }
         }
+        return result
     }
 
-    private fun SmsRecordEntity.toDomain(): SmsMessageData {
+    private fun convertEntityToDomain(record: SmsRecordEntity): SmsMessageData {
+        val urls = if (record.extractedUrls.isBlank()) {
+            emptyList()
+        } else if (record.extractedUrls.contains("|||")) {
+            record.extractedUrls.split("|||")
+        } else {
+            record.extractedUrls.split(",")
+        }
+
+        var level = ThreatLevel.SAFE
+        try {
+            level = ThreatLevel.valueOf(record.threatLevel)
+        } catch (e: Exception) {
+            level = ThreatLevel.SAFE
+        }
+
         return SmsMessageData(
-            id = id,
-            sender = sender,
-            body = sanitizedBody,
-            timestamp = timestamp,
-            threatScore = threatScore,
-            threatLevel = try { ThreatLevel.valueOf(threatLevel) } catch (e: Exception) { ThreatLevel.SAFE },
-            isQuarantined = isQuarantined,
-            threatFactors = deserializeFactors(factorsJson),
-            extractedUrls = if (extractedUrls.isBlank()) emptyList()
-                else if (extractedUrls.contains("|||")) extractedUrls.split("|||")
-                else extractedUrls.split(","),
-            wasRestored = wasRestored
+            id = record.id,
+            sender = record.sender,
+            body = record.sanitizedBody,
+            timestamp = record.timestamp,
+            threatScore = record.threatScore,
+            threatLevel = level,
+            isQuarantined = record.isQuarantined,
+            threatFactors = deserializeFactors(record.factorsJson),
+            extractedUrls = urls,
+            wasRestored = record.wasRestored
         )
     }
 }

@@ -15,7 +15,6 @@ class NotificationFilterService : NotificationListenerService() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    // Paquetes comunes de mensajería SMS en Android (AOSP, Google, Samsung, Xiaomi, Huawei, Motorola, etc.)
     private val smsPackages = setOf(
         "com.google.android.apps.messaging",
         "com.samsung.android.messaging",
@@ -36,22 +35,49 @@ class NotificationFilterService : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
-        if (sbn == null) return
+        if (sbn == null) {
+            return
+        }
 
         val packageName = sbn.packageName
-        if (!smsPackages.contains(packageName)) return
+        if (!smsPackages.contains(packageName)) {
+            return
+        }
 
-        val app = applicationContext as? SmishGuardApp ?: return
-        val settingsRepo = app.settingsRepository
-        if (!settingsRepo.isProtectionEnabled || !settingsRepo.isSilentDismissNotifEnabled) return
+        val application = applicationContext
+        if (application !is SmishGuardApp) {
+            return
+        }
+        val settingsRepo = application.settingsRepository
+        if (!settingsRepo.isProtectionEnabled || !settingsRepo.isSilentDismissNotifEnabled) {
+            return
+        }
 
-        val extras = sbn.notification.extras ?: return
-        val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
-        val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
+        val notification = sbn.notification
+        val extras = notification.extras
+        if (extras == null) {
+            return
+        }
 
-        if (text.isBlank()) return
+        val titleSequence = extras.getCharSequence(Notification.EXTRA_TITLE)
+        val title = if (titleSequence != null) {
+            titleSequence.toString()
+        } else {
+            ""
+        }
 
-        val smsRepo = app.smsRepository
+        val textSequence = extras.getCharSequence(Notification.EXTRA_TEXT)
+        val text = if (textSequence != null) {
+            textSequence.toString()
+        } else {
+            ""
+        }
+
+        if (text.isBlank()) {
+            return
+        }
+
+        val smsRepo = application.smsRepository
 
         serviceScope.launch {
             try {

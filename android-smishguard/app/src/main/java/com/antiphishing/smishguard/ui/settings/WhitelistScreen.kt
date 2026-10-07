@@ -115,8 +115,9 @@ fun WhitelistScreen(
                                     fontWeight = FontWeight.Bold,
                                     color = TextPrimary
                                 )
-                                entry.contactName?.let {
-                                    Text(text = it, fontSize = 12.sp, color = CyberCyan)
+                                val name = entry.contactName
+                                if (name != null) {
+                                    Text(text = name, fontSize = 12.sp, color = CyberCyan)
                                 }
                             }
                             IconButton(onClick = { viewModel.removeWhitelistEntry(entry.senderOrNumber) }) {
@@ -153,7 +154,10 @@ fun WhitelistScreen(
                     Button(
                         onClick = {
                             if (senderInput.isNotBlank()) {
-                                viewModel.addWhitelistEntry(senderInput.trim(), nameInput.trim().ifBlank { null })
+                                val cleanSender = senderInput.trim()
+                                val cleanName = nameInput.trim()
+                                val finalName = if (cleanName.isNotEmpty()) cleanName else null
+                                viewModel.addWhitelistEntry(cleanSender, finalName)
                                 senderInput = ""
                                 nameInput = ""
                                 showAddDialog = false

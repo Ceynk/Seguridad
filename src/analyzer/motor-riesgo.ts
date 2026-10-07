@@ -7,26 +7,22 @@ import {
 } from "../types/analisis";
 import { ConfiguracionExtension } from "../types/configuracion";
 import { ProveedorReputacion } from "../types/reputacion";
-import { RegistroReglas } from "../rules/registro-reglas";
 import { ProveedorReputacionLocal } from "../reputation/reputacion-local";
 import { extraerCaracteristicasUrl } from "./extractor-caracteristicas";
 import { calcularHashSha256Simple, generarFichaForense } from "../utils/cripto-forense";
 
 export interface OpcionesMotorRiesgo {
-  registroReglas?: RegistroReglas;
   proveedorReputacion?: ProveedorReputacion;
   umbralSospechoso?: number;
   umbralMalicioso?: number;
 }
 
 export class MotorRiesgo {
-  private registroReglas: RegistroReglas;
   private proveedorReputacion: ProveedorReputacion;
   private umbralSospechoso: number;
   private umbralMalicioso: number;
 
   constructor(opciones: OpcionesMotorRiesgo = {}) {
-    this.registroReglas = opciones.registroReglas || new RegistroReglas();
     this.proveedorReputacion = opciones.proveedorReputacion || new ProveedorReputacionLocal();
     this.umbralSospechoso = opciones.umbralSospechoso ?? 30;
     this.umbralMalicioso = opciones.umbralMalicioso ?? 70;
@@ -44,146 +40,106 @@ export class MotorRiesgo {
   }
 
   public clasificarPuntuacion(puntuacion: number): ClasificacionRiesgo {
-    if (puntuacion >= this.umbralMalicioso) {
-      return "MALICIOSO";
-    }
-    if (puntuacion >= this.umbralSospechoso) {
-      return "SOSPECHOSO";
-    }
+    if (puntuacion >= this.umbralMalicioso) return "MALICIOSO";
+    if (puntuacion >= this.umbralSospechoso) return "SOSPECHOSO";
     return "SEGURO";
-  }
-
-  private determinarNivelConfianza(
-    reglasCoincidentes: ReglaCoincidente[],
-    esDominioConocido: boolean
-  ): NivelConfianza {
-    if (esDominioConocido) {
-      return "ALTO";
-    }
-    if (reglasCoincidentes.length >= 2) {
-      return "ALTO";
-    }
-    if (reglasCoincidentes.length === 1) {
-      const regla = reglasCoincidentes[0];
-      return regla.severidad === "CRITICA" || regla.severidad === "ALTA" ? "MEDIO" : "BAJO";
-    }
-    return "ALTO";
   }
 
   public async analizarUrl(urlEntrada: string): Promise<ResultadoAnalisisUrl> {
     const tiempoInicio = performance.now();
-    const caracteristicas: CaracteristicasUrl = extraerCaracteristicasUrl(urlEntrada);
+    const caracteristicas = extraerCaracteristicasUrl(urlEntrada);
     const nombreHost = caracteristicas.nombreHost;
     const huellaSha256 = calcularHashSha256Simple(urlEntrada);
 
     const resultadoReputacion = await this.proveedorReputacion.consultarDominio(nombreHost);
 
     if (resultadoReputacion.encontrado && resultadoReputacion.tipo === "NEGRA") {
-      const tiempoFin = performance.now();
-      const reglaReputacion: ReglaCoincidente = {
-        id: "REPUTACION_LISTA_NEGRA",
-        nombre: "Dominio en Lista de Amenazas",
-        descripcion: resultadoReputacion.descripcion || "Dominio identificado previamente como malicioso.",
-        severidad: "CRITICA",
-        puntuacion: 95,
-        evidencias: [
-          {
-            campo: "reputacion",
-            valorEncontrado: resultadoReputacion.categoria || "Malicioso",
-            descripcion: resultadoReputacion.descripcion || "Coincidencia directa con amenaza conocida.",
-          },
-        ],
-        tecnicaMitre: {
-          id: "T1583.001",
-          nombre: "Resource Development: Acquire Domains",
-          tactica: "Resource Development",
-          enlace: "https://attack.mitre.org/techniques/T1583/001/",
-        },
-      };
-
-      const resultadoParcial: ResultadoAnalisisUrl = {
-        url: urlEntrada,
-        nombreHost,
-        marcaTemporal: Date.now(),
-        puntuacionRiesgo: 95,
-        clasificacion: "MALICIOSO",
-        nivelConfianza: "ALTO",
-        reglasCoincidentes: [reglaReputacion],
-        caracteristicas,
-        esDominioConocidoSeguro: false,
-        esDominioConocidoMalicioso: true,
-        tiempoProcesamientoMs: Math.round(tiempoFin - tiempoInicio),
-        huellaSha256,
-      };
-
-      resultadoParcial.fichaForense = generarFichaForense(resultadoParcial);
-      return resultadoParcial;
+      return this.crearResultadoRapido(urlEntrada, caracteristicas, 95, "MALICIOSO", true, "REPUTACION_LISTA_NEGRA", resultadoReputacion.descripcion || "Bloqueado", tiempoInicio);
+    }
+    if (resultadoReputacion.encontrado && resultadoReputacion.tipo === "BLANCA" && !caracteristicas.tieneArroba) {
+      return this.crearResultadoRapido(urlEntrada, caracteristicas, 0, "SEGURO", false, "LISTA_BLANCA", "Sitio seguro verificado", tiempoInicio);
     }
 
-    if (
-      resultadoReputacion.encontrado &&
-      resultadoReputacion.tipo === "BLANCA" &&
-      !caracteristicas.tieneArroba
-    ) {
-      const tiempoFin = performance.now();
-      const resultadoParcial: ResultadoAnalisisUrl = {
-        url: urlEntrada,
-        nombreHost,
-        marcaTemporal: Date.now(),
-        puntuacionRiesgo: 0,
-        clasificacion: "SEGURO",
-        nivelConfianza: "ALTO",
-        reglasCoincidentes: [],
-        caracteristicas,
-        esDominioConocidoSeguro: true,
-        esDominioConocidoMalicioso: false,
-        tiempoProcesamientoMs: Math.round(tiempoFin - tiempoInicio),
-        huellaSha256,
-      };
-
-      resultadoParcial.fichaForense = generarFichaForense(resultadoParcial);
-      return resultadoParcial;
-    }
-
-    const reglasActivas = this.registroReglas.obtenerReglasActivas();
+    let puntuacion = 0;
+    let explicacionPerfil = "Perfil de riesgo:\\n";
     const reglasCoincidentes: ReglaCoincidente[] = [];
-    let sumaPuntuacion = 0;
 
-    for (const regla of reglasActivas) {
-      const resultado = await regla.evaluar(caracteristicas);
-      if (resultado.activada) {
-        reglasCoincidentes.push({
-          id: resultado.reglaId,
-          nombre: resultado.nombre,
-          descripcion: resultado.descripcion,
-          severidad: resultado.severidad,
-          puntuacion: resultado.puntuacion,
-          evidencias: resultado.evidencias,
-          tecnicaMitre: resultado.tecnicaMitre,
-        });
-        sumaPuntuacion += resultado.puntuacion;
-      }
+    function agregarRegla(id: string, nombre: string, desc: string, puntos: number) {
+      puntuacion += puntos;
+      explicacionPerfil += `- ${desc} (+${puntos} pts)\\n`;
+      reglasCoincidentes.push({
+        id, nombre, descripcion: desc, severidad: puntos >= 30 ? "ALTA" : "MEDIA", puntuacion: puntos, evidencias: [],
+        tecnicaMitre: {
+          id: id === "REGLA_PUNYCODE_HOMOGRAFO" ? "T1036.007" : "T1566.002",
+          nombre: "Phishing",
+          tactica: "Initial Access",
+          enlace: "https://attack.mitre.org"
+        }
+      });
     }
 
-    if (reglasCoincidentes.length >= 3) {
-      sumaPuntuacion = Math.round(sumaPuntuacion * 1.25);
-    } else if (reglasCoincidentes.length === 2) {
-      sumaPuntuacion = Math.round(sumaPuntuacion * 1.1);
+    if (caracteristicas.esIpDirecta) {
+      agregarRegla("REGLA_IP", "Uso de IP", "El dominio es una dirección IP, táctica para evadir filtros.", 40);
     }
 
-    const puntuacionRiesgo = Math.min(100, Math.max(0, sumaPuntuacion));
-    const clasificacion = this.clasificarPuntuacion(puntuacionRiesgo);
-    const nivelConfianza = this.determinarNivelConfianza(
-      reglasCoincidentes,
-      resultadoReputacion.encontrado
-    );
+    if (caracteristicas.tldEsSospechoso) {
+      agregarRegla("REGLA_TLD", "TLD sospechoso", `La extensión .${caracteristicas.extensionTld} se usa en sitios maliciosos.`, 25);
+    }
+
+    if (caracteristicas.tieneArroba) {
+      agregarRegla("REGLA_ARROBA", "Uso de arroba", "La URL contiene '@', lo cual oculta el destino real.", 35);
+    }
+    if (caracteristicas.cantidadSubdominios >= 3) {
+      agregarRegla("REGLA_SUBDOMINIOS", "Exceso subdominios", "Tiene 3 o más subdominios, común para imitar otros sitios.", 20);
+    }
+    if (caracteristicas.cantidadGuiones >= 3) {
+      agregarRegla("REGLA_GUIONES", "Exceso guiones", "El dominio tiene múltiples guiones.", 15);
+    }
+    
+    // Penalizar dominio largo, NO URL larga
+    if (caracteristicas.longitudDominio > 45) {
+      agregarRegla("REGLA_LONGITUD_DOMINIO", "Dominio largo", "El nombre de dominio es inusualmente extenso.", 15);
+    }
+    
+    if (caracteristicas.porcentajeCodificacionUrl > 25) {
+      agregarRegla("REGLA_CODIFICACION", "Codificación alta", "La URL oculta su contenido real usando caracteres especiales.", 15);
+    }
+
+    const palabrasTotales = [
+      ...caracteristicas.contienePalabrasAutenticacion,
+      ...caracteristicas.contienePalabrasBancarias,
+      ...caracteristicas.contienePalabrasUrgencia
+    ];
+    if (palabrasTotales.length > 0) {
+      agregarRegla("REGLA_PALABRAS", "Palabras sospechosas", `Contiene palabras comunes en phishing: ${palabrasTotales.join(", ")}.`, 20);
+    }
+
+    if (caracteristicas.esPunycode || caracteristicas.tieneLetrasRarasHomoglifos) {
+      agregarRegla("REGLA_PUNYCODE_HOMOGRAFO", "Caracteres engañosos", "El dominio utiliza caracteres extraños para imitar letras normales.", 60);
+    }
+    if (caracteristicas.similitudMarcas.length > 0) {
+      agregarRegla("REGLA_SUPLANTACION", "Imitación", `El dominio se parece visualmente a una marca conocida.`, 50);
+    }
+
+    if (caracteristicas.protocolo === "http") {
+      agregarRegla("REGLA_HTTP", "Conexión insegura", "Utiliza HTTP en lugar de HTTPS.", 10);
+    }
+
+    if (puntuacion === 0) {
+      explicacionPerfil += "No se encontraron características sospechosas.\\n";
+    }
+
+    if (puntuacion > 100) puntuacion = 100;
+
+    const clasificacion = this.clasificarPuntuacion(puntuacion);
+    const nivelConfianza: NivelConfianza = puntuacion > 50 ? "ALTO" : "MEDIO";
     const tiempoFin = performance.now();
 
     const resultadoFinal: ResultadoAnalisisUrl = {
       url: urlEntrada,
       nombreHost,
       marcaTemporal: Date.now(),
-      puntuacionRiesgo,
+      puntuacionRiesgo: puntuacion,
       clasificacion,
       nivelConfianza,
       reglasCoincidentes,
@@ -195,6 +151,20 @@ export class MotorRiesgo {
     };
 
     resultadoFinal.fichaForense = generarFichaForense(resultadoFinal);
+    resultadoFinal.fichaForense.resumenTecnico = explicacionPerfil;
+
     return resultadoFinal;
+  }
+
+  private crearResultadoRapido(url: string, chars: CaracteristicasUrl, pts: number, clasificacion: ClasificacionRiesgo, esMalo: boolean, reglaId: string, desc: string, inicio: number): ResultadoAnalisisUrl {
+    const res: ResultadoAnalisisUrl = {
+      url, nombreHost: chars.nombreHost, marcaTemporal: Date.now(), puntuacionRiesgo: pts, clasificacion, nivelConfianza: "ALTO",
+      reglasCoincidentes: [{id: reglaId, nombre: desc, descripcion: desc, severidad: "CRITICA", puntuacion: pts, evidencias: []}],
+      caracteristicas: chars, esDominioConocidoSeguro: !esMalo, esDominioConocidoMalicioso: esMalo, tiempoProcesamientoMs: Math.round(performance.now() - inicio),
+      huellaSha256: calcularHashSha256Simple(url)
+    };
+    res.fichaForense = generarFichaForense(res);
+    res.fichaForense.resumenTecnico = desc;
+    return res;
   }
 }

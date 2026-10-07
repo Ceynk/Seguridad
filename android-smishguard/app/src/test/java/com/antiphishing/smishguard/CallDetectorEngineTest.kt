@@ -68,7 +68,7 @@ class CallDetectorEngineTest {
 
     @Test
     fun pruebaNumeroEnListaBlancaEsSeguro() {
-        val incoming = "+247551234" // Wangiri, pero en lista blanca
+        val incoming = "+247551234"
         val result = CallDetectorEngine.analyzeCall(incoming, isWhitelisted = true)
 
         assertEquals(ThreatLevel.SAFE, result.level)
@@ -81,7 +81,7 @@ class CallDetectorEngineTest {
     @Test
     fun pruebaDeteccionNeighborSpoofing() {
         val userNumber = "+573001234567"
-        val incoming = "+573001239999" // Mismo operador y prefijo local
+        val incoming = "+573001239999"
 
         val result = CallDetectorEngine.analyzeCall(incoming, userNumber = userNumber)
 
@@ -151,7 +151,6 @@ class CallDetectorEngineTest {
 
     @Test
     fun pruebaReglaPersonalizadaConRiesgoReDosEsManejadaSegura() {
-        // Expresión exponencial ReDoS proporcionada como regla
         val badRule = listOf(Regex("^(a+)+$"))
         val evilNumber = "a".repeat(30) + "!"
 

@@ -126,8 +126,13 @@ fun CustomRulesScreen(
                                 if (rule.description.isNotBlank()) {
                                     Text(text = rule.description, fontSize = 12.sp, color = TextSecondary)
                                 }
+                                val ruleTypeText = if (rule.isRegex) {
+                                    "Tipo: Expresión Regular (Regex)"
+                                } else {
+                                    "Tipo: Palabra clave exacta"
+                                }
                                 Text(
-                                    text = if (rule.isRegex) "Tipo: Expresión Regular (Regex)" else "Tipo: Palabra clave exacta",
+                                    text = ruleTypeText,
                                     fontSize = 11.sp,
                                     color = TextSecondary.copy(alpha = 0.7f)
                                 )
@@ -169,9 +174,10 @@ fun CustomRulesScreen(
                             singleLine = true,
                             isError = validationError != null
                         )
-                        if (validationError != null) {
+                        val currentError = validationError
+                        if (currentError != null) {
                             Text(
-                                text = validationError ?: "",
+                                text = currentError,
                                 color = ThreatDangerRed,
                                 fontSize = 12.sp
                             )

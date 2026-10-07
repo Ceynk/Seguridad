@@ -2,6 +2,7 @@ package com.antiphishing.smishguard.ui
 
 import android.Manifest
 import android.app.role.RoleManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -24,10 +25,9 @@ class MainActivity : ComponentActivity() {
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        // Si se concedieron los permisos básicos de telefonía, solicitar el rol de filtrado de llamadas
-        if (permissions[Manifest.permission.READ_PHONE_STATE] == true ||
-            permissions[Manifest.permission.RECEIVE_SMS] == true
-        ) {
+        val phoneStateGranted = permissions[Manifest.permission.READ_PHONE_STATE] == true
+        val receiveSmsGranted = permissions[Manifest.permission.RECEIVE_SMS] == true
+        if (phoneStateGranted || receiveSmsGranted) {
             requestCallScreeningRole()
         }
     }
@@ -47,17 +47,33 @@ class MainActivity : ComponentActivity() {
         var initialSharedBody = ""
         var targetDestination = Screen.Dashboard.route
 
-        if (intent.getStringExtra("navigate_to") == "quarantine") {
+        val navigateTarget = intent.getStringExtra("navigate_to")
+        if (navigateTarget == "quarantine") {
             targetDestination = Screen.Quarantine.route
-        } else if (intent.action == android.content.Intent.ACTION_SEND && intent.type?.startsWith("text/") == true) {
-            val sharedText = intent.getStringExtra(android.content.Intent.EXTRA_TEXT) ?: ""
-            if (sharedText.isNotBlank()) {
-                initialSharedBody = sharedText
-                targetDestination = Screen.ManualAnalyzer.route
+        } else if (intent.action == Intent.ACTION_SEND) {
+            val intentType = intent.type
+            if (intentType != null && intentType.startsWith("text/")) {
+                val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+                if (sharedText != null && sharedText.isNotBlank()) {
+                    initialSharedBody = sharedText
+                    targetDestination = Screen.ManualAnalyzer.route
+                }
             }
-        } else if (intent.action == android.content.Intent.ACTION_SENDTO || intent.action == android.content.Intent.ACTION_VIEW) {
-            val schemeSpecific = intent.data?.schemeSpecificPart ?: ""
-            val sharedText = intent.getStringExtra("sms_body") ?: intent.getStringExtra(android.content.Intent.EXTRA_TEXT) ?: ""
+        } else if (intent.action == Intent.ACTION_SENDTO || intent.action == Intent.ACTION_VIEW) {
+            var schemeSpecific = ""
+            val dataUri = intent.data
+            if (dataUri != null && dataUri.schemeSpecificPart != null) {
+                schemeSpecific = dataUri.schemeSpecificPart
+            }
+
+            var sharedText = intent.getStringExtra("sms_body")
+            if (sharedText == null) {
+                sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+            }
+            if (sharedText == null) {
+                sharedText = ""
+            }
+
             if (schemeSpecific.isNotBlank() || sharedText.isNotBlank()) {
                 initialSharedSender = schemeSpecific
                 initialSharedBody = sharedText
@@ -112,10 +128,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * En Android 10+ (API 29+), solicita al sistema el rol oficial de filtrado e interceptación
-     * de llamadas fraudulentas (ROLE_CALL_SCREENING) para que CallScreeningService reciba las llamadas.
-     */
     private fun requestCallScreeningRole() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             try {
@@ -127,7 +139,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             } catch (e: Exception) {
-                // Silencioso ante personalizaciones de fabricante
             }
         }
     }

@@ -10,8 +10,6 @@ import kotlin.math.min
 object SmishDetectorEngine {
 
     const val DEFAULT_QUARANTINE_THRESHOLD = 50
-
-    /** Reducción del umbral cuando el usuario activa el modo heurístico agresivo. */
     const val AGGRESSIVE_THRESHOLD_DELTA = 15
     private const val MIN_THRESHOLD = 20
     private const val MAX_BODY_LENGTH = 4000
@@ -23,10 +21,6 @@ object SmishDetectorEngine {
 
     private val IP_DEFANG_REGEX = Regex("""\b(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\b""")
 
-    /**
-     * Categorías de ingeniería social que NUNCA deben neutralizarse por parecer un OTP.
-     * Evita la evasión trivial de añadir "válido por 5 minutos" o "no lo comparta" a un fraude.
-     */
     private val NON_NEUTRALIZABLE_CATEGORIES = listOf(
         "Suplantación Familiar",
         "Extracción Activa de Credenciales",
@@ -47,7 +41,6 @@ object SmishDetectorEngine {
         quarantineThreshold: Int = DEFAULT_QUARANTINE_THRESHOLD,
         aggressiveMode: Boolean = false
     ): AnalysisResult {
-        // 1. Verificación de Lista Blanca
         if (isWhitelisted) {
             return AnalysisResult(
                 threatScore = 0,
@@ -63,13 +56,17 @@ object SmishDetectorEngine {
 
         val effectiveThreshold = if (aggressiveMode) {
             max(MIN_THRESHOLD, quarantineThreshold - AGGRESSIVE_THRESHOLD_DELTA)
-        } else quarantineThreshold
+        } else {
+            quarantineThreshold
+        }
 
-        // Acotar la longitud de entrada para proteger el motor contra ReDoS y sobreconsumo de CPU
-        val boundedBody = if (body.length > MAX_BODY_LENGTH) body.substring(0, MAX_BODY_LENGTH) else body
+        val boundedBody = if (body.length > MAX_BODY_LENGTH) {
+            body.substring(0, MAX_BODY_LENGTH)
+        } else {
+            body
+        }
         val factors = mutableListOf<ThreatFactor>()
 
-        // 2. Detección y normalización de Homoglifos, caracteres invisibles y Leetspeak
         val homoglyphs = HomographDetector.findHomoglyphs(boundedBody)
         if (homoglyphs.isNotEmpty()) {
             factors.add(
@@ -83,7 +80,6 @@ object SmishDetectorEngine {
         }
         val normalizedBody = HomographDetector.normalizeHomoglyphs(boundedBody)
 
-        // 3. Extracción y análisis exhaustivo de URLs
         val extractedUrls = UrlThreatAnalyzer.extractUrls(boundedBody)
         val urlFactors = UrlThreatAnalyzer.analyzeUrls(extractedUrls)
         factors.addAll(urlFactors)
@@ -92,19 +88,25 @@ object SmishDetectorEngine {
         val allUrlsLegitimate = extractedUrls.isNotEmpty() && UrlThreatAnalyzer.areAllUrlsLegitimate(extractedUrls)
         val hasUnverifiedUrl = extractedUrls.isNotEmpty() && !allUrlsLegitimate
 
-        // 4. Evaluación de patrones de ingeniería social (antes del remitente para poder
-        //    invalidar la heurística de "OTP legítimo" cuando hay tácticas de fraude duras)
         val rawPatternFactors = PatternRuleEngine.evaluatePatterns(normalizedBody)
-        val hasHardSocialEngineering = rawPatternFactors.any { f ->
-            NON_NEUTRALIZABLE_CATEGORIES.any { f.category.contains(it) }
+
+        var hasHardSocialEngineering = false
+        for (factor in rawPatternFactors) {
+            for (category in NON_NEUTRALIZABLE_CATEGORIES) {
+                if (factor.category.contains(category)) {
+                    hasHardSocialEngineering = true
+                    break
+                }
+            }
+            if (hasHardSocialEngineering) {
+                break
+            }
         }
 
-        // 5. Verificación de contexto: ¿Es un OTP o notificación defensiva legítima?
         val looksLikeOtp = PatternRuleEngine.isLegitimateOtpNotification(normalizedBody, hasMaliciousUrl)
         val isLegitimateOtp = looksLikeOtp && !hasHardSocialEngineering
         val mentionsFinancial = FINANCIAL_ENTITY_REGEX.containsMatchIn(normalizedBody)
 
-        // 6. Análisis del remitente
         val senderFactors = SenderFraudAnalyzer.analyzeSender(
             sender = sender,
             hasMaliciousUrl = hasMaliciousUrl,
@@ -115,56 +117,71 @@ object SmishDetectorEngine {
         factors.addAll(senderFactors)
 
         val filteredPatternFactors = mutableListOf<ThreatFactor>()
-        for (pFactor in rawPatternFactors) {
-            // Mitigación de Falsos Positivos: Si es un OTP legítimo sin URLs maliciosas,
-            // no penalizar la mención de banco/clave dinámica
+        for (factor in rawPatternFactors) {
             if (isLegitimateOtp && !hasMaliciousUrl) {
-                if (pFactor.category.contains("Billetera") || pFactor.category.contains("Bancario")) {
-                    // Es un OTP genuino informando una clave o código; se descarta como factor de amenaza
+                if (factor.category.contains("Billetera") || factor.category.contains("Bancario")) {
                     continue
                 }
             }
-            filteredPatternFactors.add(pFactor)
+            filteredPatternFactors.add(factor)
         }
         factors.addAll(filteredPatternFactors)
 
-        // 7. Cálculo de Puntuación Ponderada y Contextual
-        var totalScore = factors.sumOf { it.severityScore }
+        var totalScore = 0
+        for (factor in factors) {
+            totalScore += factor.severityScore
+        }
 
-        // Correlación de ataque: Si convergen vector URL malicioso y patrones de ingeniería social
         if (hasMaliciousUrl && filteredPatternFactors.isNotEmpty()) {
             totalScore = (totalScore * 1.35).toInt()
         }
 
-        // Correlación de ataque: Celular privado enviando URLs y haciéndose pasar por banco
-        if (senderFactors.any { it.category.contains("Celular Privada") } && hasMaliciousUrl) {
+        var hasPrivateCellular = false
+        for (factor in senderFactors) {
+            if (factor.category.contains("Celular Privada")) {
+                hasPrivateCellular = true
+                break
+            }
+        }
+        if (hasPrivateCellular && hasMaliciousUrl) {
             totalScore = (totalScore * 1.4).toInt()
         }
 
-        // ATENUADORES DE CONFIANZA (Trust Mitigators):
-        // Solo se confía plenamente en un OTP si no hay URL maliciosa, ni URL no verificada,
-        // ni prefijo internacional de riesgo, ni tácticas de ingeniería social duras.
-        val trustOtp = isLegitimateOtp && !hasMaliciousUrl && !hasUnverifiedUrl &&
-            !senderFactors.any { it.category.contains("Internacional") }
+        var hasRiskPrefix = false
+        for (factor in senderFactors) {
+            if (factor.category.contains("Internacional")) {
+                hasRiskPrefix = true
+                break
+            }
+        }
+        val trustOtp = isLegitimateOtp && !hasMaliciousUrl && !hasUnverifiedUrl && !hasRiskPrefix
+
         if (trustOtp) {
             totalScore = 0
             factors.clear()
         } else if (allUrlsLegitimate && !hasMaliciousUrl && !hasHardSocialEngineering) {
-            // Si todas las URLs pertenecen a dominios oficiales reconocidos, amortiguar significativamente
             totalScore = (totalScore * 0.25).toInt()
         }
 
-        // 8. Reglas Personalizadas del Usuario: se aplican DESPUÉS de los atenuadores porque
-        //    expresan una decisión explícita del usuario y deben aislar el mensaje por sí solas.
         var customRuleMatched = false
         if (customBlockPatterns.isNotEmpty()) {
-            val safeBody = if (body.length > MAX_CUSTOM_RULE_INPUT) body.substring(0, MAX_CUSTOM_RULE_INPUT) else body
-            val safeNorm = if (normalizedBody.length > MAX_CUSTOM_RULE_INPUT) normalizedBody.substring(0, MAX_CUSTOM_RULE_INPUT) else normalizedBody
+            val safeBody = if (body.length > MAX_CUSTOM_RULE_INPUT) {
+                body.substring(0, MAX_CUSTOM_RULE_INPUT)
+            } else {
+                body
+            }
+            val safeNorm = if (normalizedBody.length > MAX_CUSTOM_RULE_INPUT) {
+                normalizedBody.substring(0, MAX_CUSTOM_RULE_INPUT)
+            } else {
+                normalizedBody
+            }
+
             for (customRegex in customBlockPatterns) {
-                val matched = SafeRegex.containsMatch(customRegex, safeBody) == true ||
-                    SafeRegex.containsMatch(customRegex, safeNorm) == true ||
-                    SafeRegex.containsMatch(customRegex, sender) == true
-                if (matched) {
+                val matchBody = SafeRegex.containsMatch(customRegex, safeBody) == true
+                val matchNorm = SafeRegex.containsMatch(customRegex, safeNorm) == true
+                val matchSender = SafeRegex.containsMatch(customRegex, sender) == true
+
+                if (matchBody || matchNorm || matchSender) {
                     customRuleMatched = true
                     factors.add(
                         ThreatFactor(
@@ -178,6 +195,7 @@ object SmishDetectorEngine {
                 }
             }
         }
+
         if (customRuleMatched) {
             totalScore = max(totalScore + 40, effectiveThreshold)
         }
@@ -216,7 +234,6 @@ object SmishDetectorEngine {
     fun defangText(text: String, extractedUrls: List<String> = emptyList()): String {
         var result = text
 
-        // Neutralizar primero las URLs extraídas exactas (ordenadas por longitud descendente para evitar colisiones de prefijo)
         val sortedUrls = extractedUrls.sortedByDescending { it.length }
         for (rawUrl in sortedUrls) {
             val defangedUrl = rawUrl
@@ -231,7 +248,6 @@ object SmishDetectorEngine {
             .replace("http://", "hxxp://", ignoreCase = true)
             .replace("www.", "w[w]w[.]", ignoreCase = true)
 
-        // Neutralizar direcciones IP numéricas
         result = IP_DEFANG_REGEX.replace(result) { match ->
             "${match.groupValues[1]}[.]${match.groupValues[2]}[.]${match.groupValues[3]}[.]${match.groupValues[4]}"
         }

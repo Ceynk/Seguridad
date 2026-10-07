@@ -16,18 +16,42 @@ class SecuritySettingsRepository(context: Context) {
     }
 
     var isProtectionEnabled: Boolean
-        get() = prefs.getBoolean(KEY_PROTECTION_ENABLED, true)
-        set(value) = prefs.edit().putBoolean(KEY_PROTECTION_ENABLED, value).apply()
+        get() {
+            return prefs.getBoolean(KEY_PROTECTION_ENABLED, true)
+        }
+        set(value) {
+            val editor = prefs.edit()
+            editor.putBoolean(KEY_PROTECTION_ENABLED, value)
+            editor.apply()
+        }
 
     var quarantineThreshold: Int
-        get() = prefs.getInt(KEY_QUARANTINE_THRESHOLD, 50)
-        set(value) = prefs.edit().putInt(KEY_QUARANTINE_THRESHOLD, value).apply()
+        get() {
+            return prefs.getInt(KEY_QUARANTINE_THRESHOLD, 50)
+        }
+        set(value) {
+            val editor = prefs.edit()
+            editor.putInt(KEY_QUARANTINE_THRESHOLD, value)
+            editor.apply()
+        }
 
     var isAggressiveModeEnabled: Boolean
-        get() = prefs.getBoolean(KEY_AGGRESSIVE_MODE, false)
-        set(value) = prefs.edit().putBoolean(KEY_AGGRESSIVE_MODE, value).apply()
+        get() {
+            return prefs.getBoolean(KEY_AGGRESSIVE_MODE, false)
+        }
+        set(value) {
+            val editor = prefs.edit()
+            editor.putBoolean(KEY_AGGRESSIVE_MODE, value)
+            editor.apply()
+        }
 
     var isSilentDismissNotifEnabled: Boolean
-        get() = prefs.getBoolean(KEY_SILENT_DISMISS_NOTIF, true)
-        set(value) = prefs.edit().putBoolean(KEY_SILENT_DISMISS_NOTIF, value).apply()
+        get() {
+            return prefs.getBoolean(KEY_SILENT_DISMISS_NOTIF, true)
+        }
+        set(value) {
+            val editor = prefs.edit()
+            editor.putBoolean(KEY_SILENT_DISMISS_NOTIF, value)
+            editor.apply()
+        }
 }

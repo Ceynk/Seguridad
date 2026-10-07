@@ -54,13 +54,11 @@ class SmishGuardApp : Application() {
 
         ThreatNotificationManager.createNotificationChannels(this)
 
-        // Tarea de mantenimiento local periódica: purga de registros que exceden el periodo de retención
         appScope.launch {
             try {
-                smsRepository.purgeExpiredRecords(retentionDays = 30)
-                callRepository.purgeExpiredRecords(retentionDays = 30)
+                smsRepository.purgeExpiredRecords(30)
+                callRepository.purgeExpiredRecords(30)
             } catch (e: Exception) {
-                // Silencioso: no debe impedir el inicio de la app
             }
         }
     }

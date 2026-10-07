@@ -16,6 +16,6 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object CustomRules : Screen("custom_rules", "Reglas Propias")
 
     companion object {
-        val bottomNavItems get() = listOf(Dashboard, Quarantine, ManualAnalyzer, Settings)
+        val bottomNavItems = listOf(Dashboard, Quarantine, ManualAnalyzer, Settings)
     }
 }

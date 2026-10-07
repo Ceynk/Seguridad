@@ -22,30 +22,43 @@ class CallScreeningServiceImpl : CallScreeningService() {
 
     override fun onScreenCall(callDetails: Call.Details) {
         val handle = callDetails.handle
-        val rawNumber = handle?.schemeSpecificPart ?: ""
+        val rawNumber = if (handle != null && handle.schemeSpecificPart != null) {
+            handle.schemeSpecificPart
+        } else {
+            ""
+        }
 
-        val app = applicationContext as? SmishGuardApp
-        val settingsRepo = app?.settingsRepository
-
-        // Si la aplicación o ajustes no están disponibles, o la protección está apagada por el usuario:
-        // Responder inmediatamente permitiendo la llamada según el contrato de Android Telecom
-        if (settingsRepo == null || !settingsRepo.isProtectionEnabled) {
-            respondToCall(callDetails, CallResponse.Builder().build())
+        val application = applicationContext
+        if (application !is SmishGuardApp) {
+            val defaultResponse = CallResponse.Builder().build()
+            respondToCall(callDetails, defaultResponse)
             return
         }
 
-        val callRepo = app.callRepository
-        val smsRepo = app.smsRepository
+        val settingsRepo = application.settingsRepository
+        if (!settingsRepo.isProtectionEnabled) {
+            val defaultResponse = CallResponse.Builder().build()
+            respondToCall(callDetails, defaultResponse)
+            return
+        }
 
-        // Android 11+ (API 30+): Verificar autenticidad del identificador (STIR/SHAKEN de red)
+        val callRepo = application.callRepository
+        val smsRepo = application.smsRepository
+
         val networkVerificationFailed = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             callDetails.callerNumberVerificationStatus == Connection.VERIFICATION_STATUS_FAILED
-        } else false
+        } else {
+            false
+        }
 
         serviceScope.launch {
             var responseBuilder = CallResponse.Builder()
             try {
-                val isWhitelisted = if (rawNumber.isNotBlank()) callRepo.isNumberWhitelisted(rawNumber) else false
+                val isWhitelisted = if (rawNumber.isNotBlank()) {
+                    callRepo.isNumberWhitelisted(rawNumber)
+                } else {
+                    false
+                }
                 val customPatterns = smsRepo.getActiveCustomRegexes()
 
                 val analysis = CallDetectorEngine.analyzeCall(
@@ -59,22 +72,29 @@ class CallScreeningServiceImpl : CallScreeningService() {
 
                 callRepo.saveCallAnalysis(analysis)
 
+                val displayPhone = if (rawNumber.isBlank()) {
+                    "Número Oculto"
+                } else {
+                    rawNumber
+                }
+
                 if (analysis.action == CallAction.BLOCK) {
-                    responseBuilder = CallResponse.Builder().apply {
-                        setDisallowCall(true)
-                        setRejectCall(true)
-                        setSkipNotification(true)
-                        setSkipCallLog(false)
-                    }
+                    val blockBuilder = CallResponse.Builder()
+                    blockBuilder.setDisallowCall(true)
+                    blockBuilder.setRejectCall(true)
+                    blockBuilder.setSkipNotification(true)
+                    blockBuilder.setSkipCallLog(false)
+                    responseBuilder = blockBuilder
+
                     ThreatNotificationManager.showCallThreatAlert(
                         context = applicationContext,
-                        phoneNumber = if (rawNumber.isBlank()) "Número Oculto" else rawNumber,
+                        phoneNumber = displayPhone,
                         analysis = analysis
                     )
                 } else if (analysis.action == CallAction.WARN) {
                     ThreatNotificationManager.showCallThreatAlert(
                         context = applicationContext,
-                        phoneNumber = if (rawNumber.isBlank()) "Número Oculto" else rawNumber,
+                        phoneNumber = displayPhone,
                         analysis = analysis
                     )
                 }

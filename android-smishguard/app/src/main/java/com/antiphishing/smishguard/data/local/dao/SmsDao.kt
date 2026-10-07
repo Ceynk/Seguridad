@@ -51,11 +51,9 @@ interface SmsDao {
     @Query("DELETE FROM sms_records WHERE isQuarantined = 0 OR wasRestored = 1")
     suspend fun clearNonQuarantined()
 
-    /** Retención: elimina el historial no aislado más antiguo que [cutoff]. */
     @Query("DELETE FROM sms_records WHERE (isQuarantined = 0 OR wasRestored = 1) AND timestamp < :cutoff")
     suspend fun deleteNonQuarantinedOlderThan(cutoff: Long): Int
 
-    /** Retención: elimina mensajes aislados más antiguos que [cutoff]. */
     @Query("DELETE FROM sms_records WHERE timestamp < :cutoff")
     suspend fun deleteAllOlderThan(cutoff: Long): Int
 }

@@ -19,29 +19,51 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        val action = intent.action ?: return
+        val action = intent.action
+        if (action == null) {
+            return
+        }
         if (action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION && action != Telephony.Sms.Intents.SMS_DELIVER_ACTION) {
             return
         }
 
-        val app = context.applicationContext as? SmishGuardApp ?: return
-        val settingsRepo = app.settingsRepository
-        if (!settingsRepo.isProtectionEnabled) return
+        val application = context.applicationContext
+        if (application !is SmishGuardApp) {
+            return
+        }
+        val settingsRepo = application.settingsRepository
+        if (!settingsRepo.isProtectionEnabled) {
+            return
+        }
 
-        val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent) ?: return
-        if (messages.isEmpty()) return
+        val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
+        if (messages == null || messages.isEmpty()) {
+            return
+        }
 
-        val sender = messages[0].originatingAddress ?: "Desconocido"
+        val firstMessage = messages[0]
+        val rawSender = firstMessage.originatingAddress
+        val sender = if (rawSender != null) {
+            rawSender
+        } else {
+            "Desconocido"
+        }
+
         val bodyBuilder = StringBuilder()
         for (msg in messages) {
-            msg.messageBody?.let { bodyBuilder.append(it) }
+            val part = msg.messageBody
+            if (part != null) {
+                bodyBuilder.append(part)
+            }
         }
         val fullBody = bodyBuilder.toString()
-        if (fullBody.isBlank()) return
+        if (fullBody.isBlank()) {
+            return
+        }
 
         val isOrdered = isOrderedBroadcast
         val pendingResult = goAsync()
-        val smsRepo = app.smsRepository
+        val smsRepo = application.smsRepository
 
         receiverScope.launch {
             try {
@@ -62,13 +84,10 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
                 if (analysis.isQuarantined) {
                     ThreatNotificationManager.showThreatAlert(context, sender, analysis)
 
-                    // Si es una difusión ordenada (SMS_DELIVER cuando es app predeterminada, o SMS_RECEIVED con prioridad)
-                    // abortamos la propagación para que el mensaje no alerte al usuario ni contamine la bandeja de entrada
                     if (isOrdered) {
                         try {
                             abortBroadcast()
                         } catch (e: Exception) {
-                            // Si la difusión ya fue finalizada por el sistema
                         }
                     }
                 }

@@ -98,13 +98,18 @@ class ManualAnalyzerViewModel(
     }
 
     fun analyze() {
-        if (_bodyInput.value.isBlank()) return
+        val sender = _senderInput.value
+        val body = _bodyInput.value
+        if (body.isBlank()) {
+            return
+        }
+
         viewModelScope.launch {
-            val isWhitelisted = smsRepository.isSenderWhitelisted(_senderInput.value)
+            val isWhitelisted = smsRepository.isSenderWhitelisted(sender)
             val customPatterns = smsRepository.getActiveCustomRegexes()
             val result = SmishDetectorEngine.analyze(
-                sender = _senderInput.value,
-                body = _bodyInput.value,
+                sender = sender,
+                body = body,
                 isWhitelisted = isWhitelisted,
                 customBlockPatterns = customPatterns
             )

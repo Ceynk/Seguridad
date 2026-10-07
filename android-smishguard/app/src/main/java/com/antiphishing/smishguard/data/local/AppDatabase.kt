@@ -35,14 +35,24 @@ abstract class AppDatabase : RoomDatabase() {
         private var INSTANCE: AppDatabase? = null
 
         fun getInstance(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "smishguard_vault.db"
-                ).fallbackToDestructiveMigration().build()
-                INSTANCE = instance
-                instance
+            val currentInstance = INSTANCE
+            if (currentInstance != null) {
+                return currentInstance
+            }
+
+            return synchronized(this) {
+                val existingInstance = INSTANCE
+                if (existingInstance != null) {
+                    existingInstance
+                } else {
+                    val newInstance = Room.databaseBuilder(
+                        context.applicationContext,
+                        AppDatabase::class.java,
+                        "smishguard_vault.db"
+                    ).fallbackToDestructiveMigration().build()
+                    INSTANCE = newInstance
+                    newInstance
+                }
             }
         }
     }

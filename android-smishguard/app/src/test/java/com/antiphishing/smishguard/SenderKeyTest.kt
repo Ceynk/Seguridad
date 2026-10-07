@@ -8,7 +8,6 @@ class SenderKeyTest {
 
     @Test
     fun pruebaCoincidenciaNumeroConYPrefijoDePais() {
-        // En Colombia (+57)
         val storedInWhitelist = "3001234567"
         val incomingFromNetwork = "+57 300 123 4567"
 
