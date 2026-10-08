@@ -241,11 +241,11 @@ export const ComponenteOpciones: React.FC = () => {
       <section className="contenedor-laboratorio">
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <FlaskConical size={22} color="#c084fc" />
-          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#f3e8ff" }}>
+          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#6b21a8" }}>
             Simulador de URLs y Vectores de Ataque
           </h2>
         </div>
-        <p style={{ fontSize: "12px", color: "#cbd5e1", lineHeight: "1.5" }}>
+        <p style={{ fontSize: "12px", color: "#475569", lineHeight: "1.5" }}>
           Permite generar y evaluar variantes sintácticas para comprobar la respuesta del motor de detección ante distintas técnicas de evasión.
         </p>
 
@@ -317,7 +317,7 @@ export const ComponenteOpciones: React.FC = () => {
         </div>
 
         <div>
-          <span style={{ fontSize: "11px", fontWeight: 700, color: "#94a3b8" }}>
+          <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748b" }}>
             URL Sintetizada:
           </span>
           <div className="caja-url-generada">
@@ -350,24 +350,24 @@ export const ComponenteOpciones: React.FC = () => {
               <span style={{ fontWeight: 700, fontSize: "14px" }}>
                 Resultado: {resultadoLab.clasificacion} ({resultadoLab.puntuacionRiesgo}/100)
               </span>
-              <span style={{ fontSize: "11px", color: "#38bdf8", fontFamily: "ui-monospace" }}>
+              <span style={{ fontSize: "11px", color: "#0284c7", fontFamily: "ui-monospace" }}>
                 {resultadoLab.tiempoProcesamientoMs} ms
               </span>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "4px" }}>
-              <div style={{ background: "rgba(15, 23, 42, 0.6)", padding: "6px", borderRadius: "4px", fontSize: "11px" }}>
+              <div style={{ background: "#f1f5f9", padding: "6px", borderRadius: "4px", fontSize: "11px" }}>
                 <strong>Entropía Shannon:</strong> {resultadoLab.caracteristicas.entropiaShannon} bits/símbolo
               </div>
-              <div style={{ background: "rgba(15, 23, 42, 0.6)", padding: "6px", borderRadius: "4px", fontSize: "11px" }}>
+              <div style={{ background: "#f1f5f9", padding: "6px", borderRadius: "4px", fontSize: "11px" }}>
                 <strong>MITRE ATT&CK:</strong> {resultadoLab.reglasCoincidentes.map((r) => r.tecnicaMitre?.id).filter(Boolean).join(", ") || "N/A"}
               </div>
             </div>
 
             <div style={{ marginTop: "6px" }}>
-              <strong style={{ fontSize: "11px", color: "#fca5a5" }}>Reglas Activadas:</strong>
+              <strong style={{ fontSize: "11px", color: "#dc2626" }}>Reglas Activadas:</strong>
               {resultadoLab.reglasCoincidentes.map((regla) => (
-                <div key={regla.id} style={{ fontSize: "11px", color: "#e2e8f0", marginTop: "2px" }}>
+                <div key={regla.id} style={{ fontSize: "11px", color: "#334155", marginTop: "2px" }}>
                   • <strong>{regla.nombre}</strong> (+{regla.puntuacion} pts): {regla.descripcion}
                 </div>
               ))}
@@ -568,32 +568,32 @@ export const ComponenteOpciones: React.FC = () => {
               </span>
             </div>
 
-            <div style={{ fontSize: "11px", color: "#94a3b8" }}>
+            <div style={{ fontSize: "11px", color: "#64748b" }}>
               Tiempo: {resultadoPrueba.tiempoProcesamientoMs} ms • Entropía Shannon: {resultadoPrueba.caracteristicas.entropiaShannon} bits/símbolo
             </div>
 
             {resultadoPrueba.reglasCoincidentes.length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}>
-                <strong style={{ fontSize: "12px", color: "#e2e8f0" }}>Reglas activadas:</strong>
+                <strong style={{ fontSize: "12px", color: "#334155" }}>Reglas activadas:</strong>
                 {resultadoPrueba.reglasCoincidentes.map((regla) => (
                   <div
                     key={regla.id}
                     style={{
-                      backgroundColor: "rgba(15, 23, 42, 0.6)",
+                      backgroundColor: "#f1f5f9",
                       padding: "8px",
                       borderRadius: "6px",
                       fontSize: "11px",
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontWeight: 600, color: "#f87171" }}>{regla.nombre}</span>
+                      <span style={{ fontWeight: 600, color: "#dc2626" }}>{regla.nombre}</span>
                       {regla.tecnicaMitre && (
-                        <span style={{ color: "#60a5fa", fontFamily: "ui-monospace" }}>
+                        <span style={{ color: "#2563eb", fontFamily: "ui-monospace" }}>
                           [{regla.tecnicaMitre.id}]
                         </span>
                       )}
                     </div>
-                    <div style={{ color: "#94a3b8" }}>{regla.descripcion}</div>
+                    <div style={{ color: "#64748b" }}>{regla.descripcion}</div>
                   </div>
                 ))}
               </div>
@@ -606,7 +606,7 @@ export const ComponenteOpciones: React.FC = () => {
         <h2 className="titulo-seccion">
           <Lock size={18} /> Privacidad
         </h2>
-        <p style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.6" }}>
+        <p style={{ fontSize: "12px", color: "#64748b", lineHeight: "1.6" }}>
           • El análisis se ejecuta de manera local en el navegador.
           <br />
           • No se almacena historial de navegación persistente ni se inspeccionan contraseñas o campos de formulario.
