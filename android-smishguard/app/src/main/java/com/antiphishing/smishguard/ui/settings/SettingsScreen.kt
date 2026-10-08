@@ -69,7 +69,7 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Sensibilidad de Aislamiento",
+                            text = "Sensibilidad de Detección",
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary
                         )
@@ -81,7 +81,7 @@ fun SettingsScreen(
                     }
 
                     Text(
-                        text = "Los SMS con una puntuación de riesgo igual o mayor a $threshold% serán enviados a la Bóveda Honeypot.",
+                        text = "Los mensajes con una puntuación de riesgo igual o mayor a $threshold% serán enviados a Cuarentena.",
                         fontSize = 12.sp,
                         color = TextSecondary
                     )
@@ -182,7 +182,7 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.Default.CleaningServices, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Vaciar Bóveda Honeypot")
+                        Text("Vaciar Cuarentena")
                     }
 
                     OutlinedButton(
@@ -196,7 +196,7 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Limpiar Todo el Historial de Análisis")
+                        Text("Limpiar Historial de Análisis")
                     }
                 }
             }
@@ -206,16 +206,16 @@ fun SettingsScreen(
                     onDismissRequest = { showClearDialog = false },
                     title = {
                         Text(
-                            text = if (clearType == "VAULT") "Vaciar Bóveda" else "Limpiar Historial",
+                            text = if (clearType == "VAULT") "Vaciar Cuarentena" else "Limpiar Historial",
                             color = TextPrimary
                         )
                     },
                     text = {
                         Text(
                             text = if (clearType == "VAULT")
-                                "¿Deseas eliminar permanentemente todos los mensajes aislados en la Bóveda Honeypot?"
+                                "¿Deseas eliminar todos los mensajes de la lista de cuarentena?"
                             else
-                                "¿Deseas eliminar todos los registros analizados e historial de la base de datos local?",
+                                "¿Deseas eliminar todos los registros analizados del historial?",
                             color = TextSecondary
                         )
                     },

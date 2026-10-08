@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.antiphishing.smishguard.SmishDetectorEngineTest" tests="31" skipped="0" failures="0" errors="0" timestamp="2026-10-07T22:22:19" hostname="DESKTOP-LPRS91P" time="0.117">
+<testsuite name="com.antiphishing.smishguard.SmishDetectorEngineTest" tests="31" skipped="0" failures="0" errors="0" timestamp="2026-10-08T05:30:37" hostname="DESKTOP-LPRS91P" time="0.061">
   <properties/>
-  <testcase name="pruebaCelularPrivadoEnviandoAlertaBancariaEsSospechoso" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.048"/>
-  <testcase name="pruebaDeteccionFraudeDianConEmbargo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.004"/>
-  <testcase name="pruebaDeteccionFalsoPrestamoGotaAGota" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.003"/>
-  <testcase name="pruebaDeteccionUrlMaliciosaSinProtocoloYSinBarraFinal" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.003"/>
-  <testcase name="pruebaDefangCompletoDeUrlsIpsYDominios" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.003"/>
+  <testcase name="pruebaCelularPrivadoEnviandoAlertaBancariaEsSospechoso" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.013"/>
+  <testcase name="pruebaDeteccionFraudeDianConEmbargo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.003"/>
+  <testcase name="pruebaDeteccionFalsoPrestamoGotaAGota" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
+  <testcase name="pruebaDeteccionUrlMaliciosaSinProtocoloYSinBarraFinal" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaDefangCompletoDeUrlsIpsYDominios" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
   <testcase name="pruebaDeteccionAtaqueHomografoConCaracteresCirlicos" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.006"/>
   <testcase name="pruebaDeteccionEspaciadoArtificialEvasivo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.005"/>
-  <testcase name="pruebaSmsLegitimoDaviviendaConSubdominioOficialSinFalsoPositivo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
-  <testcase name="pruebaNoFalsoPositivoMarcasCortasIngYPse" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.003"/>
-  <testcase name="pruebaSmsLegitimoNequiOtpSinFalsoPositivo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
-  <testcase name="pruebaDeteccionSuplantacionMarcaCortaCuandoEstaDelimitada" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaSmsLegitimoDaviviendaConSubdominioOficialSinFalsoPositivo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaNoFalsoPositivoMarcasCortasIngYPse" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
+  <testcase name="pruebaSmsLegitimoNequiOtpSinFalsoPositivo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
+  <testcase name="pruebaDeteccionSuplantacionMarcaCortaCuandoEstaDelimitada" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
   <testcase name="pruebaAtaqueConOtpFalsoYIngenieriaSocialNoSeNeutraliza" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
-  <testcase name="pruebaSmsLegitimoBancolombiaClaveDinamicaSinFalsoPositivo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
-  <testcase name="pruebaDeteccionSuplantacionOperadorMovilImei" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
-  <testcase name="pruebaDeteccionEstafaSuplantacionFamiliar" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
-  <testcase name="pruebaDeteccionEvasionConCaracteresInvisiblesAnchoCero" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
-  <testcase name="pruebaDeteccionPhishingNequiConAlojamientoAbusado" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
-  <testcase name="pruebaDeteccionRoboTokenOtpDinamico" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.0"/>
+  <testcase name="pruebaSmsLegitimoBancolombiaClaveDinamicaSinFalsoPositivo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.0"/>
+  <testcase name="pruebaDeteccionSuplantacionOperadorMovilImei" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaDeteccionEstafaSuplantacionFamiliar" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaDeteccionEvasionConCaracteresInvisiblesAnchoCero" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaDeteccionPhishingNequiConAlojamientoAbusado" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaDeteccionRoboTokenOtpDinamico" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
   <testcase name="pruebaDefangTextNeutralizaIpsYProtocolosCompletamente" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.0"/>
-  <testcase name="pruebaSmsLegitimoBancolombiaConSubdominioOficialSinFalsoPositivo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
-  <testcase name="pruebaReglaPersonalizadaAislaMensajePorSiSola" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
-  <testcase name="pruebaRemitenteEnListaBlancaRetornaSeguro" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.0"/>
-  <testcase name="pruebaSmsLegitimoGoogleOtpEsSeguro" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaSmsLegitimoBancolombiaConSubdominioOficialSinFalsoPositivo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaReglaPersonalizadaAislaMensajePorSiSola" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaRemitenteEnListaBlancaRetornaSeguro" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaSmsLegitimoGoogleOtpEsSeguro" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.0"/>
   <testcase name="pruebaDeteccionMultipleEspaciadoArtificial" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.0"/>
-  <testcase name="pruebaSinEmojisEnResultadosDelMotor" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.003"/>
-  <testcase name="pruebaDeteccionPhishingBancarioConUrlMaliciosa" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.004"/>
-  <testcase name="pruebaDeteccionEstafaPaqueteriaConTldDeRiesgo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.003"/>
-  <testcase name="pruebaDeteccionFalsoDebitoPseConIpDirecta" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
-  <testcase name="pruebaDeteccionLeetspeakEnPalabrasSensibles" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.003"/>
+  <testcase name="pruebaSinEmojisEnResultadosDelMotor" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
+  <testcase name="pruebaDeteccionPhishingBancarioConUrlMaliciosa" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaDeteccionEstafaPaqueteriaConTldDeRiesgo" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaDeteccionFalsoDebitoPseConIpDirecta" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaDeteccionLeetspeakEnPalabrasSensibles" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.002"/>
   <testcase name="pruebaDeteccionFalsaMultaDgtConIpDirecta" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
   <testcase name="pruebaReglaPersonalizadaActivaCuarentena" classname="com.antiphishing.smishguard.SmishDetectorEngineTest" time="0.001"/>
   <system-out><![CDATA[]]></system-out>

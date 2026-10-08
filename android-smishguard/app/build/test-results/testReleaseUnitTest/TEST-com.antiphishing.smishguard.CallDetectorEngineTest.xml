@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.antiphishing.smishguard.CallDetectorEngineTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-10-08T05:30:35" hostname="DESKTOP-LPRS91P" time="0.123">
+  <properties/>
+  <testcase name="pruebaReglaPersonalizadaConRiesgoReDosEsManejadaSegura" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.103"/>
+  <testcase name="pruebaDeteccionLlamadaWangiriIslaAscension" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.01"/>
+  <testcase name="pruebaReglaPersonalizadaDeLlamadaBloquea" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaFalloVerificacionRedStirShakenSumaRiesgo" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.0"/>
+  <testcase name="pruebaLlamadaNumeroOcultoEnModoAgresivoBloquea" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaNumeroEnListaBlancaEsSeguro" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.0"/>
+  <testcase name="pruebaDeteccionLlamadaWangiriBenin" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaDeteccionLlamadaTarificacionEspecialColombia" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.0"/>
+  <testcase name="pruebaDeteccionLlamadaTarificacionEspecialEspana" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.0"/>
+  <testcase name="pruebaDeteccionNumeroMalformadoConVariosSignosMas" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaLlamadaNormalNacionalEsSegura" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.0"/>
+  <testcase name="pruebaNumeroEmergenciaEsSeguro" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.001"/>
+  <testcase name="pruebaDeteccionNeighborSpoofing" classname="com.antiphishing.smishguard.CallDetectorEngineTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

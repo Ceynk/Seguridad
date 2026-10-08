@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.antiphishing.smishguard.data.repository.SmsRepository
 import com.antiphishing.smishguard.domain.detector.SmishDetectorEngine
+import com.antiphishing.smishguard.domain.detector.UrlDecision
+import com.antiphishing.smishguard.domain.detector.UrlThreatAnalyzer
 import com.antiphishing.smishguard.domain.model.AnalysisResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +30,12 @@ class ManualAnalyzerViewModel(
 
     private val _analysisResult = MutableStateFlow<AnalysisResult?>(null)
     val analysisResult: StateFlow<AnalysisResult?> = _analysisResult.asStateFlow()
+
+    private val _blockedDecision = MutableStateFlow<UrlDecision?>(null)
+    val blockedDecision: StateFlow<UrlDecision?> = _blockedDecision.asStateFlow()
+
+    private val _safeUrlToOpen = MutableStateFlow<String?>(null)
+    val safeUrlToOpen: StateFlow<String?> = _safeUrlToOpen.asStateFlow()
 
     val presets = listOf(
         PresetSmishTemplate(
@@ -117,9 +125,32 @@ class ManualAnalyzerViewModel(
         }
     }
 
+    fun attemptOpenUrl(rawUrl: String) {
+        val decision = UrlThreatAnalyzer.analyzeSingleUrl(rawUrl)
+        if (decision.isBlocked) {
+            _blockedDecision.value = decision
+        } else {
+            _safeUrlToOpen.value = rawUrl
+        }
+    }
+
+    fun showBlockedDecision(decision: UrlDecision) {
+        _blockedDecision.value = decision
+    }
+
+    fun dismissBlockedDecision() {
+        _blockedDecision.value = null
+    }
+
+    fun consumeSafeUrl() {
+        _safeUrlToOpen.value = null
+    }
+
     fun clear() {
         _senderInput.value = ""
         _bodyInput.value = ""
         _analysisResult.value = null
+        _blockedDecision.value = null
+        _safeUrlToOpen.value = null
     }
 }

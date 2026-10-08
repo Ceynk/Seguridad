@@ -65,12 +65,12 @@ fun QuarantineScreen(
         item {
             Column {
                 Text(
-                    text = "Bóveda Honeypot",
+                    text = "Cuarentena de Mensajes",
                     style = MaterialTheme.typography.headlineMedium,
                     color = CyberCyan
                 )
                 Text(
-                    text = "SMS maliciosos neutralizados y aislados en entorno seguro.",
+                    text = "Mensajes sospechosos aislados preventivamente.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )
@@ -267,7 +267,7 @@ fun QuarantinedMessageCard(
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        text = "CONTENIDO NEUTRALIZADO (AISLADO):",
+                        text = "CONTENIDO DEL MENSAJE:",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = CyberCyan
@@ -288,9 +288,9 @@ fun QuarantinedMessageCard(
                 contentPadding = PaddingValues(0.dp)
             ) {
                 val buttonText = if (isExpanded) {
-                    "Ocultar desglose forense"
+                    "Ocultar detalles"
                 } else {
-                    "Ver factores de amenaza (${message.threatFactors.size})"
+                    "Ver factores de riesgo (${message.threatFactors.size})"
                 }
                 Text(
                     text = buttonText,

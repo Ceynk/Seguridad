@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.antiphishing.smishguard.SecurityVerificationTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-10-08T05:30:35" hostname="DESKTOP-LPRS91P" time="0.059">
+  <properties/>
+  <testcase name="escenario06_urlConCaracteresExtraños" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.039"/>
+  <testcase name="escenario13_intentarAbrirUrlSegura" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.001"/>
+  <testcase name="escenario07_urlAcortada" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.001"/>
+  <testcase name="escenario12_intentarAbrirUrlMaliciosa" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.009"/>
+  <testcase name="escenario08_urlVaciaOInvalida" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.0"/>
+  <testcase name="escenario05_urlConSubdominiosSospechosos" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.002"/>
+  <testcase name="escenario10_numeroTelefonicoSospechoso" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.0"/>
+  <testcase name="escenario04_urlConIpEnLugarDeDominio" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.001"/>
+  <testcase name="escenario11_numeroDesconocido" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.0"/>
+  <testcase name="escenario01_urlNormalYConocida" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.001"/>
+  <testcase name="escenario09_numeroTelefonicoNormal" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.0"/>
+  <testcase name="escenario02_urlConEstructuraSospechosa" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.002"/>
+  <testcase name="escenario03_urlDePhishingConocidaParaPruebas" classname="com.antiphishing.smishguard.SecurityVerificationTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

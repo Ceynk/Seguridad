@@ -1,0 +1,19 @@
+R_DEF: Internal format may change without notice
+local
+color accent
+color background_dark
+color primary
+color primary_dark
+color surface_dark
+drawable ic_shield
+string app_name
+string app_tagline
+string channel_status_desc
+string channel_status_name
+string channel_threats_desc
+string channel_threats_name
+string notification_service_label
+string threat_detected_desc
+string threat_detected_title
+style Theme.SmishGuard
+xml data_extraction_rules

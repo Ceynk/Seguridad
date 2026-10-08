@@ -233,6 +233,15 @@ if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessage)
           break;
         }
 
+        case "ANALIZAR_ENLACE": {
+          if (mensaje.url) {
+            const resultado = await motorRiesgo.analizarUrl(mensaje.url);
+            responder({ exito: true, datos: resultado });
+            return;
+          }
+          break;
+        }
+
         default:
           responder({ exito: false, mensaje: "Tipo de mensaje desconocido" });
       }

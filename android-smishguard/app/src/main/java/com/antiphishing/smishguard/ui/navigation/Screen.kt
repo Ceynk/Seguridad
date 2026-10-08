@@ -8,14 +8,16 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector? = null) {
-    object Dashboard : Screen("dashboard", "Protección", Icons.Default.Security)
-    object Quarantine : Screen("quarantine", "Bóveda Honeypot", Icons.Default.Lock)
-    object ManualAnalyzer : Screen("analyzer", "Analizador", Icons.Default.BugReport)
-    object Settings : Screen("settings", "Ajustes", Icons.Default.Settings)
-    object Whitelist : Screen("whitelist", "Lista Blanca")
-    object CustomRules : Screen("custom_rules", "Reglas Propias")
+    data object Dashboard : Screen("dashboard", "Protección", Icons.Default.Security)
+    data object Quarantine : Screen("quarantine", "Cuarentena", Icons.Default.Lock)
+    data object ManualAnalyzer : Screen("analyzer", "Analizador", Icons.Default.BugReport)
+    data object Settings : Screen("settings", "Ajustes", Icons.Default.Settings)
+    data object Whitelist : Screen("whitelist", "Lista Blanca")
+    data object CustomRules : Screen("custom_rules", "Reglas Propias")
+    data object BlockedUrl : Screen("blocked_url", "Enlace Bloqueado")
 
     companion object {
-        val bottomNavItems = listOf(Dashboard, Quarantine, ManualAnalyzer, Settings)
+        val bottomNavItems: List<Screen>
+            get() = listOf(Dashboard, Quarantine, ManualAnalyzer, Settings)
     }
 }

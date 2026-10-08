@@ -59,24 +59,26 @@ class MainActivity : ComponentActivity() {
                     targetDestination = Screen.ManualAnalyzer.route
                 }
             }
-        } else if (intent.action == Intent.ACTION_SENDTO || intent.action == Intent.ACTION_VIEW) {
-            var schemeSpecific = ""
+        } else if (intent.action == Intent.ACTION_VIEW) {
             val dataUri = intent.data
-            if (dataUri != null && dataUri.schemeSpecificPart != null) {
-                schemeSpecific = dataUri.schemeSpecificPart
+            if (dataUri != null) {
+                val scheme = dataUri.scheme?.lowercase()
+                if (scheme == "http" || scheme == "https") {
+                    initialSharedBody = dataUri.toString()
+                    targetDestination = Screen.ManualAnalyzer.route
+                } else if (scheme == "sms" || scheme == "smsto") {
+                    initialSharedSender = dataUri.schemeSpecificPart ?: ""
+                    initialSharedBody = intent.getStringExtra("sms_body") ?: intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
+                    targetDestination = Screen.ManualAnalyzer.route
+                }
             }
-
-            var sharedText = intent.getStringExtra("sms_body")
-            if (sharedText == null) {
-                sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+        } else if (intent.action == Intent.ACTION_SENDTO) {
+            val dataUri = intent.data
+            if (dataUri != null) {
+                initialSharedSender = dataUri.schemeSpecificPart ?: ""
             }
-            if (sharedText == null) {
-                sharedText = ""
-            }
-
-            if (schemeSpecific.isNotBlank() || sharedText.isNotBlank()) {
-                initialSharedSender = schemeSpecific
-                initialSharedBody = sharedText
+            initialSharedBody = intent.getStringExtra("sms_body") ?: intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
+            if (initialSharedSender.isNotBlank() || initialSharedBody.isNotBlank()) {
                 targetDestination = Screen.ManualAnalyzer.route
             }
         }

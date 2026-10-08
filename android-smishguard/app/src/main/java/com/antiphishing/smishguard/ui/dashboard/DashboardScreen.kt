@@ -58,7 +58,7 @@ fun DashboardScreen(
                         color = CyberCyan
                     )
                     Text(
-                        text = "Escudo Antiphishing SMS y Honeypot",
+                        text = "Protección contra smishing y fraude",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary
                     )
@@ -118,7 +118,7 @@ fun DashboardScreen(
                     modifier = Modifier.weight(1f)
                 )
                 MetricCard(
-                    title = "En Honeypot",
+                    title = "Cuarentena",
                     value = quarantinedCount.toString(),
                     icon = Icons.Default.Lock,
                     color = ThreatWarningYellow,
@@ -140,7 +140,7 @@ fun DashboardScreen(
                 ) {
                     Icon(Icons.Default.BugReport, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Probar Texto", maxLines = 1)
+                    Text("Analizar Enlace", maxLines = 1)
                 }
 
                 Button(
@@ -151,7 +151,7 @@ fun DashboardScreen(
                 ) {
                     Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Ver Bóveda", maxLines = 1)
+                    Text("Ver Cuarentena", maxLines = 1)
                 }
             }
         }
@@ -163,7 +163,7 @@ fun DashboardScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Ultimas Amenazas Aisladas",
+                    text = "Amenazas Detectadas",
                     style = MaterialTheme.typography.titleMedium,
                     color = TextPrimary
                 )
@@ -199,12 +199,12 @@ fun DashboardScreen(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "Bandeja protegida y limpia",
+                            text = "Sin amenazas recientes",
                             color = TextPrimary,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = "No se han detectado SMS maliciosos recientemente.",
+                            text = "No se han detectado mensajes maliciosos.",
                             color = TextSecondary,
                             fontSize = 12.sp
                         )

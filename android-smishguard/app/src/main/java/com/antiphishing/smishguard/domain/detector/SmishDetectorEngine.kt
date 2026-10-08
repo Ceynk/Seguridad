@@ -80,7 +80,9 @@ object SmishDetectorEngine {
         }
         val normalizedBody = HomographDetector.normalizeHomoglyphs(boundedBody)
 
-        val extractedUrls = UrlThreatAnalyzer.extractUrls(boundedBody)
+        val rawUrls = UrlThreatAnalyzer.extractUrls(boundedBody)
+        val normUrls = UrlThreatAnalyzer.extractUrls(normalizedBody)
+        val extractedUrls = (rawUrls + normUrls).distinct()
         val urlFactors = UrlThreatAnalyzer.analyzeUrls(extractedUrls)
         factors.addAll(urlFactors)
 
@@ -247,6 +249,7 @@ object SmishDetectorEngine {
             .replace("https://", "hxxps://", ignoreCase = true)
             .replace("http://", "hxxp://", ignoreCase = true)
             .replace("www.", "w[w]w[.]", ignoreCase = true)
+            .replace("www[.]", "w[w]w[.]", ignoreCase = true)
 
         result = IP_DEFANG_REGEX.replace(result) { match ->
             "${match.groupValues[1]}[.]${match.groupValues[2]}[.]${match.groupValues[3]}[.]${match.groupValues[4]}"
