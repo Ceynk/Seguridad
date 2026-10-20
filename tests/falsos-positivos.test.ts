@@ -44,4 +44,11 @@ describe("Prevención de Falsos Positivos en Sitios Legítimos", () => {
     expect(resultado.clasificacion).toBe("SEGURO");
     expect(resultado.puntuacionRiesgo).toBeLessThan(30);
   });
+
+  it("no debe confundir una marca contenida dentro de una palabra con suplantación", async () => {
+    const resultado = await motor.analizarUrl("https://mygoogleanalytics.example.com/dashboard");
+
+    expect(resultado.clasificacion).toBe("SEGURO");
+    expect(resultado.reglasCoincidentes.some((regla) => regla.id === "REGLA_SUPLANTACION")).toBe(false);
+  });
 });

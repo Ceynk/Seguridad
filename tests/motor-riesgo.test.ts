@@ -84,4 +84,29 @@ describe("Motor de Riesgo y Clasificación Heurística", () => {
     expect(res3.clasificacion).toBe("MALICIOSO");
     expect(res3.puntuacionRiesgo).toBe(95);
   });
+
+  it("no debe elevar una señal débil aislada a maliciosa", async () => {
+    const resultado = await motor.analizarUrl("https://catalogo-ejemplo.top/productos");
+
+    expect(resultado.clasificacion).toBe("SEGURO");
+    expect(resultado.puntuacionRiesgo).toBeLessThan(70);
+  });
+
+  it("debe priorizar la combinación de suplantación y contexto sensible", async () => {
+    const resultado = await motor.analizarUrl(
+      "https://bancolombia-seguridad-falsa.xyz/actualizar-datos/verificar-clave"
+    );
+
+    expect(resultado.clasificacion).toBe("MALICIOSO");
+    expect(resultado.reglasCoincidentes.some((regla) => regla.id === "REGLA_CONTEXTO_SOCIAL")).toBe(true);
+    expect(resultado.reglasCoincidentes.some((regla) => regla.id === "REGLA_SUPLANTACION")).toBe(true);
+  });
+
+  it("solo debe recomendar bloqueo automático con evidencia fuerte", async () => {
+    const urlDebil = await motor.analizarUrl("https://catalogo-ejemplo.top/productos");
+    const urlFuerte = await motor.analizarUrl("http://banc0l0mbia-login-verificacion.xyz/portal");
+
+    expect(urlDebil.esBloqueoAltaConfianza).toBe(false);
+    expect(urlFuerte.esBloqueoAltaConfianza).toBe(true);
+  });
 });

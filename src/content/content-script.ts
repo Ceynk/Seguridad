@@ -2,6 +2,23 @@ declare const chrome: any;
 
 let temporizador: any = null;
 
+function enviarEvidenciaDocumento() {
+  if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) return;
+
+  const formularios = document.forms;
+  const tieneCampoContrasena = Boolean(document.querySelector('input[type="password"]'));
+  const tieneFormularioSensible = Array.from(formularios).some((formulario) => {
+    const texto = `${formulario.action} ${formulario.innerText}`.toLowerCase();
+    return tieneCampoContrasena || /login|ingreso|cuenta|pago|tarjeta|seguridad|verificar/.test(texto);
+  });
+
+  chrome.runtime.sendMessage({
+    tipo: "ANALIZAR_DOCUMENTO",
+    tieneFormularioSensible,
+    tieneCampoContrasena,
+  });
+}
+
 function analizarEnlaces() {
   if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id) return;
   
@@ -33,6 +50,7 @@ function analizarEnlaces() {
 }
 
 analizarEnlaces();
+enviarEvidenciaDocumento();
 
 const observador = new MutationObserver(() => {
   if (temporizador) clearTimeout(temporizador);

@@ -119,6 +119,8 @@ export interface ResultadoAnalisisUrl {
   esDominioConocidoSeguro: boolean;
   esDominioConocidoMalicioso: boolean;
   tiempoProcesamientoMs: number;
+  esBloqueoAltaConfianza: boolean;
+  requiereConfirmacionDocumento: boolean;
   huellaSha256?: string;
   fichaForense?: FichaForenseIncidente;
 }

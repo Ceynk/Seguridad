@@ -10,6 +10,7 @@ let configuracionEnMemoria: ConfiguracionExtension = CONFIGURACION_PREDETERMINAD
 const dominiosExcepcionTemporal = new Set<string>();
 const mapaResultadosPorPestana = new Map<number, ResultadoAnalisisUrl>();
 const pestanasEnProcesoBloqueo = new Set<number>();
+const confirmacionesDocumento = new Map<number, { tieneFormularioSensible: boolean; tieneCampoContrasena: boolean }>();
 
 function actualizarInsigniaPestana(idPestana: number, resultado: ResultadoAnalisisUrl): void {
   if (typeof chrome === "undefined" || !chrome.action) return;
@@ -28,6 +29,7 @@ function actualizarInsigniaPestana(idPestana: number, resultado: ResultadoAnalis
       chrome.action.setBadgeBackgroundColor({ tabId: idPestana, color: "#16A34A" });
       break;
   }
+
 }
 
 function esUrlExcluida(urlTexto: string): boolean {
@@ -129,6 +131,7 @@ async function procesarNavegacion(idPestana: number, urlTexto: string): Promise<
 
     if (
       resultado.clasificacion === "MALICIOSO" &&
+      resultado.esBloqueoAltaConfianza &&
       configuracionEnMemoria.bloquearMaliciososAutomaticamente
     ) {
       pestanasEnProcesoBloqueo.add(idPestana);
@@ -169,11 +172,12 @@ if (typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.onRemoved) {
   chrome.tabs.onRemoved.addListener((idPestana) => {
     mapaResultadosPorPestana.delete(idPestana);
     pestanasEnProcesoBloqueo.delete(idPestana);
+    confirmacionesDocumento.delete(idPestana);
   });
 }
 
 if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessage) {
-  chrome.runtime.onMessage.addListener((mensaje, _remitente, responder) => {
+  chrome.runtime.onMessage.addListener((mensaje, remitente, responder) => {
     (async () => {
       switch (mensaje.tipo) {
         case "OBTENER_ANALISIS_PESTANA_ACTUAL": {
@@ -238,6 +242,33 @@ if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessage)
             const resultado = await motorRiesgo.analizarUrl(mensaje.url);
             responder({ exito: true, datos: resultado });
             return;
+          }
+          break;
+        }
+
+        case "ANALIZAR_DOCUMENTO": {
+          const idPestana = typeof mensaje.idPestana === "number" ? mensaje.idPestana : remitente.tab?.id;
+          if (typeof idPestana === "number") {
+            const evidencia = {
+              tieneFormularioSensible: Boolean(mensaje.tieneFormularioSensible),
+              tieneCampoContrasena: Boolean(mensaje.tieneCampoContrasena),
+            };
+            confirmacionesDocumento.set(idPestana, evidencia);
+            const resultado = mapaResultadosPorPestana.get(idPestana);
+            if (resultado && resultado.clasificacion === "MALICIOSO" && evidencia.tieneFormularioSensible) {
+              resultado.esBloqueoAltaConfianza = true;
+              resultado.requiereConfirmacionDocumento = false;
+              mapaResultadosPorPestana.set(idPestana, resultado);
+              if (configuracionEnMemoria.bloquearMaliciososAutomaticamente && !pestanasEnProcesoBloqueo.has(idPestana)) {
+                pestanasEnProcesoBloqueo.add(idPestana);
+                const urlOriginal = remitente.tab?.url;
+                if (urlOriginal) {
+                  const urlBloqueo = construirUrlPaginaBloqueo(urlOriginal, resultado.nombreHost, resultado);
+                  chrome.tabs.update(idPestana, { url: urlBloqueo });
+                }
+              }
+            }
+            responder({ exito: true });
           }
           break;
         }

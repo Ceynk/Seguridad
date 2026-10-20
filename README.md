@@ -18,7 +18,7 @@ Extensión de navegador para detección, advertencia y bloqueo de sitios fraudul
 
 ## Descripción
 
-PhishGuard Colombia intercepta y evalúa URLs antes de su carga en el navegador, calculando un índice de riesgo basado en heurística léxica, detección de homoglifos, análisis estructural y reputación local.
+PhishGuard Colombia intercepta y evalúa URLs antes de su carga en el navegador, calculando un índice de riesgo basado en heurística contextual, detección de homoglifos, análisis estructural y reputación local.
 
 Clasificación de riesgo:
 - **SEGURO (0 - 29 puntos):** Sin indicadores de riesgo detectados.
@@ -129,13 +129,17 @@ Los artefactos de producción se generan en la carpeta `dist/`.
 
 | Indicador | Severidad | Puntuación Base | Descripción |
 | :--- | :--- | :--- | :--- |
-| **Suplantación de Marca** | CRÍTICA | 45 - 55 pts | Detección de marcas en dominios no oficiales u homoglifos (`banc0l0mbia`, `nequ1`). |
-| **Host IP Directo** | ALTA | 35 - 55 pts | Uso de IPv4 o IPv6 directa en lugar de nombre de dominio. |
-| **Punycode / IDN** | ALTA | 35 - 60 pts | Prefijo `xn--` utilizado en nombres de dominio internacionalizados. |
-| **Anomalías Estructurales** | ALTA | 20 - 45 pts | Presencia de `@`, múltiples subdominios anidados o exceso de guiones. |
-| **TLD de Alto Riesgo** | MEDIA | 20 - 45 pts | Extensiones frecuentemente asociadas a abuso (`.xyz`, `.top`, `.click`, `.tk`). |
-| **Patrones Léxicos** | MEDIA | 10 - 30 pts | Combinación de términos de autenticación con alertas de urgencia. |
-| **Protocolo HTTP** | MEDIA | 15 - 35 pts | Ausencia de cifrado HTTPS en flujos con palabras sensibles. |
+| **Suplantación de Marca** | CRÍTICA | 50 pts | Detección de marcas en etiquetas de dominio no oficiales u homoglifos (`banc0l0mbia`, `nequ1`). |
+| **Host IP Directo** | ALTA | 40 pts | Uso de IPv4 o IPv6 directa en lugar de nombre de dominio. |
+| **Punycode / IDN** | ALTA | 60 pts | Prefijo `xn--` o caracteres confusables en nombres de dominio. |
+| **Anomalías Estructurales** | MEDIA | 5 - 35 pts | Presencia de `@`, subdominios profundos, etiquetas compuestas o codificación elevada. |
+| **TLD de abuso frecuente** | MEDIA | 20 pts | Extensiones con alta tasa histórica de abuso (`.xyz`, `.top`, `.click`, `.tk`). |
+| **Contexto de ingeniería social** | ALTA | 25 - 30 pts | Solo puntúa cuando combina autenticación, contexto financiero o presión temporal. |
+| **Protocolo HTTP** | BAJA | 5 pts | Solo puntúa junto con un contexto sensible de ingeniería social. |
+
+Las señales aisladas no provocan bloqueo automático. La puntuación se combina con reputación local y contexto; las listas blancas oficiales y personalizadas se evalúan antes de las reglas heurísticas.
+
+El bloqueo automático requiere una entrada de lista negra o evidencia heurística fuerte. Las señales moderadas se muestran como sospechosas y pueden solicitar una confirmación documental local cuando la página contiene un formulario sensible. La versión actual no envía URLs, hashes ni datos de navegación a servicios externos.
 
 ---
 

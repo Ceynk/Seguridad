@@ -16,6 +16,11 @@ export const DOMINIOS_CONFIABLES_LOCALES: EntradaReputacion[] = [
   { dominio: "instagram.com", tipo: "BLANCA", categoria: "Redes Sociales", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Instagram" },
   { dominio: "cdninstagram.com", tipo: "BLANCA", categoria: "Redes Sociales", fechaRegistro: "2026-01-01", descripcion: "CDN oficial de Instagram" },
   { dominio: "whatsapp.com", tipo: "BLANCA", categoria: "Mensajería", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de WhatsApp" },
+  { dominio: "spotify.com", tipo: "BLANCA", categoria: "Entretenimiento", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Spotify" },
+  { dominio: "twitch.tv", tipo: "BLANCA", categoria: "Entretenimiento", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Twitch" },
+  { dominio: "airbnb.com.co", tipo: "BLANCA", categoria: "Comercio", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Airbnb Colombia" },
+  { dominio: "booking.com", tipo: "BLANCA", categoria: "Turismo", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Booking" },
+  { dominio: "aws.amazon.com", tipo: "BLANCA", categoria: "Tecnología", fechaRegistro: "2026-01-01", descripcion: "Dominio oficial de Amazon Web Services" },
 
   { dominio: "bancolombia.com", tipo: "BLANCA", categoria: "Banca Colombia", fechaRegistro: "2026-01-01", descripcion: "Portal oficial Bancolombia" },
   { dominio: "nequi.com.co", tipo: "BLANCA", categoria: "Banca Digital", fechaRegistro: "2026-01-01", descripcion: "Portal oficial Nequi Colombia" },

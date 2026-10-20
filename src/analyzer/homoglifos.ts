@@ -420,7 +420,13 @@ export function detectarSimilitudMarcas(
     const nombresAComparar = [marca.nombre, ...marca.nombresAlternativos];
 
     for (const nombreMarca of nombresAComparar) {
-      if (hostMinusculas.includes(nombreMarca) && !dominioMinusculas.includes(dominioLegitimoMinusculas)) {
+      const marcaEsToken = tokensHost.includes(nombreMarca);
+      const alternativaEsEtiqueta = nombreMarca.includes("-") && hostMinusculas.includes(nombreMarca);
+
+      if (
+        (marcaEsToken || alternativaEsEtiqueta) &&
+        !dominioMinusculas.includes(dominioLegitimoMinusculas)
+      ) {
         resultados.push({
           marcaObjetivo: marca.nombre,
           dominioOriginal: marca.dominioLegitimo,
