@@ -20,6 +20,7 @@ import com.antiphishing.smishguard.ui.dashboard.DashboardViewModel
 import com.antiphishing.smishguard.ui.quarantine.QuarantineScreen
 import com.antiphishing.smishguard.ui.quarantine.QuarantineViewModel
 import com.antiphishing.smishguard.ui.settings.CustomRulesScreen
+import com.antiphishing.smishguard.ui.settings.CommunityBlacklistScreen
 import com.antiphishing.smishguard.ui.settings.SettingsScreen
 import com.antiphishing.smishguard.ui.settings.SettingsViewModel
 import com.antiphishing.smishguard.ui.settings.WhitelistScreen
@@ -43,7 +44,7 @@ class AppViewModelFactory(private val app: SmishGuardApp) : ViewModelProvider.Fa
             modelClass.isAssignableFrom(ManualAnalyzerViewModel::class.java) ->
                 ManualAnalyzerViewModel(app.smsRepository) as T
             modelClass.isAssignableFrom(SettingsViewModel::class.java) ->
-                SettingsViewModel(app.settingsRepository, app.smsRepository, app.callRepository) as T
+                SettingsViewModel(app.settingsRepository, app.smsRepository, app.callRepository, app.communityApiClient) as T
             else -> throw IllegalArgumentException("ViewModel no reconocido")
         }
     }
@@ -154,6 +155,8 @@ fun AppNavigation(
                     viewModel = settingsViewModel,
                     onNavigateToWhitelist = { navController.navigate(Screen.Whitelist.route) },
                     onNavigateToCustomRules = { navController.navigate(Screen.CustomRules.route) }
+                    ,
+                    onNavigateToCommunityBlacklist = { navController.navigate(Screen.CommunityBlacklist.route) }
                 )
             }
             composable(Screen.Whitelist.route) {
@@ -164,6 +167,12 @@ fun AppNavigation(
             }
             composable(Screen.CustomRules.route) {
                 CustomRulesScreen(
+                    viewModel = settingsViewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Screen.CommunityBlacklist.route) {
+                CommunityBlacklistScreen(
                     viewModel = settingsViewModel,
                     onBack = { navController.popBackStack() }
                 )

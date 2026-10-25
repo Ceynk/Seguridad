@@ -4,6 +4,8 @@ import android.app.Application
 import android.util.Log
 import com.antiphishing.smishguard.data.local.AppDatabase
 import com.antiphishing.smishguard.data.repository.CallRepository
+import com.antiphishing.smishguard.data.repository.CommunityApiClient
+import com.antiphishing.smishguard.data.repository.CommunityIndicator
 import com.antiphishing.smishguard.data.repository.RuleCache
 import com.antiphishing.smishguard.data.repository.SecuritySettingsRepository
 import com.antiphishing.smishguard.data.repository.SmsRepository
@@ -32,24 +34,30 @@ class SmishGuardApp : Application() {
     lateinit var settingsRepository: SecuritySettingsRepository
         private set
 
+    lateinit var communityApiClient: CommunityApiClient
+        private set
+
     override fun onCreate() {
         super.onCreate()
         database = AppDatabase.getInstance(this)
         ruleCache = RuleCache(
             whitelistDao = database.whitelistDao(),
-            customRuleDao = database.customRuleDao()
+            customRuleDao = database.customRuleDao(),
+            communityBlacklistDao = database.communityBlacklistDao()
         )
         smsRepository = SmsRepository(
             smsDao = database.smsDao(),
             whitelistDao = database.whitelistDao(),
             customRuleDao = database.customRuleDao(),
-            ruleCache = ruleCache
+            ruleCache = ruleCache,
+            communityBlacklistDao = database.communityBlacklistDao()
         )
         callRepository = CallRepository(
             callDao = database.callDao(),
             ruleCache = ruleCache
         )
         settingsRepository = SecuritySettingsRepository(this)
+        communityApiClient = CommunityApiClient()
 
         ThreatNotificationManager.createNotificationChannels(this)
 
@@ -57,6 +65,19 @@ class SmishGuardApp : Application() {
             try {
                 smsRepository.purgeExpiredRecords(30)
                 callRepository.purgeExpiredRecords(30)
+                for (pendiente in smsRepository.getPendingCommunityEntries()) {
+                    try {
+                        val sincronizado = communityApiClient.enviar(
+                            CommunityIndicator(pendiente.indicador, pendiente.tipo)
+                        )
+                        if (sincronizado != null) {
+                            smsRepository.saveCommunityEntry(sincronizado)
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "No se pudo sincronizar ${pendiente.indicador}", e)
+                    }
+                }
+                smsRepository.saveCommunityEntries(communityApiClient.descargar())
             } catch (e: Exception) {
                 Log.e(TAG, "No se pudieron purgar los registros expirados", e)
             }

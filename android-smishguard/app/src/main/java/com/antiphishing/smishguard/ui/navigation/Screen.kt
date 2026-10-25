@@ -14,6 +14,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     data object Settings : Screen("settings", "Ajustes", Icons.Default.Settings)
     data object Whitelist : Screen("whitelist", "Lista Blanca")
     data object CustomRules : Screen("custom_rules", "Reglas Propias")
+    data object CommunityBlacklist : Screen("community_blacklist", "Lista Negra Comunitaria")
     data object BlockedUrl : Screen("blocked_url", "Enlace Bloqueado")
 
     companion object {

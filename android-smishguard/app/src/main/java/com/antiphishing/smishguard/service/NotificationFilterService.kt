@@ -85,6 +85,7 @@ class NotificationFilterService : NotificationListenerService() {
             try {
                 val isWhitelisted = smsRepo.isSenderWhitelisted(title)
                 val customPatterns = smsRepo.getActiveCustomRegexes()
+                val communityEntries = smsRepo.getCommunityEntriesByIndicator()
 
                 val analysis = SmishDetectorEngine.analyze(
                     sender = title,
@@ -92,7 +93,8 @@ class NotificationFilterService : NotificationListenerService() {
                     isWhitelisted = isWhitelisted,
                     customBlockPatterns = customPatterns,
                     quarantineThreshold = settingsRepo.quarantineThreshold,
-                    aggressiveMode = settingsRepo.isAggressiveModeEnabled
+                    aggressiveMode = settingsRepo.isAggressiveModeEnabled,
+                    communityEntries = communityEntries
                 )
 
                 val identity = SmsRepository.identityFor(

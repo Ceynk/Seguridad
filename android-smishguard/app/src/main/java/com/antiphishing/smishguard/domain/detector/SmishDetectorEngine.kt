@@ -3,6 +3,8 @@ package com.antiphishing.smishguard.domain.detector
 import com.antiphishing.smishguard.domain.model.AnalysisResult
 import com.antiphishing.smishguard.domain.model.ThreatFactor
 import com.antiphishing.smishguard.domain.model.ThreatLevel
+import com.antiphishing.smishguard.data.local.entity.CommunityBlacklistEntity
+import com.antiphishing.smishguard.data.repository.CommunityIndicatorNormalizer
 import com.antiphishing.smishguard.util.SafeRegex
 import kotlin.math.max
 import kotlin.math.min
@@ -39,7 +41,8 @@ object SmishDetectorEngine {
         isWhitelisted: Boolean = false,
         customBlockPatterns: List<Regex> = emptyList(),
         quarantineThreshold: Int = DEFAULT_QUARANTINE_THRESHOLD,
-        aggressiveMode: Boolean = false
+        aggressiveMode: Boolean = false,
+        communityEntries: Map<String, CommunityBlacklistEntity> = emptyMap()
     ): AnalysisResult {
         if (isWhitelisted) {
             return AnalysisResult(
@@ -202,6 +205,41 @@ object SmishDetectorEngine {
             totalScore = max(totalScore + 40, effectiveThreshold)
         }
 
+        var communityMaliciousMatch = false
+        var communityReportMatch = false
+        val communityIndicatorsInMessage = CommunityIndicatorNormalizer
+            .obtener("$sender $body")
+            .map { it.valor }
+        for (indicador in communityIndicatorsInMessage) {
+            val entrada = communityEntries[indicador] ?: continue
+            if (entrada.esMalicioso || entrada.reportes >= 5) {
+                communityMaliciousMatch = true
+                factors.add(
+                    ThreatFactor(
+                        category = "Lista negra de la comunidad",
+                        description = "La comunidad confirmó este indicador como malicioso.",
+                        severityScore = 100,
+                        matchedSnippet = indicador
+                    )
+                )
+            } else {
+                communityReportMatch = true
+                factors.add(
+                    ThreatFactor(
+                        category = "Reporte de la comunidad",
+                        description = "Este indicador fue reportado por la comunidad y todavía está en evaluación.",
+                        severityScore = 25,
+                        matchedSnippet = indicador
+                    )
+                )
+            }
+        }
+        if (communityMaliciousMatch) {
+            totalScore = 100
+        } else if (communityReportMatch) {
+            totalScore += 25
+        }
+
         val boundedScore = min(100, max(0, totalScore))
 
         val threatLevel = when {
@@ -215,6 +253,8 @@ object SmishDetectorEngine {
 
         val summaryReason = when {
             trustOtp && boundedScore == 0 -> "Mensaje de autenticación o código de seguridad verificado (Legítimo)."
+            communityMaliciousMatch -> "Indicador confirmado como malicioso por la comunidad."
+            communityReportMatch -> "Indicador reportado por la comunidad; continúa en evaluación."
             customRuleMatched && threatLevel != ThreatLevel.PHISHING -> "Mensaje aislado por una regla personalizada del usuario."
             threatLevel == ThreatLevel.PHISHING -> "Alto riesgo de Smishing detectado (${factors.size} factores de riesgo identificados)."
             threatLevel == ThreatLevel.SUSPICIOUS -> "Mensaje sospechoso con posibles elementos de coerción o anomalías."

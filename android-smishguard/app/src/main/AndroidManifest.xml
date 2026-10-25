@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".SmishGuardApp"
@@ -19,7 +20,7 @@
         android:roundIcon="@drawable/ic_shield"
         android:supportsRtl="true"
         android:theme="@style/Theme.SmishGuard"
-        android:usesCleartextTraffic="false"
+        android:usesCleartextTraffic="${communityCleartextTraffic}"
         tools:targetApi="34">
 
         <activity

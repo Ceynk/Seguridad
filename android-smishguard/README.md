@@ -8,6 +8,7 @@ SmishGuard es una aplicacion nativa para Android desarrollada en Kotlin, diseña
 
 - Procesamiento local en el dispositivo: Todo el analisis semantico, heuristico, calculo de entropia, deteccion de dominios falsificados y ataques homografos se ejecuta localmente en la CPU del telefono.
 - Sin conexion externa ni telemetria: Ningun SMS, numero, remitente ni contenido es transmitido a la nube ni a servidores externos.
+- Reporte comunitario limitado: Solo se transmite el indicador normalizado de un enlace, dominio o numero. Los reportes pendientes se reintentan al iniciar la aplicacion.
 - Modo Guardian No Invasivo: Puede funcionar como servicio complementario sin obligar al usuario a reemplazar su aplicacion de mensajeria predeterminada. Si detecta phishing, suprime la notificacion peligrosa de forma automatica.
 - Boveda Honeypot Aislada: Los mensajes clasificados como amenazas son aislados en un entorno seguro donde los enlaces son neutralizados (hxxp:// y [.]) para imposibilitar clics accidentales.
 
@@ -51,10 +52,36 @@ El motor de deteccion integra multiples capas de analisis forense en tiempo real
   - Ajuste del umbral de sensibilidad de cuarentena (deslizador de 20% a 80%).
   - Gestor de Lista Blanca de contactos y numeros de confianza.
   - Creador de Reglas Propias con soporte para palabras clave o Expresiones Regulares (Regex).
+  - Lista Negra Comunitaria con reportes pendientes de confirmacion y clasificacion maliciosa desde cinco reportes.
 
 ---
 
-## 4. Tecnologias Utilizadas
+## 4. Contrato del API Comunitaria
+
+La sincronizacion esta desactivada cuando `COMMUNITY_API_URL` esta vacia. Para activarla, define esa variable al compilar. La lista es global al servidor: no se envia ni se exige ningun identificador del dispositivo.
+
+- `POST /v1/reportes`
+  - Cuerpo: `{"indicador":"ejemplo.com","tipo":"dominio"}`
+  - Respuesta: `{"indicador":"ejemplo.com","tipo":"dominio","reportes":1,"esMalicioso":false}`
+- `GET /v1/lista-negra`
+  - Respuesta: arreglo con objetos del mismo formato.
+
+El cliente nunca envia SMS, remitentes, contactos, identificadores del dispositivo ni datos personales. La descarga de la lista no incluye parametros del usuario.
+
+## 5. Servidor comunitario
+
+El servidor esta en `../servidor`. Requiere Node.js 20 o posterior.
+
+1. Ejecutar `npm start` dentro de `../servidor`.
+2. El servidor escucha en `http://localhost:8787`.
+3. Para conectar la aplicacion, define `COMMUNITY_API_URL` antes de compilar:
+   - Emulador Android: `http://10.0.2.2:8787`
+   - Dispositivo fisico: usa la direccion IP local del equipo, por ejemplo `http://192.168.1.20:8787`
+4. Para una instalacion publica, usa HTTPS y define `ALLOW_ORIGIN` con el origen permitido.
+
+Los datos se guardan en `servidor/datos/lista-negra.json`. El servidor solo almacena el indicador, su tipo, el numero de reportes y la fecha de actualizacion. No recibe SMS ni identificadores del dispositivo.
+
+## 6. Tecnologias Utilizadas
 
 - Lenguaje: Kotlin 2.0.0
 - Interfaz de Usuario: Jetpack Compose y Material 3
@@ -65,7 +92,7 @@ El motor de deteccion integra multiples capas de analisis forense en tiempo real
 
 ---
 
-## 5. Instrucciones para Abrir y Compilar en Android Studio
+## 7. Instrucciones para Abrir y Compilar en Android Studio
 
 1. Abrir Android Studio.
 2. Seleccionar la opcion Open y abrir la carpeta del proyecto:

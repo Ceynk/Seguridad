@@ -23,6 +23,8 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onNavigateToWhitelist: () -> Unit,
     onNavigateToCustomRules: () -> Unit
+    ,
+    onNavigateToCommunityBlacklist: () -> Unit
 ) {
     val threshold by viewModel.quarantineThreshold.collectAsState()
     val aggressiveMode by viewModel.aggressiveMode.collectAsState()
@@ -145,6 +147,13 @@ fun SettingsScreen(
                     subtitle = "Añade tus propias palabras clave o patrones de bloqueo.",
                     icon = Icons.AutoMirrored.Filled.Rule,
                     onClick = onNavigateToCustomRules
+                )
+
+                RuleNavCard(
+                    title = "Lista Negra Comunitaria",
+                    subtitle = "Añade enlaces, dominios o números y comparte solo ese indicador.",
+                    icon = Icons.Default.CloudUpload,
+                    onClick = onNavigateToCommunityBlacklist
                 )
             }
         }

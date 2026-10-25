@@ -2,8 +2,10 @@ package com.antiphishing.smishguard.data.repository
 
 import com.antiphishing.smishguard.data.local.dao.SmsDao
 import com.antiphishing.smishguard.data.local.dao.CustomRuleDao
+import com.antiphishing.smishguard.data.local.dao.CommunityBlacklistDao
 import com.antiphishing.smishguard.data.local.dao.WhitelistDao
 import com.antiphishing.smishguard.data.local.entity.CustomRuleEntity
+import com.antiphishing.smishguard.data.local.entity.CommunityBlacklistEntity
 import com.antiphishing.smishguard.data.local.entity.SmsRecordEntity
 import com.antiphishing.smishguard.data.local.entity.WhitelistEntity
 import com.antiphishing.smishguard.data.security.FieldCipher
@@ -23,6 +25,8 @@ class SmsRepository(
     private val whitelistDao: WhitelistDao,
     private val customRuleDao: CustomRuleDao,
     private val ruleCache: RuleCache
+    ,
+    private val communityBlacklistDao: CommunityBlacklistDao
 ) {
 
     fun getAllRecords(): Flow<List<SmsMessageData>> {
@@ -88,6 +92,34 @@ class SmsRepository(
 
     suspend fun getActiveCustomRegexes(): List<Regex> {
         return ruleCache.getCustomRegexes()
+    }
+
+    suspend fun getCommunityIndicators(): Set<String> {
+        return ruleCache.getCommunityIndicators()
+    }
+
+    suspend fun getCommunityEntriesByIndicator(): Map<String, CommunityBlacklistEntity> {
+        return communityBlacklistDao.obtenerTodosAhora().associateBy { it.indicador }
+    }
+
+    fun getCommunityEntries(): Flow<List<CommunityBlacklistEntity>> {
+        return communityBlacklistDao.obtenerTodos()
+    }
+
+    suspend fun saveCommunityEntry(entry: CommunityBlacklistEntity) {
+        communityBlacklistDao.guardar(entry)
+        ruleCache.invalidateCommunityIndicators()
+    }
+
+    suspend fun saveCommunityEntries(entries: List<CommunityBlacklistEntity>) {
+        if (entries.isNotEmpty()) {
+            communityBlacklistDao.guardarTodos(entries)
+            ruleCache.invalidateCommunityIndicators()
+        }
+    }
+
+    suspend fun getPendingCommunityEntries(): List<CommunityBlacklistEntity> {
+        return communityBlacklistDao.obtenerPendientes()
     }
 
     suspend fun addCustomRule(pattern: String, isRegex: Boolean, description: String): String? {

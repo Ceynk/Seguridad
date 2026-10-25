@@ -115,11 +115,13 @@ class ManualAnalyzerViewModel(
         viewModelScope.launch {
             val isWhitelisted = smsRepository.isSenderWhitelisted(sender)
             val customPatterns = smsRepository.getActiveCustomRegexes()
+            val communityEntries = smsRepository.getCommunityEntriesByIndicator()
             val result = SmishDetectorEngine.analyze(
                 sender = sender,
                 body = body,
                 isWhitelisted = isWhitelisted,
-                customBlockPatterns = customPatterns
+                customBlockPatterns = customPatterns,
+                communityEntries = communityEntries
             )
             _analysisResult.value = result
         }

@@ -20,6 +20,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        manifestPlaceholders["communityCleartextTraffic"] = "false"
     }
 
     signingConfigs {
@@ -32,6 +33,11 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            buildConfigField(
+                "String",
+                "COMMUNITY_API_URL",
+                "\"${System.getenv("COMMUNITY_API_URL") ?: ""}\""
+            )
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -39,6 +45,12 @@ android {
         }
         debug {
             isMinifyEnabled = false
+            manifestPlaceholders["communityCleartextTraffic"] = "true"
+            buildConfigField(
+                "String",
+                "COMMUNITY_API_URL",
+                "\"${System.getenv("COMMUNITY_API_URL") ?: ""}\""
+            )
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -51,6 +63,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {

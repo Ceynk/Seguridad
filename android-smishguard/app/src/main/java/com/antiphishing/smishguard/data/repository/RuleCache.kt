@@ -1,6 +1,7 @@
 package com.antiphishing.smishguard.data.repository
 
 import com.antiphishing.smishguard.data.local.dao.CustomRuleDao
+import com.antiphishing.smishguard.data.local.dao.CommunityBlacklistDao
 import com.antiphishing.smishguard.data.local.dao.WhitelistDao
 import com.antiphishing.smishguard.util.SafeRegex
 import com.antiphishing.smishguard.util.SenderKey
@@ -10,11 +11,14 @@ import kotlinx.coroutines.sync.withLock
 class RuleCache(
     private val whitelistDao: WhitelistDao,
     private val customRuleDao: CustomRuleDao
+    ,
+    private val communityBlacklistDao: CommunityBlacklistDao
 ) {
     private val mutex = Mutex()
 
     @Volatile private var whitelist: List<String>? = null
     @Volatile private var customRegexes: List<Regex>? = null
+    @Volatile private var communityIndicators: Set<String>? = null
 
     suspend fun isWhitelisted(senderOrNumber: String): Boolean {
         if (senderOrNumber.isBlank()) {
@@ -71,5 +75,26 @@ class RuleCache(
 
     fun invalidateRules() {
         customRegexes = null
+    }
+
+    suspend fun getCommunityIndicators(): Set<String> {
+        val cached = communityIndicators
+        if (cached != null) {
+            return cached
+        }
+        return mutex.withLock {
+            val current = communityIndicators
+            if (current != null) {
+                current
+            } else {
+                val fetched = communityBlacklistDao.obtenerIndicadores().toSet()
+                communityIndicators = fetched
+                fetched
+            }
+        }
+    }
+
+    fun invalidateCommunityIndicators() {
+        communityIndicators = null
     }
 }
