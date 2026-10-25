@@ -1,0 +1,162 @@
+[
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia: Se desconto $142.300 de tu cuenta corriente *3109 por pago de convenio Acueducto.",
+    "categoria_python": "LEGITIMO",
+    "prob_legitimo": 0.709418,
+    "prob_spam": 0.106341,
+    "prob_smishing": 0.184241
+  },
+  {
+    "remitente": "87450",
+    "mensaje": "904182 es tu codigo de confirmacion para ingresar a Mi Claro. Expira en 5 minutos.",
+    "categoria_python": "LEGITIMO",
+    "prob_legitimo": 0.795418,
+    "prob_spam": 0.130471,
+    "prob_smishing": 0.07411
+  },
+  {
+    "remitente": "Davivienda",
+    "mensaje": "Davivienda informa que su tarjeta debito fue bloqueada preventivamente en cajero. Acerquese a cualquier oficina con su cedula original.",
+    "categoria_python": "LEGITIMO",
+    "prob_legitimo": 0.561438,
+    "prob_spam": 0.128525,
+    "prob_smishing": 0.310037
+  },
+  {
+    "remitente": "Servientrega",
+    "mensaje": "Servientrega: Tu encomienda 99817263 quedo entregada en recepcion. Ver soporte digital en https://www.servientrega.com",
+    "categoria_python": "LEGITIMO",
+    "prob_legitimo": 0.703531,
+    "prob_spam": 0.164694,
+    "prob_smishing": 0.131776
+  },
+  {
+    "remitente": "+573154328765",
+    "mensaje": "Companero, te dejo el enlace de Teams para conectarnos a la revision de codigo: https://teams.microsoft.com/l/meetup-join/19abc",
+    "categoria_python": "LEGITIMO",
+    "prob_legitimo": 0.853142,
+    "prob_spam": 0.055091,
+    "prob_smishing": 0.091767
+  },
+  {
+    "remitente": "+573109871234",
+    "mensaje": "Hola mama, ya llegue bien a Medellin, apenas me instale en el hotel te marco.",
+    "categoria_python": "LEGITIMO",
+    "prob_legitimo": 0.743359,
+    "prob_spam": 0.112387,
+    "prob_smishing": 0.144254
+  },
+  {
+    "remitente": "Claro",
+    "mensaje": "Claro: Renueva hoy tu smartphone con hasta 40% de descuento en referencias seleccionadas en tiendas Claro.",
+    "categoria_python": "SPAM",
+    "prob_legitimo": 0.069025,
+    "prob_spam": 0.889949,
+    "prob_smishing": 0.041025
+  },
+  {
+    "remitente": "Tigo",
+    "mensaje": "Hogar Tigo: Contrata 500 megas de internet fibra mas TV HD con descuento los primeros 3 meses en https://tigo.com.co",
+    "categoria_python": "SPAM",
+    "prob_legitimo": 0.153531,
+    "prob_spam": 0.790817,
+    "prob_smishing": 0.055653
+  },
+  {
+    "remitente": "Falabella",
+    "mensaje": "Cierre de temporada Falabella: Hasta 45% de descuento en tenis y chaquetas en https://falabella.com.co",
+    "categoria_python": "SPAM",
+    "prob_legitimo": 0.118061,
+    "prob_spam": 0.828231,
+    "prob_smishing": 0.053708
+  },
+  {
+    "remitente": "PromoCalzado",
+    "mensaje": "Cliente preferencial: Tienes un bono de descuento del 30% en nuestra tienda fisica de calzado del centro comercial.",
+    "categoria_python": "SPAM",
+    "prob_legitimo": 0.056537,
+    "prob_spam": 0.889641,
+    "prob_smishing": 0.053822
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia: Registramos un intento de cambio de correo desde un navegador desconocido. Confirme su identidad en https://bancolombia-proteccion.xyz/validar",
+    "categoria_python": "SMISHING",
+    "prob_legitimo": 0.075732,
+    "prob_spam": 0.059811,
+    "prob_smishing": 0.864456
+  },
+  {
+    "remitente": "Nequi",
+    "mensaje": "Nequi: Por politicas de seguridad tu bolsillo quedo congelado temporalmente. Restablece tu acceso en https://nequi-verificacion.top/acceso",
+    "categoria_python": "SMISHING",
+    "prob_legitimo": 0.154507,
+    "prob_spam": 0.083578,
+    "prob_smishing": 0.761915
+  },
+  {
+    "remitente": "PSE",
+    "mensaje": "PSE: Pago programado en curso por $590.000 hacia aerolinea internacional. Anule el descuento no reconocido en http://192.168.10.45/pse-anular",
+    "categoria_python": "SMISHING",
+    "prob_legitimo": 0.078402,
+    "prob_spam": 0.234774,
+    "prob_smishing": 0.686824
+  },
+  {
+    "remitente": "+573205544331",
+    "mensaje": "Financiamos hasta $4.500.000 hoy mismo aunque estes reportado. Obten el instalador directo en https://cupo-inmediato.top/credito.apk",
+    "categoria_python": "SMISHING",
+    "prob_legitimo": 0.165486,
+    "prob_spam": 0.22289,
+    "prob_smishing": 0.611624
+  },
+  {
+    "remitente": "Soporte",
+    "mensaje": "Su acceso n3qu1 fue r3str1ng1d0 preventivamente. Confirme su cl4v3 personal en https://verificacion-movil.top",
+    "categoria_python": "SMISHING",
+    "prob_legitimo": 0.136926,
+    "prob_spam": 0.04849,
+    "prob_smishing": 0.814584
+  },
+  {
+    "remitente": "BancoCajaSocial",
+    "mensaje": "Banco Caja Social: Le invitamos a validar su token empresarial actualizado ingresando a https://bancocajasocial.com.portal-empresas.net/token",
+    "categoria_python": "SMISHING",
+    "prob_legitimo": 0.093445,
+    "prob_spam": 0.064853,
+    "prob_smishing": 0.841702
+  },
+  {
+    "remitente": "+573219900445",
+    "mensaje": "Agencia de Mercadeo Digital: Gana $320.000 al dia calificando comercios desde tu telefono. Inicia hoy en https://wa.me/22997112233",
+    "categoria_python": "SMISHING",
+    "prob_legitimo": 0.223127,
+    "prob_spam": 0.254094,
+    "prob_smishing": 0.522779
+  },
+  {
+    "remitente": "+573012233449",
+    "mensaje": "Seguridad Bancaria: Para frenar el retiro no reconocido en curso reenvie inmediatamente el codigo OTP de 6 digitos que acaba de llegarle.",
+    "categoria_python": "SMISHING",
+    "prob_legitimo": 0.319415,
+    "prob_spam": 0.081612,
+    "prob_smishing": 0.598974
+  },
+  {
+    "remitente": "Bancolombia-Seg",
+    "mensaje": "Bancolombia: Registramos compra presencial sospechosa por $2.100.000 en Joyeria Inter. Si no fue usted llame ya a bloqueos al 6014408819.",
+    "categoria_python": "SMISHING",
+    "prob_legitimo": 0.329971,
+    "prob_spam": 0.139024,
+    "prob_smishing": 0.531004
+  },
+  {
+    "remitente": "Mesa-Fraudes",
+    "mensaje": "Alerta PSE: Hay un pago retenido desde su cuenta de ahorros. Dictenos o envie por este chat los 16 digitos de su tarjeta y codigo trasero para anular.",
+    "categoria_python": "SMISHING",
+    "prob_legitimo": 0.372251,
+    "prob_spam": 0.057235,
+    "prob_smishing": 0.570513
+  }
+]

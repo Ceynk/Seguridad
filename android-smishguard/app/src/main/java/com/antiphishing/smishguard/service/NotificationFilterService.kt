@@ -61,19 +61,8 @@ class NotificationFilterService : NotificationListenerService() {
             return
         }
 
-        val titleSequence = extras.getCharSequence(Notification.EXTRA_TITLE)
-        val title = if (titleSequence != null) {
-            titleSequence.toString()
-        } else {
-            ""
-        }
-
-        val textSequence = extras.getCharSequence(Notification.EXTRA_TEXT)
-        val text = if (textSequence != null) {
-            textSequence.toString()
-        } else {
-            ""
-        }
+        val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
+        val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
 
         if (text.isBlank()) {
             return

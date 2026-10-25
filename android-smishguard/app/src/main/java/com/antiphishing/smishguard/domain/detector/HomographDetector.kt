@@ -86,14 +86,7 @@ object HomographDetector {
             detected.add("Punycode detectado: ${punyMatcher.group()}")
         }
 
-        var hasInvisible = false
-        for (i in 0 until text.length) {
-            val ch = text[i]
-            if (INVISIBLE_AND_BIDI_CHARS.contains(ch)) {
-                hasInvisible = true
-                break
-            }
-        }
+        val hasInvisible = text.any(INVISIBLE_AND_BIDI_CHARS::contains)
         if (hasInvisible) {
             detected.add("Caracteres invisibles o modificadores de dirección detectados (intento de evasión)")
         }
@@ -102,13 +95,12 @@ object HomographDetector {
         var hasNonLatinConfusable = false
         val foundChars = StringBuilder()
 
-        for (i in 0 until text.length) {
-            val ch = text[i]
+        for (ch in text) {
             if ((ch in 'a'..'z') || (ch in 'A'..'Z')) {
                 hasLatin = true
             } else if (CONFUSABLE_MAPPING.containsKey(ch)) {
                 hasNonLatinConfusable = true
-                val replacement = CONFUSABLE_MAPPING[ch]
+                val replacement = CONFUSABLE_MAPPING.getValue(ch)
                 foundChars.append(ch).append(" imita a '").append(replacement).append("', ")
             }
         }
@@ -136,19 +128,14 @@ object HomographDetector {
     }
 
     fun normalizeHomoglyphs(text: String): String {
-        val cleanSb = StringBuilder()
-        for (i in 0 until text.length) {
-            val ch = text[i]
-            if (!INVISIBLE_AND_BIDI_CHARS.contains(ch)) {
-                val mapped = CONFUSABLE_MAPPING[ch]
-                if (mapped != null) {
-                    cleanSb.append(mapped)
-                } else {
-                    cleanSb.append(ch)
+        val cleanText = buildString {
+            for (ch in text) {
+                if (ch !in INVISIBLE_AND_BIDI_CHARS) {
+                    append(CONFUSABLE_MAPPING[ch] ?: ch)
                 }
             }
         }
-        var processed = cleanSb.toString()
+        var processed = cleanText
 
         val whitespaceRegex = "\\s+".toRegex()
         processed = ARTIFICIAL_SPACING_REGEX.replace(processed) { matchResult ->

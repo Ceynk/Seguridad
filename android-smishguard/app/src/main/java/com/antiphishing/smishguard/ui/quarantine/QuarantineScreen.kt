@@ -34,9 +34,8 @@ fun QuarantineScreen(
     var selectedFilter by remember { mutableStateOf("ALL") }
 
     val filteredMessages = remember(messages, searchQuery, selectedFilter) {
-        val resultList = mutableListOf<SmsMessageData>()
         val hasSearch = searchQuery.isNotBlank()
-        for (msg in messages) {
+        messages.filter { msg ->
             val matchesSearch = !hasSearch ||
                 msg.sender.contains(searchQuery, ignoreCase = true) ||
                 msg.body.contains(searchQuery, ignoreCase = true)
@@ -47,11 +46,8 @@ fun QuarantineScreen(
                 else -> true
             }
 
-            if (matchesSearch && matchesFilter) {
-                resultList.add(msg)
-            }
+            matchesSearch && matchesFilter
         }
-        resultList
     }
 
     LazyColumn(

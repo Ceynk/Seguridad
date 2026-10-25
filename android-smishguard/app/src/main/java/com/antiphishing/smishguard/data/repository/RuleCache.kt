@@ -10,8 +10,7 @@ import kotlinx.coroutines.sync.withLock
 
 class RuleCache(
     private val whitelistDao: WhitelistDao,
-    private val customRuleDao: CustomRuleDao
-    ,
+    private val customRuleDao: CustomRuleDao,
     private val communityBlacklistDao: CommunityBlacklistDao
 ) {
     private val mutex = Mutex()

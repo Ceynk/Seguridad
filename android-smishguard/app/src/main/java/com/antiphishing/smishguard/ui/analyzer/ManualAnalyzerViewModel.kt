@@ -2,15 +2,18 @@ package com.antiphishing.smishguard.ui.analyzer
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.antiphishing.smishguard.data.repository.SecuritySettingsRepository
 import com.antiphishing.smishguard.data.repository.SmsRepository
 import com.antiphishing.smishguard.domain.detector.SmishDetectorEngine
 import com.antiphishing.smishguard.domain.detector.UrlDecision
 import com.antiphishing.smishguard.domain.detector.UrlThreatAnalyzer
 import com.antiphishing.smishguard.domain.model.AnalysisResult
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class PresetSmishTemplate(
     val title: String,
@@ -19,7 +22,8 @@ data class PresetSmishTemplate(
 )
 
 class ManualAnalyzerViewModel(
-    private val smsRepository: SmsRepository
+    private val smsRepository: SmsRepository,
+    private val settingsRepository: SecuritySettingsRepository? = null
 ) : ViewModel() {
 
     private val _senderInput = MutableStateFlow("")
@@ -116,13 +120,19 @@ class ManualAnalyzerViewModel(
             val isWhitelisted = smsRepository.isSenderWhitelisted(sender)
             val customPatterns = smsRepository.getActiveCustomRegexes()
             val communityEntries = smsRepository.getCommunityEntriesByIndicator()
-            val result = SmishDetectorEngine.analyze(
-                sender = sender,
-                body = body,
-                isWhitelisted = isWhitelisted,
-                customBlockPatterns = customPatterns,
-                communityEntries = communityEntries
-            )
+            val threshold = settingsRepository?.quarantineThreshold ?: SmishDetectorEngine.DEFAULT_QUARANTINE_THRESHOLD
+            val aggressive = settingsRepository?.isAggressiveModeEnabled ?: false
+            val result = withContext(Dispatchers.Default) {
+                SmishDetectorEngine.analyze(
+                    sender = sender,
+                    body = body,
+                    isWhitelisted = isWhitelisted,
+                    customBlockPatterns = customPatterns,
+                    quarantineThreshold = threshold,
+                    aggressiveMode = aggressive,
+                    communityEntries = communityEntries
+                )
+            }
             _analysisResult.value = result
         }
     }

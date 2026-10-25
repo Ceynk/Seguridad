@@ -1,0 +1,1922 @@
+[
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia le informa compra por $45.000 en SUPERMERCADO EXITO el 25/10/2026 con su tarjeta terminada en 1042.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_compra_comercio_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia: Retiro exitoso por $200.000 en cajero automatico Unicentro. Si no reconoce la operacion llame al 018000912345.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_retiro_cajero_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia: Transferencia exitosa por $150.000 hacia cuenta de ahorros terminada en 8821.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_transferencia_enviada_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia: Le recordamos que el pago de su tarjeta de credito vence el 30 de este mes. Consulte en nuestra app oficial.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_recordatorio_vencimiento_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Nequi",
+    "mensaje": "Nequi: Recibiste $80.000 de Laura Martinez en tu cuenta. Ya estan disponibles en tu saldo.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_recepcion_billetera_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Nequi",
+    "mensaje": "Nequi: Enviaste $35.000 a Carlos Gomez desde tu disponible. Referencia M918273.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_envio_billetera_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Nequi",
+    "mensaje": "Nequi: Retiraste $100.000 en corresponsal bancario. Gracias por usar Nequi.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_retiro_corresponsal_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Daviplata",
+    "mensaje": "Daviplata: Recibiste un giro nacional por $120.000 en tu bolsillo principal.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_giro_recibido_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Davivienda",
+    "mensaje": "Davivienda le informa pago exitoso de servicios publicos por $94.200 desde su cuenta de ahorros.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_pago_servicios_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "BBVA",
+    "mensaje": "BBVA: Se ha abonado su nomina mensual por valor de $2.450.000 en su cuenta.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_abono_nomina_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "PSE",
+    "mensaje": "PSE: Su pago en Empresas Publicas de Medellin por $115.000 fue aprobado con CUS 91827364.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_pago_pse_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Transfiya",
+    "mensaje": "Transfiya: Tu envio de dinero por $40.000 fue aceptado por el destinatario en su entidad bancaria.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_transfiya_aceptado_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Nu",
+    "mensaje": "Nu: Compra aprobada por $19.900 en SPOTIFY con tu tarjeta de credito morada.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_compra_suscripcion_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "LuloBank",
+    "mensaje": "Lulo Bank: Recibiste una devolucion de cashback por $4.500 en tu Lulo Cuenta.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_cashback_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "AVVillas",
+    "mensaje": "Banco AV Villas: Se realizo el pago automatico de su obligacion financiera por $320.000.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_debito_automatico_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Scotiabank",
+    "mensaje": "Scotiabank Colpatria: Compra nacional aprobada por $78.000 en HOMECENTER. Linea de atencion 6017561616.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_compra_ferreteria_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia le informa que su clave dinamica es 582910. Valida por 5 minutos. Nunca la comparta con nadie.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_clave_dinamica_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Nequi",
+    "mensaje": "Nequi: Tu codigo de verificacion es 491-820 para entrar a la app. No lo compartas con nadie.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_billetera_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Daviplata",
+    "mensaje": "Daviplata: Tu codigo de seguridad es 738291. Por tu seguridad no entregues esta clave a terceros.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_bolsillo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "BancoBogota",
+    "mensaje": "Banco de Bogota: Su clave token para autorizar el pago es 839102. No la comparta con nadie.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_token_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Google",
+    "mensaje": "G-482910 es tu codigo de verificacion de Google. No lo compartas con nadie.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_google_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "890123",
+    "mensaje": "Tu codigo de seguridad de Microsoft es 774819.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_corto_sin_aviso_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "WhatsApp",
+    "mensaje": "Codigo de WhatsApp: 301-948. No compartas este codigo con nadie.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_mensajeria_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Apple",
+    "mensaje": "Tu codigo de ID de Apple es 550192. No lo compartas con nadie.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_apple_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "85432",
+    "mensaje": "Codigo de acceso temporal 4419 para iniciar sesion en Netflix.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_streaming_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Amazon",
+    "mensaje": "883920 es tu contrasena de un solo uso (OTP) de Amazon. No la compartas con nadie.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_ecommerce_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "PayPal",
+    "mensaje": "PayPal: Tu codigo de seguridad es 671209. Expira en 10 minutos. No lo compartas.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_pagos_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "87900",
+    "mensaje": "Codigo de confirmacion 619044 para firmar documentos electronicos en Camara de Comercio.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_otp_firma_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia: Nunca entregues tu usuario, clave principal ni clave dinamica por llamadas o mensajes. El banco jamas solicita estos datos.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_educacion_seguridad_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "BBVA",
+    "mensaje": "BBVA informa: Bloqueamos preventivamente su tarjeta en cajero por tres intentos de PIN errado. Solicite reposicion en cualquier sucursal fisica con su documento.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_bloqueo_oficina_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Nequi",
+    "mensaje": "Nequi: Detectamos un inicio de sesion en tu cuenta desde un Xiaomi Redmi. Si fuiste tu, ignora este mensaje; de lo contrario cambia tu clave desde la app.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_alerta_nuevo_dispositivo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "BancoBogota",
+    "mensaje": "Banco de Bogota: Actualizamos con exito su tope diario de transferencias desde la Banca Movil. Si no realizo este ajuste acerquese a una oficina.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_cambio_tope_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Davivienda",
+    "mensaje": "Davivienda: Consulte su extracto mensual disponible en el portal oficial https://notificaciones.davivienda.com",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_oficial_extracto_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia: Consulte sus movimientos de forma segura en https://sucursalpersonas.transaccionesbancolombia.com",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_oficial_sucursal_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Servientrega",
+    "mensaje": "Servientrega: Su envio con guia 209384712 fue entregado satisfactoriamente en porteria. Rastreelo en https://www.servientrega.com",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_oficial_guia_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Coordinadora",
+    "mensaje": "Coordinadora: Tu paquete con guia 88192031 esta en reparto hoy. Consulta estado en https://coordinadora.com",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_oficial_reparto_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Correos",
+    "mensaje": "Correos: Su paquete ha sido entregado hoy. Consulte el seguimiento en https://correos.es",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_oficial_correos_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "MercadoLibre",
+    "mensaje": "Mercado Libre: Tu pedido de audifonos inalambricos llegara hoy entre las 10:00 y las 17:00. Revisa en https://www.mercadolibre.com.co",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_oficial_pedido_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "DIAN",
+    "mensaje": "DIAN: Recuerde presentar su declaracion de renta segun el ultimo digito de su NIT en https://www.dian.gov.co",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_oficial_dian_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Colpensiones",
+    "mensaje": "Colpensiones: Descargue su certificacion de afiliacion ingresando a la sede electronica https://www.colpensiones.gov.co",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_oficial_pension_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573105551234",
+    "mensaje": "Hola equipo, les comparto el enlace de Zoom para la sustentacion de tesis hoy a las 4 pm: https://zoom.us/j/948172635",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_videollamada_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573158899001",
+    "mensaje": "Buenas tardes ingeniero, ya subi los cambios del backend al repositorio https://github.com/equipo-grado/detector-sms",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_repositorio_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Universidad",
+    "mensaje": "Registro Academico: La inscripcion de asignaturas del semestre inicia manana en https://sia.unal.edu.co",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_universidad_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Laboratorio",
+    "mensaje": "IDIME: Sus resultados de examenes de sangre ya se encuentran listos para consulta en https://resultados.idime.com.co/portal",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_salud_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573004411223",
+    "mensaje": "Amor mira la carta del restaurante italiano para reservar esta noche: https://ilforno.co/menu-digital",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_restaurante_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573112299884",
+    "mensaje": "Vecinos, la alcaldia publico el cronograma de racionamiento de agua de esta semana en https://bogota.gov.co/servicios",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_alcaldia_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573167788992",
+    "mensaje": "Companeros, por favor llenen la asistencia del laboratorio en el documento compartido https://docs.google.com/forms/d/1xYzAbC",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_formulario_clase_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573203344551",
+    "mensaje": "Hermano lee este articulo sobre las becas de posgrado en ingenieria: https://elespectador.com/educacion/becas-2026",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_prensa_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "TuBoleta",
+    "mensaje": "TuBoleta: Tus entradas digitales para el concierto sinfonico del sabado estan listas en https://tuboleta.com/mis-boletas",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_boletas_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "ClinicaVet",
+    "mensaje": "Veterinaria San Roque: El carnet de vacunacion de Toby quedo actualizado en https://sanroquevet.com.co/mascotas",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_veterinaria_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573146655221",
+    "mensaje": "Profe buenos dias, le dejo el enlace de la reunion en Meet para revisar el anteproyecto: https://meet.google.com/abc-defg-hij",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_meet_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Biblioteca",
+    "mensaje": "Red de Bibliotecas: Renueve el prestamo de sus libros de calculo en linea desde https://biblored.gov.co/catalogo",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_url_biblioteca_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573104455667",
+    "mensaje": "Hola amor, ya sali de la oficina, paso por el supermercado y llego a la casa en media hora.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_regreso_casa_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573001122334",
+    "mensaje": "Hola mama, ya llegue bien a la universidad, cuando salga del parcial te llamo.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_saludo_mama_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573129988112",
+    "mensaje": "Hola papa, me puedes pasar por favor el numero de la cuenta de ahorros para enviarte lo del arriendo?",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_cuenta_familiar_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573145566778",
+    "mensaje": "Amiga, necesito urgente que me pases la clave del wifi de tu apartamento para conectar el portatil.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_urgente_wifi_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573187766554",
+    "mensaje": "Hijo, acuerdate de pagar urgente el recibo del gas hoy antes de las 5 para evitar reconexion.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_urgente_recibo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573013344556",
+    "mensaje": "Hola jefe, el proveedor ya aprobo la orden de compra y confirmo que despacha la mercancia el viernes.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_trabajo_orden_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573126655443",
+    "mensaje": "Ya deje el paquete con el portero del edificio, cualquier novedad me escribes.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_porteria_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573164433221",
+    "mensaje": "Nos vemos a las 6 en la estacion de Transmilenio para irnos juntos a clase.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_transporte_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573045566112",
+    "mensaje": "Te mande al correo institucional las diapositivas de arquitectura de software.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_estudio_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573137788990",
+    "mensaje": "Prima, muchas gracias por acompanarnos ayer en el grado, pasamos muy feliz.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_agradecimiento_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573172211009",
+    "mensaje": "Buenas tardes, soy el domiciliario de la drogueria, estoy en la entrada principal de la unidad.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_domiciliario_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573216549870",
+    "mensaje": "Confirmada la reserva de la cancha sintetica hoy a las 8 pm, traigan petos.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_deporte_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573209988776",
+    "mensaje": "Vecino buenas noches, dejaron la ventana del carro abierta en el sotano dos.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_vecino_carro_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573105551122",
+    "mensaje": "Me avisas apenas aterrice el avion para salir a recogerte al aeropuerto.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_aeropuerto_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573156662233",
+    "mensaje": "No olvides comprar huevos, cafe y queso para el desayuno de manana.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_mercado_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573007773344",
+    "mensaje": "Voy quince minutos tarde porque cerraron un carril en la avenida Boyaca.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_trafico_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573201115566",
+    "mensaje": "Hermano, ya te transferi por Nequi los 25 mil pesos de la cuota del regalo.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_conv_cuota_amigos_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Sura",
+    "mensaje": "EPS Sura: Recordatorio de cita de medicina general manana a las 08:30 AM en sede Industriales.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_cita_medica_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Sanitas",
+    "mensaje": "EPS Sanitas: Su autorizacion para toma de radiografia fue aprobada y enviada a su correo registrado.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_autorizacion_eps_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Compensar",
+    "mensaje": "Compensar: Su cita odontologica con el Dr. Ramirez quedo confirmada para el jueves a las 3:00 PM.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_cita_odontologia_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Rappi",
+    "mensaje": "Rappi: Tu Rappitendero Andres ya recogio tu pedido en el restaurante y va en camino.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_estado_domicilio_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Avianca",
+    "mensaje": "Avianca: El check-in para tu vuelo AV9512 Bogota - Medellin ya esta abierto en nuestra aplicacion.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_vuelo_checkin_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Enel",
+    "mensaje": "Enel Colombia: Hemos recibido el pago de su factura de energia del mes de octubre. Gracias por estar al dia.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_confirmacion_energia_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "EPM",
+    "mensaje": "EPM: Informamos interrupcion programada de acueducto este domingo de 8:00 AM a 2:00 PM en su barrio.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_mantenimiento_servicio_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Claro",
+    "mensaje": "Claro: Hemos recibido el pago de tu factura hogar por $102.000. Gracias por tu puntualidad.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_pago_telecom_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Movistar",
+    "mensaje": "Movistar: Tu recarga de $10.000 fue exitosa. Tu paquete todo incluido tiene vigencia de 7 dias.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_recarga_exitosa_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Tigo",
+    "mensaje": "Tigo: El pago de tu plan pospago fue aplicado correctamente. Consulta tu factura en Mi Tigo.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_pago_pospago_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Interrapidisimo",
+    "mensaje": "Interrapidisimo: Hemos entregado tu envio 700192834 en la direccion registrada a nombre de Juliana Rios.",
+    "clase": "LEGITIMO",
+    "origen": "sintetico",
+    "familia_plantilla": "leg_entrega_sin_url_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Claro",
+    "mensaje": "Promo Claro: Pasate a pospago hoy y recibe 50% de descuento durante 6 meses mas gigas libres. Aplica TyC.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_telecom_pospago_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Claro",
+    "mensaje": "Claro Musica: Escucha tus listas favoritas sin descontar datos de tu plan. Activa el mes de cortesia en la app.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_telecom_musica_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "85123",
+    "mensaje": "Hoy en Claro recibe el doble de gigas por tu recarga desde $6.000 en puntos autorizados.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_telecom_recarga_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Movistar",
+    "mensaje": "Movistar: Estrena celular 5G con 30% de descuento en tiendas oficiales Movistar. Unidades limitadas.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_telecom_equipos_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Movistar",
+    "mensaje": "Oferta exclusiva Movistar Fibra: 900 megas simetricas con tarifa preferencial los primeros 4 meses en https://movistar.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_telecom_fibra_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Tigo",
+    "mensaje": "Tigo: Activa hoy tu paquete ilimitado de fin de semana por solo $5.000 y navega sin parar.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_telecom_finde_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Tigo",
+    "mensaje": "Beneficios Tigo: Disfruta entradas 2x1 en cartelera todos los martes presentando tu factura al dia.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_telecom_cine_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "WOM",
+    "mensaje": "WOM: Trae tu linea con portabilidad y lleva el segundo mes sin costo en planes desde $35.000. Info en https://wom.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_telecom_portabilidad_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Exito",
+    "mensaje": "Aniversario Exito: Aprovecha hasta 40% de descuento en televisores, neveras y lavadoras este fin de semana en https://www.exito.com",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_retail_electro_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "PuntosCol",
+    "mensaje": "Puntos Colombia: Tienes 2.400 puntos listos para redimir en mercado, combustible y aliados.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_fidelidad_puntos_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Alkosto",
+    "mensaje": "Hiperahorro Alkosto: Hoy sabado lleva llantas y portatiles con precios especiales en https://www.alkosto.com",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_retail_alkosto_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Falabella",
+    "mensaje": "Falabella: Madrugon de moda con hasta 50% de descuento en ropa y calzado seleccionado en https://falabella.com.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_falabella_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "CineColombia",
+    "mensaje": "Cine Colombia: Este miercoles disfruta todas las funciones a mitad de precio pagando con tu tarjeta Cineco en https://cinecolombia.com",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_entretenimiento_cine_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "DominoPizza",
+    "mensaje": "Dominos: Martes de 2x1 en pizzas medianas y grandes pidiendo por nuestra app oficial.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_comida_pizza_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "KFC",
+    "mensaje": "KFC: Comparte en familia hoy nuestro Mega Fest con 25% de ahorro en domicilios.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_comida_pollo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Rappi",
+    "mensaje": "Rappi: Tienes un cupon de envio sin costo para tu proximo pedido en restaurantes aliados hoy.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_delivery_cupon_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bodytech",
+    "mensaje": "Bodytech: Inscribete este mes al plan anual de entrenamiento con 35% de descuento y valoracion incluida.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_gimnasio_anual_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "SmartFit",
+    "mensaje": "Smart Fit: Entrena desde $69.900 al mes sin clausula de permanencia. Conoce sedes en https://smartfit.com.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_gimnasio_mensual_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Pepeganga",
+    "mensaje": "Pepeganga: Gran feria infantil con descuentos del 30% en jugueteria en tiendas fisicas.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_juguetes_feria_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Panamericana",
+    "mensaje": "Panamericana: Temporada escolar con 20% de descuento en cuadernos, morrales y literatura en https://panamericana.com.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_papeleria_escolar_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Decameron",
+    "mensaje": "Hoteles Decameron: Reserva tus vacaciones todo incluido en Baru o San Andres con tarifas de preventa en https://decameron.com",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_turismo_hotel_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Latam",
+    "mensaje": "LATAM Airlines: Vuela por Colombia desde $99.900 por trayecto comprando en https://latamairlines.com",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_viajes_tiquetes_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "CruzVerde",
+    "mensaje": "Droguerias Cruz Verde: Hoy 25% de ahorro en dermocosmetica y bloqueadores solares para clientes club.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_farmacia_dermo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Farmatodo",
+    "mensaje": "Farmatodo: Aprovecha nuestros dias azules con promocion 3x2 en cuidado capilar en https://farmatodo.com.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_farmacia_3x2_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Homecenter",
+    "mensaje": "Homecenter: Renueva tu sala y cocina con hasta 35% de ahorro en muebles e iluminacion en https://homecenter.com.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_hogar_muebles_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Totto",
+    "mensaje": "Totto Loco: Descuentos de hasta el 50% en maletas de viaje y morrales universitarios en https://totto.com",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_morrales_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "ArturoCalle",
+    "mensaje": "Arturo Calle: Nueva coleccion de chaquetas y camisas de lino disponible en tiendas del pais y https://arturocalle.com",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_masculina_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "StudioF",
+    "mensaje": "Studio F: Fin de semana de rebajas con 30% de descuento en la segunda prenda en centros comerciales.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_femenina_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Auteco",
+    "mensaje": "Auteco Mobility: Estrena motocicleta electrica este mes con bono matricula de $400.000 en concesionarios.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_vehiculos_moto_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "DirecTV",
+    "mensaje": "DIRECTV: Suscribete a DGO y vive la liga deportiva con 20% de descuento el primer trimestre.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_streaming_deportes_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "OpenEnglish",
+    "mensaje": "Open English: Clases de ingles en vivo las 24 horas con 60% de descuento en tu inscripcion online.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_educacion_idiomas_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Platzi",
+    "mensaje": "Platzi: Impulsa tu perfil profesional en ciencia de datos con tarifa preferencial anual en https://platzi.com",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_educacion_tech_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Olimpica",
+    "mensaje": "Supertiendas Olimpica: Miercoles de plaza con precios bajos en frutas, verduras y lacteos frescos.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_supermercado_plaza_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "D1",
+    "mensaje": "Tiendas D1: Descubre los productos extraordinarios de cocina de esta quincena en tu tienda mas cercana.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_supermercado_d1_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Ara",
+    "mensaje": "Tiendas Ara: Esta semana ahorra en productos de aseo y despensa con nuestras rebajas imperdibles.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_supermercado_ara_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Colsubsidio",
+    "mensaje": "Supermercados Colsubsidio: Martes de 20% de descuento para afiliados en carnes y granos seleccionados.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_supermercado_caja_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "MacCenter",
+    "mensaje": "Mac Center: Lleva tu nuevo iPad o MacBook con 0% de interes a 12 cuotas en tiendas autorizadas.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_tech_apple_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Ktronix",
+    "mensaje": "Ktronix: Quincena tecnologica con precios rebajados en barras de sonido y consolas en https://ktronix.com",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_tech_consolas_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Locatel",
+    "mensaje": "Locatel: Semana del bienestar con 20% de ahorro en tensiometros y cuidado en casa.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_salud_equipos_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "BurgerKing",
+    "mensaje": "Burger King: Usa tus cupones digitales en mostrador y lleva dos combos Whopper por $34.900.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_comida_hamburguesa_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Crepes",
+    "mensaje": "Crepes y Waffles: Conoce los nuevos helados artesanales de temporada en nuestros puntos a nivel nacional.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_comida_postres_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "JuanValdez",
+    "mensaje": "Juan Valdez Cafe: Redime tus puntos Amigos y recibe 15% de ahorro en bebidas frias hoy.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_comida_cafe_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Frisby",
+    "mensaje": "Frisby: Pide hoy nuestra picada familiar apanada con precio de lanzamiento en https://frisby.com.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_comida_frisby_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Tennis",
+    "mensaje": "Tennis: Liquidacion de mitad de temporada con hasta 40% menos en jeans y camisetas en https://tennis.com.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_juvenil_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Velez",
+    "mensaje": "Cueros Velez: Recibe un bono regalo del 20% en botas y bolsos de cuero presentando este SMS en tienda.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_cuero_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Koaj",
+    "mensaje": "KOAJ: Ultimos 3 dias de precios azules en chaquetas acolchadas y hoodies desde $59.900 en https://koaj.com.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_koaj_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Jumbo",
+    "mensaje": "Tiendas Jumbo: Fin de semana de vinos y quesos importados con 30% de descuento pagando con Cencosud.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_supermercado_jumbo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Carulla",
+    "mensaje": "Carulla FreshMarket: Hoy viernes 25% de ahorro en panaderia artesanal y pescaderia para clientes SuperCliente.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_supermercado_carulla_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bosi",
+    "mensaje": "Bosi: Nueva linea de calzado urbano ya en vitrinas. Lleva el segundo par con 40% de descuento.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_calzado_bosi_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Gef",
+    "mensaje": "GEF: Arma tu pinta basica con 3x2 en camisetas y medias seleccionadas en tiendas y https://gef.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_gef_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": " LiliPink",
+    "mensaje": "Lili Pink: Dias rosados con ofertas desde $14.900 en cuidado corporal y pijamas en puntos fisicos.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_lilipink_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": " Offcorss",
+    "mensaje": "OFFCORSS: Viste a los ninos para vacaciones con 30% de descuento en vestidos de bano en https://offcorss.com",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_infantil_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "87411",
+    "mensaje": "Centro Comercial Santafe: Este sabado gran trasnochon de marcas con parqueadero sin costo despues de las 6 pm.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_evento_cc_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "89201",
+    "mensaje": "Feria del Libro en Corferias: Presenta tu carnet estudiantil en taquilla y obten 25% de descuento en tu boleta.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_evento_feria_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "ColchonesElDorado",
+    "mensaje": "Colchones El Dorado: Cambia tu colchon hoy con hasta 45% de descuento mas almohadas de obsequio.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_hogar_colchones_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Tugo",
+    "mensaje": "Tugo: Dias de diseno para tu estudio con 25% menos en escritorios y sillas ergonomicas en https://tugo.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_hogar_escritorios_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "OpticaCol",
+    "mensaje": "Lafam: Agenda tu examen visual sin costo al comprar tu montura con 30% de descuento este mes.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_salud_optica_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "DentalPlus",
+    "mensaje": "Sonria: Valoracion de ortodoncia sin costo y hasta 35% de descuento en blanqueamiento laser este mes.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_salud_odontologia_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "PepsiPromo",
+    "mensaje": "Destapa y participa en puntos autorizados: reune tres tapas marcadas y canjealas por un vaso coleccionable en tienda.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_canje_tienda_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Spotify",
+    "mensaje": "Spotify Premium: Vuelve a disfrutar musica sin anuncios durante 3 meses por $16.900. Cancela cuando quieras en la app.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_streaming_musica_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "HBO",
+    "mensaje": "Max: Suscribete al plan anual y ahorra 33% para ver tus series y peliculas favoritas en casa.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_streaming_series_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "PapaJohns",
+    "mensaje": "Papa Johns: Jueves de pizza familiar de un ingrediente con borde de queso y gaseosa con 30% de descuento.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_comida_papajohns_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Subway",
+    "mensaje": "Subway: Aprovecha el Sub del dia de 15 cm mas bebida por solo $14.900 en restaurantes participantes.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_comida_subway_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "ElCorral",
+    "mensaje": "El Corral: Prueba nuestra nueva hamburguesa doble en combo con papas rusticas a precio de lanzamiento.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_comida_hamburguesa_2",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Starbucks",
+    "mensaje": "Starbucks Rewards: Hoy acumulas doble estrella en todas tus bebidas preparadas en barra.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_cafe_estrellas_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Adidas",
+    "mensaje": "Adidas: Miembros adiClub reciben 20% adicional en calzado de running este fin de semana en https://adidas.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_deporte_calzado_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Decathlon",
+    "mensaje": "Decathlon: Equipa tu salida de camping con carpas y linternas desde $49.900 en https://decathlon.com.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_deporte_camping_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": " LibreriaNacional",
+    "mensaje": "Libreria Nacional: 15% de descuento en novelas historicas durante todo octubre en sedes fisicas.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_libros_novelas_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Chevignon",
+    "mensaje": "Chevignon: Bono de $50.000 redimible en tu compra superior a $250.000 en chaquetas de denim en tienda.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_bono_tienda_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": " PullBear",
+    "mensaje": "Pull and Bear: Rebajas de temporada de hasta 30% en abrigos y calzado casual en tiendas seleccionadas.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_moda_casual_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Wingo",
+    "mensaje": "Wingo: Tarifas promocionales para volar a Aruba y Panama desde $420.000 ida y regreso en https://wingo.com",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_viajes_caribe_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Ikea",
+    "mensaje": "IKEA Colombia: Descubre ideas para organizar tu habitacion desde $19.900 en tienda y https://ikea.com.co",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_hogar_ikea_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "89100",
+    "mensaje": "Club Vivamos El Tiempo: Presenta tu tarjeta de suscriptor y recibe 20% de descuento en restaurantes aliados.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_club_suscriptor_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Terpel",
+    "mensaje": "Puntos Colombia y Terpel: Tanquea hoy desde $40.000 y recibe el triple de puntos registrando tu cedula en estacion.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_combustible_puntos_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Texaco",
+    "mensaje": "Estaciones Texaco: Por cada cambio de aceite sintetico reclama gratis un ambientador vehicular en isla.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_combustible_aceite_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Miniso",
+    "mensaje": "Miniso: Conoce la nueva coleccion de organizadores y peluches con precios desde $12.900 en tienda.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_variedades_miniso_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Dollarcity",
+    "mensaje": "Dollarcity: Ya llegaron los articulos decorativos de navidad para tu mesa y sala en todas las sedes.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_hogar_decoracion_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Cinemark",
+    "mensaje": "Cinemark: Compra tu combo crispetas grandes en preventa desde la app y recibe recarga sin costo.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_cine_crispetas_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Colombiana",
+    "mensaje": "Festival Gastronomico en el Parque de la 93 este sabado y domingo: entrada libre para toda la familia.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_evento_gastronomico_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Coursera",
+    "mensaje": "Coursera: Obten 25% de ahorro en tu certificado profesional de gestion de proyectos durante esta semana.",
+    "clase": "SPAM",
+    "origen": "sintetico",
+    "familia_plantilla": "spam_educacion_certificado_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia: Su cuenta ha sido bloqueada preventivamente por intentos fallidos. Reactive su clave en https://bancolombia-seguridad.xyz/login",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_banco_bloqueo_xyz_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia: Detectamos un acceso no autorizado desde otro dispositivo. Verifique su identidad urgente en https://sucursal-virtual-personas.top",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_banco_acceso_top_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573009182736",
+    "mensaje": "Bancolombia: Se registro una compra por $980.000 en falabella. Si no la reconoce anulela de inmediato en https://anular-transaccion-col.com/login",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_banco_compra_falsa_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573128374650",
+    "mensaje": "Aviso Bancolombia: Su clave dinamica sera desactivada hoy. Actualice sus datos de seguridad en http://bit.ly/3xBancol",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_banco_acortador_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia: Evite el cobro del seguro de proteccion de tarjetas por $89.900 cancelando la suscripcion aqui: https://cancelar-seguro-banco.online",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_banco_seguro_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Nequi",
+    "mensaje": "Nequi: Tu cuenta fue suspendida por movimientos inusuales. Ingresa tus datos para desbloquearla en https://nequi-desbloqueo.pages.dev/auth",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_billetera_hosting_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573154433221",
+    "mensaje": "Nequi: Tienes un abono retenido por $350.000 pendiente de aceptacion. Confirma tu cuenta en https://nequi-recargas-col.xyz/aceptar",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_billetera_abono_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Nequi-Info",
+    "mensaje": "Nequi: Por actualizacion de seguridad debes validar tu clave de 4 digitos antes de 24 horas en https://validacion-nequi.lat",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_billetera_clave4_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573201928374",
+    "mensaje": "Nequi: Ganaste el bono de fidelidad de $250.000 para usuarios activos. Reclama tu desembolso ya en https://bono-nequi.vercel.app",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_billetera_bono_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Daviplata",
+    "mensaje": "Daviplata: Su bolsillo ha sido bloqueado temporalmente. Ingrese su clave en https://daviplata-verifica.top/login para reactivar.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_bolsillo_bloqueo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573119988223",
+    "mensaje": "Daviplata: Eres beneficiario del subsidio de ingreso solidario por $420.000. Registra tu cedula para el retiro en https://subsidio-daviplata.xyz",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_subsidio_estatal_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Daviplata",
+    "mensaje": "Daviplata: Detectamos un retiro sospechoso en tramite. Si no fue usted cancele la transaccion en http://185.220.101.45/daviplata",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_ip_publica_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Davivienda",
+    "mensaje": "Davivienda: Su tarjeta de credito presenta bloqueo preventivo. Valide sus credenciales inmediatamente en https://davivienda-clientes.duckdns.org/auth",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_tunel_duckdns_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573147766551",
+    "mensaje": "Davivienda: Alerta de transferencia pendiente por $1.500.000. Para rechazar este debito ingrese a https://portal-seguro-davivienda.site",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_rechazar_debito_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "BBVA",
+    "mensaje": "BBVA: Su cuenta ha sido restringida por falta de actualizacion de datos. Evite el cierre ingresando a https://bbva-alerta.duckdns.org/login",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_cierre_cuenta_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573182233445",
+    "mensaje": "BBVA Colombia: Tienes puntos por vencer equivalentes a $310.000 en efectivo. Redimelos hoy en https://puntos-bbva-col.click",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_puntos_efectivo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "BancoBogota",
+    "mensaje": "Banco de Bogota: Su token de seguridad presenta fallas de sincronizacion. Reactive su banca movil en https://bancobogota-seguridad.xyz",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_token_desincronizado_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Estimado cliente, le invitamos a confirmar la vinculacion de su dispositivo movil en https://bancolombia.com.co.gestion-clientes.net/acceso",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_subdominio_engano_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Davivienda",
+    "mensaje": "Informamos que su certificado digital bancario requiere renovacion periodica a traves de https://davivienda.com.portal-verificacion.org/renovar",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_subdominio_certificado_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Scotiabank",
+    "mensaje": "Scotiabank Colpatria: Tiene una nota credito pendiente de aplicacion en su extracto. Confirme la cuenta destino en https://scotiabank-colpatria-abonos.com/cliente",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_corporativo_nota_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "CajaSocial",
+    "mensaje": "Banco Caja Social: Por normativa financiera requerimos confirmar su correo y clave transaccional en https://bancocajasoclal.com/datos",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_typosquatting_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "NuColombia",
+    "mensaje": "Hola, notamos una inconsistencia en la facturacion de tu tarjeta Nu. Revisa y ajusta el cobro en https://nu-colombia-ayuda.com/estado",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_tono_amable_nu_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "PayPal",
+    "mensaje": "PayPal: Hemos limitado temporalmente algunas funciones de su cuenta comercial. Complete la revision documental en https://paypal-resoluciones.com/cuenta",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_tono_corporativo_paypal_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "DIAN-Alerta",
+    "mensaje": "DIAN: Notificacion de cobro coactivo. Su cuenta bancaria presenta orden de embargo por mora tributaria. Consulte resolucion en https://dian-tramites.xyz/pago",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_dian_embargo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573018877665",
+    "mensaje": "DIAN: Usted tiene una sancion pendiente por inconsistencias en facturacion electronica. Pague con descuento hoy en https://portal-dian-impuestos.top",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_dian_facturacion_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "DIAN",
+    "mensaje": "DIAN: Tienes una devolucion de saldo a favor de IVA por $380.000. Inscribe tu cuenta bancaria para el giro en https://devolucion-dian.pages.dev",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_dian_devolucion_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "PSE",
+    "mensaje": "PSE: Transaccion aprobada por $450.000 COP en comercio internacional. Si no reconoce este debito cancele en http://192.168.1.80/pse",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_pse_ip_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "PSE-Notifica",
+    "mensaje": "PSE: Se detecto un intento de debito automatico desde su cuenta de ahorros. Anule el cobro en https://pse-cancelacion-pagos.xyz",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_pse_intento_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "SIMIT",
+    "mensaje": "SIMIT: Usted registra una fotomulta pendiente de pago con ultimo dia de descuento del 50% antes de embargo. Pague aqui: https://simit-comparendos.top",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_simit_fotomulta_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573165544332",
+    "mensaje": "Secretaria de Movilidad: Evite la inmovilizacion de su vehiculo y reporte en cobro coactivo pagando su comparendo en https://consulta-multas-col.online",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_movilidad_inmovilizacion_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Prosperidad",
+    "mensaje": "Prosperidad Social: Usted salio favorecido en el nuevo ciclo de Renta Ciudadana por $500.000. Consulte su giro en https://renta-ciudadana-consulta.xyz",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_prosperidad_renta_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "DGT",
+    "mensaje": "DGT: Sancion administrativa por exceso de velocidad. Ultimo aviso de pago antes de recargo en http://192.168.1.50/dgt",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_dgt_multa_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Colpass",
+    "mensaje": "Colpass: Su paso por peaje electronico fue rechazado por saldo insuficiente. Pague hoy para evitar comparendo en https://peajes-colpass-pago.xyz",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_peaje_colpass_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Enel-Aviso",
+    "mensaje": "Enel: Orden de corte de energia programada para hoy por factura vencida. Pague de inmediato y evite suspension en https://pagos-enel-col.top",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_servicio_energia_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Acueducto",
+    "mensaje": "Acueducto: Su medidor registra mora de dos periodos y suspension manana. Liquide el saldo pendiente en https://acueducto-pagos-enlinea.site",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_servicio_agua_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Colpensiones",
+    "mensaje": "Colpensiones: Detectamos semanas faltantes en su historial pensional. Corrija sus aportes subiendo su cedula en https://colpensiones-revision.com/formulario",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_pension_semanas_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Servientrega",
+    "mensaje": "Servientrega: Su paquete no pudo ser entregado por direccion incompleta. Actualice sus datos y pague el reenvio en https://servientrega-guia.xyz/envio",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_paquete_direccion_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573024455667",
+    "mensaje": "Coordinadora: Su encomienda se encuentra retenida en bodega central por falta de pago de impuestos. Libere su guia en https://coordinadora-rastreo.top",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_paquete_bodega_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Interrapidisimo",
+    "mensaje": "Interrapidisimo: Intento de entrega fallido hoy. Confirme su direccion y pague el recargo logistico de $6.800 en https://interrapidisimo-entrega.site",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_paquete_recargo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "4-72",
+    "mensaje": "4-72 Envios: Su paquete internacional presenta retencion en aduanas. Pague la tasa aduanera en menos de 24 horas en https://aduanas-472-colombia.xyz",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_aduana_472_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Correos",
+    "mensaje": "Correos: Paquete retenido por falta de pago de tasa de aduana. Realice el pago urgente en https://entrega-correos.xyz/pago",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_aduana_correos_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "DHL-Express",
+    "mensaje": "DHL: Su importacion requiere liquidacion de arancel por $18.900 para salir a reparto hoy. Gestione el pago en https://cutt.ly/dhl-arancel",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_aduana_acortador_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Claro",
+    "mensaje": "Claro: Su linea celular sera suspendida hoy por falta de registro de IMEI. Evite el bloqueo registrando su equipo en https://claro-imei.xyz",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_operador_imei_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Movistar",
+    "mensaje": "Movistar: Detectamos un error en el cobro de su factura. Valide su tarjeta para evitar la suspension del servicio en https://movistar-pagos.top",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_operador_factura_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Tigo",
+    "mensaje": "Tigo: Tu equipo celular presenta reporte preventivo de bloqueo. Actualiza tus datos personales urgente en https://registro-tigo-col.online",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_operador_reporte_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Netflix-Cobro",
+    "mensaje": "Netflix: Tu suscripcion ha sido suspendida por rechazo en el medio de pago. Actualiza tu tarjeta de credito en https://netflix-facturacion.xyz",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_streaming_pago_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Efecty",
+    "mensaje": "Efecty: Tienes un giro pendiente por reclamar de $380.000. Confirma tus datos bancarios para abono directo en https://efecty-giros-col.online",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_giro_efecty_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Transfiya",
+    "mensaje": "Transfiya: Recibiste una transferencia de $290.000 que expira en 2 horas. Ingresa tu usuario y clave bancaria para aceptarla en https://recibir-transfiya.xyz",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_transfiya_clave_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573009988776",
+    "mensaje": "Credito pre-aprobado por $3.000.000 sin fiador ni consulta en centrales de riesgo. Descargue el apk inmediato en https://prestamo-ya.top/app.apk",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_prestamo_apk_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573198877665",
+    "mensaje": "Desembolso inmediato de $5.000.000 a sola firma sin vida crediticia. Instala nuestra aplicacion para recibir el dinero: https://credito-facil-col.xyz/apk",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_prestamo_apk_2",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573223344556",
+    "mensaje": "Has sido seleccionado para un trabajo a tiempo parcial desde casa dando me gusta en videos. Gana $300.000 diarios escribiendo a https://wa.me/23480123456",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_empleo_likes_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+2348099887766",
+    "mensaje": "Recursos Humanos Amazon: Oferta de empleo remoto ganando hasta $450.000 al dia sin experiencia. Contactanos urgente en https://bit.ly/trabajo-rapido",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_empleo_acortador_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Soporte",
+    "mensaje": "Su cuenta b4nc0l0mb14 ha sido bl0qu34d4 por seguridad. Ingrese sus credenciales en https://alerta-cuenta.xyz",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_leetspeak_banco_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Seguridad",
+    "mensaje": "Alerta de acceso: Verifique su cuenta en https://раураl-seguro.top/login para evitar suspension.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_homografo_cirilico_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573056677889",
+    "mensaje": "Felicidades! Tu linea fue ganadora de un bono de $2.000.000 y un iPhone en nuestro sorteo aniversario. Reclama tu premio en https://sorteo-ganador.top",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sorteo_premio_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573174400221",
+    "mensaje": "Notificacion Contable: Su empresa registra factura electronica rechazada con orden de sancion. Descargue el anexo en https://documentos-tributarios-co.net/anexo",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_documento_contable_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573189900114",
+    "mensaje": "Departamento de Talento Humano: Su hoja de vida paso a fase final para vacante administrativa. Confirme sus datos bancarios de nomina en https://ingreso-personal-col.org/registro",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_rrhh_nomina_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Apple-Seguridad",
+    "mensaje": "iCloud: Se localizo tu iPhone robado hace 10 minutos. Mira la ubicacion exacta iniciando sesion con tu Apple ID en https://icloud-mapa-buscar.com/login",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_icloud_robo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "MercadoPago",
+    "mensaje": "Mercado Pago: Retuvimos un cobro con QR por $410.000. Ingresa tu clave de seguridad para devolver el dinero en https://tinyurl.com/mpago-reverso",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_qr_acortador_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Google-Alert",
+    "mensaje": "Google: Alguien solicito eliminar tu cuenta de Gmail en 12 horas. Cancela la solicitud confirmando tu contrasena en https://verificacion-cuenta-mail.web.app",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_gmail_webapp_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573009876543",
+    "mensaje": "Banco: Alerta de seguridad. Para anular la transferencia en curso reenvie de inmediato el codigo dinamico de 6 digitos que acaba de recibir.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_otp_banco_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573107654321",
+    "mensaje": "Soporte Nequi: Estamos bloqueando un retiro fraudulento en tu cuenta. Responde este mensaje con el codigo OTP que te acabamos de enviar.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_otp_nequi_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573134567890",
+    "mensaje": "Seguridad Bancaria: Para cancelar la compra por $1.200.000 entregue la clave dinamica al asesor o escribala aqui de inmediato.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_clave_asesor_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573116540987",
+    "mensaje": "Aviso WhatsApp: Detectamos registro de tu numero en otro celular. Envianos por este medio el codigo de 6 digitos recibido para conservar tu linea.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_otp_whatsapp_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Bancolombia",
+    "mensaje": "Bancolombia Alerta: Compra internacional en proceso por USD 680 en MIAMI. Si no la autorizo comuniquese ya con seguridad bancaria al 6014899210.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_vishing_compra_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Davivienda",
+    "mensaje": "Davivienda: Bloqueo preventivo de su clave virtual por intento de fraude. Llame de inmediato a nuestra central de desbloqueo 3209182736.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_vishing_celular_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "BBVA-Seguridad",
+    "mensaje": "BBVA: Se programo retiro sin tarjeta por $900.000. Para detener el desembolso comuniquese urgente con soporte antifraude al 6017901122.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_vishing_retiro_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573109998877",
+    "mensaje": "Hola mama, se me ha roto el movil y este es mi nuevo numero. Escribeme a whatsapp urgente que tengo una emergencia y necesito pagar algo.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_familiar_roto_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573142211334",
+    "mensaje": "Hola papa, cambie de telefono porque me robaron el otro. Escribeme urgente a este numero que necesito que me hagas un favor con una transferencia.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_familiar_robo_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573218877441",
+    "mensaje": "Tia buenas tardes, tuve un choque en el carro y transito me lo va a llevar a patios, prestame urgente $450.000 al Nequi 3194455667 mientras llego.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_choque_patios_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573159988332",
+    "mensaje": "Primo soy Andres, estoy varado en carretera sin senal de llamadas, consigname por favor $180.000 para la grua a Daviplata 3128899004 y ya te devuelvo.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_grua_carretera_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "DIAN-Cobros",
+    "mensaje": "DIAN: Su RUT fue suspendido por mora fiscal. Comuniquese hoy mismo por WhatsApp con el gestor tributario 3167788991 para evitar embargo.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_dian_whatsapp_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573049911223",
+    "mensaje": "Aduanas Nacional: Su equipaje retenido desde Madrid saldra a remate hoy. Consigne $260.000 de bodegaje a la cuenta ahorros 4419283710 y envie soporte.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_maleta_aduana_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573191122883",
+    "mensaje": "Mesa de Ayuda Bancaria: Su token digital presenta intento de clonacion. Responda este SMS con su cedula y los 4 digitos de su clave para blindar su cuenta.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_clonacion_clave_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573027766110",
+    "mensaje": "Fiscalia General: Existe citacion penal urgente a su nombre por transferencia sospechosa. Comuniquese de inmediato con el investigador al 3176655449.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_fiscalia_vishing_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573184455992",
+    "mensaje": "Financiera Rapida: Tu credito por $8.000.000 fue aprobado. Transfiere $190.000 de poliza de desembolso al Nequi 3108877661 para liberar el giro hoy.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_poliza_credito_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573123399881",
+    "mensaje": "Soporte PSE: Detectamos doble cobro en su cuenta. Para reembolsar el saldo responda con el numero completo de su tarjeta, fecha de vencimiento y CVV.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_cvv_tarjeta_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+2347011223344",
+    "mensaje": "Convocatoria Internacional: Gana desde $350.000 diarios calificando hoteles desde tu celular. Escribe ahora mismo al WhatsApp +573229988110 para activar tu pago.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_empleo_whatsapp_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "Soporte-SIM",
+    "mensaje": "Operador Movil: Recibimos solicitud de cambio de eSIM para tu linea. Si no la pediste responde con el PIN de seguridad que llego por mensaje.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_simswap_pin_1",
+    "requiere_revision": false
+  },
+  {
+    "remitente": "+573015544882",
+    "mensaje": "Juzgado Civil: Orden de retencion salarial radicada hoy contra su cedula. Llame antes de las 5 pm al despacho 6013349980 para suspender la medida.",
+    "clase": "SMISHING",
+    "origen": "sintetico",
+    "familia_plantilla": "smish_sin_url_juzgado_vishing_1",
+    "requiere_revision": false
+  }
+]

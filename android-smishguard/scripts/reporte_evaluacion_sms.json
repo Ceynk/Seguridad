@@ -1,0 +1,193 @@
+{
+  "nota_metodologica": "Corpus sintético controlado con separación estricta por familias de plantillas. No sustituye calibración probabilística sobre tráfico real de operadoras.",
+  "distribucion_datos": {
+    "entrenamiento": {
+      "LEGITIMO": 80,
+      "SPAM": 80,
+      "SMISHING": 80
+    },
+    "validacion": {
+      "LEGITIMO": 20,
+      "SPAM": 20,
+      "SMISHING": 20
+    },
+    "prueba_independiente": {
+      "LEGITIMO": 35,
+      "SPAM": 35,
+      "SMISHING": 35
+    },
+    "maxima_similitud_estructural_desarrollo_vs_prueba": 0.6971
+  },
+  "modelo": {
+    "terminos_vocabulario_entrenamiento": 536,
+    "terminos_exportados": 536,
+    "tamano_archivo_bytes": 29733,
+    "tamano_archivo_kb": 29.04,
+    "regularizacion_seleccionada": 0.001,
+    "umbral_smishing_validacion": 0.42,
+    "umbral_spam_validacion": 0.42,
+    "convergencia": {
+      "epocas_ejecutadas": 450,
+      "perdida_inicial": 1.09861,
+      "perdida_final": 0.40873,
+      "regularizacion": 0.001
+    },
+    "tiempo_promedio_inferencia_python_ms": 0.5088
+  },
+  "evaluacion_validacion": {
+    "exactitud": 0.95,
+    "macro_f1": 0.9496,
+    "total_ejemplos": 60,
+    "predicciones_correctas": 57,
+    "predicciones_incorrectas": 3,
+    "por_clase": {
+      "LEGITIMO": {
+        "precision": 0.9474,
+        "recall": 0.9,
+        "f1": 0.9231,
+        "soporte": 20
+      },
+      "SPAM": {
+        "precision": 0.95,
+        "recall": 0.95,
+        "f1": 0.95,
+        "soporte": 20
+      },
+      "SMISHING": {
+        "precision": 0.9524,
+        "recall": 1.0,
+        "f1": 0.9756,
+        "soporte": 20
+      }
+    },
+    "matriz_confusion": [
+      [
+        18,
+        1,
+        1
+      ],
+      [
+        1,
+        19,
+        0
+      ],
+      [
+        0,
+        0,
+        20
+      ]
+    ]
+  },
+  "evaluacion_prueba_independiente": {
+    "exactitud": 0.9524,
+    "macro_f1": 0.9522,
+    "total_ejemplos": 105,
+    "predicciones_correctas": 100,
+    "predicciones_incorrectas": 5,
+    "por_clase": {
+      "LEGITIMO": {
+        "precision": 0.9697,
+        "recall": 0.9143,
+        "f1": 0.9412,
+        "soporte": 35
+      },
+      "SPAM": {
+        "precision": 0.9444,
+        "recall": 0.9714,
+        "f1": 0.9577,
+        "soporte": 35
+      },
+      "SMISHING": {
+        "precision": 0.9444,
+        "recall": 0.9714,
+        "f1": 0.9577,
+        "soporte": 35
+      }
+    },
+    "matriz_confusion": [
+      [
+        32,
+        2,
+        1
+      ],
+      [
+        0,
+        34,
+        1
+      ],
+      [
+        1,
+        0,
+        34
+      ]
+    ]
+  },
+  "pruebas_especificas_subconjuntos": {
+    "legitimos_con_enlace_acertados": "8/10 (80.0%)",
+    "smishing_sin_enlace_detectados": "7/8 (87.5%)",
+    "remitentes_numericos_acertados": "24/24 (100.0%)"
+  },
+  "analisis_errores_prueba": {
+    "falsos_positivos_smishing": [
+      {
+        "remitente": "CentroMedico",
+        "mensaje_enmascarado": "Colcan: Descargue sus imagenes diagnosticas ingresando con su orden en https://portal.colcan.com.co/pacientes",
+        "clase_real": "LEGITIMO",
+        "clase_predicha": "SMISHING",
+        "probabilidades": {
+          "LEGITIMO": 0.1955,
+          "SPAM": 0.1171,
+          "SMISHING": 0.6873
+        }
+      },
+      {
+        "remitente": "Platzi",
+        "mensaje_enmascarado": "Estudia ingles y desarrollo movil en Platzi con beca parcial de aniversario en https://platzi.com",
+        "clase_real": "SPAM",
+        "clase_predicha": "SMISHING",
+        "probabilidades": {
+          "LEGITIMO": 0.2467,
+          "SPAM": 0.3185,
+          "SMISHING": 0.4348
+        }
+      }
+    ],
+    "falsos_negativos_smishing": [
+      {
+        "remitente": "Soporte-Cuenta",
+        "mensaje_enmascarado": "Centro de Verificacion: Para cancelar el cambio de correo electronico en tu billetera digital responde este SMS con tu clave actual de 4 digitos.",
+        "clase_real": "SMISHING",
+        "clase_predicha": "LEGITIMO",
+        "probabilidades": {
+          "LEGITIMO": 0.3524,
+          "SPAM": 0.2904,
+          "SMISHING": 0.3572
+        }
+      }
+    ],
+    "confusiones_legitimo_spam": [
+      {
+        "remitente": "Daviplata",
+        "mensaje_enmascarado": "Daviplata: Retiro completado por $150.000 en punto Efecty autorizado. Costo de la operacion $0.",
+        "clase_real": "LEGITIMO",
+        "clase_predicha": "SPAM",
+        "probabilidades": {
+          "LEGITIMO": 0.3066,
+          "SPAM": 0.4395,
+          "SMISHING": 0.2539
+        }
+      },
+      {
+        "remitente": "Atrapalo",
+        "mensaje_enmascarado": "Atrapalo: Tu reserva para dos personas en la obra de teatro de esta noche esta en https://atrapalo.com.co/reservas",
+        "clase_real": "LEGITIMO",
+        "clase_predicha": "SPAM",
+        "probabilidades": {
+          "LEGITIMO": 0.3115,
+          "SPAM": 0.4189,
+          "SMISHING": 0.2696
+        }
+      }
+    ]
+  }
+}

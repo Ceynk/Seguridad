@@ -45,21 +45,8 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
         }
 
         val firstMessage = messages[0]
-        val rawSender = firstMessage.originatingAddress
-        val sender = if (rawSender != null) {
-            rawSender
-        } else {
-            "Desconocido"
-        }
-
-        val bodyBuilder = StringBuilder()
-        for (msg in messages) {
-            val part = msg.messageBody
-            if (part != null) {
-                bodyBuilder.append(part)
-            }
-        }
-        val fullBody = bodyBuilder.toString()
+        val sender = firstMessage.originatingAddress ?: "Desconocido"
+        val fullBody = messages.mapNotNull { it.messageBody }.joinToString("")
         if (fullBody.isBlank()) {
             return
         }

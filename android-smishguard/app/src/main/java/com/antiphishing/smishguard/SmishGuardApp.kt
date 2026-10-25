@@ -9,6 +9,7 @@ import com.antiphishing.smishguard.data.repository.CommunityIndicator
 import com.antiphishing.smishguard.data.repository.RuleCache
 import com.antiphishing.smishguard.data.repository.SecuritySettingsRepository
 import com.antiphishing.smishguard.data.repository.SmsRepository
+import com.antiphishing.smishguard.domain.detector.ClasificadorMensajesSms
 import com.antiphishing.smishguard.service.ThreatNotificationManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +63,7 @@ class SmishGuardApp : Application() {
         ThreatNotificationManager.createNotificationChannels(this)
 
         appScope.launch {
+            ClasificadorMensajesSms.precargarModelo()
             try {
                 smsRepository.purgeExpiredRecords(30)
                 callRepository.purgeExpiredRecords(30)

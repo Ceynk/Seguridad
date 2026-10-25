@@ -36,7 +36,13 @@ object CommunityIndicatorNormalizer {
     fun normalizarUrl(valor: String): CommunityIndicator? {
         val limpio = valor.trim().trimEnd('.', ',', ';', ':', ')', ']', '!')
         val uri = try {
-            URI(if (limpio.startsWith("www.", true)) "https://$limpio" else if ("://" in limpio) limpio else "https://$limpio")
+            URI(
+                when {
+                    limpio.startsWith("www.", true) -> "https://$limpio"
+                    "://" in limpio -> limpio
+                    else -> "https://$limpio"
+                }
+            )
         } catch (_: Exception) {
             return null
         }

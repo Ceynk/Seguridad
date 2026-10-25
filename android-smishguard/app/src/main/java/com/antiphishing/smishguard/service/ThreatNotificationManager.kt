@@ -54,12 +54,9 @@ object ThreatNotificationManager {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val factorSummaryBuilder = StringBuilder()
-        val topFactors = analysis.factors.take(2)
-        for (f in topFactors) {
-            factorSummaryBuilder.append("- ").append(f.category).append("\n")
-        }
-        val factorSummary = factorSummaryBuilder.toString().trimEnd()
+        val factorSummary = analysis.factors
+            .take(2)
+            .joinToString("\n") { "- ${it.category}" }
 
         val contentText = "Riesgo ${analysis.threatScore}%: SMS interceptado y puesto en cuarentena."
 
@@ -102,11 +99,7 @@ object ThreatNotificationManager {
             "SmishGuard: Alerta de Llamada Sospechosa"
         }
 
-        val factorSummaryBuilder = StringBuilder()
-        for (f in analysis.factors) {
-            factorSummaryBuilder.append("- ").append(f.category).append("\n")
-        }
-        val factorSummary = factorSummaryBuilder.toString().trimEnd()
+        val factorSummary = analysis.factors.joinToString("\n") { "- ${it.category}" }
 
         val originInfo = if (analysis.countryOrOrigin != null) {
             "Origen: ${analysis.countryOrOrigin}\n"

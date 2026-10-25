@@ -42,7 +42,7 @@ class AppViewModelFactory(private val app: SmishGuardApp) : ViewModelProvider.Fa
             modelClass.isAssignableFrom(QuarantineViewModel::class.java) ->
                 QuarantineViewModel(app.smsRepository) as T
             modelClass.isAssignableFrom(ManualAnalyzerViewModel::class.java) ->
-                ManualAnalyzerViewModel(app.smsRepository) as T
+                ManualAnalyzerViewModel(app.smsRepository, app.settingsRepository) as T
             modelClass.isAssignableFrom(SettingsViewModel::class.java) ->
                 SettingsViewModel(app.settingsRepository, app.smsRepository, app.callRepository, app.communityApiClient) as T
             else -> throw IllegalArgumentException("ViewModel no reconocido")

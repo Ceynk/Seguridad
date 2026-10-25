@@ -128,51 +128,36 @@ object CallDetectorEngine {
         }
 
         if (internationalDigits != null) {
-            for ((prefix, description) in WANGIRI_HIGH_RISK_DESTINATIONS) {
-                if (internationalDigits.startsWith(prefix)) {
-                    detectedCountryOrOrigin = description
-                    factors.add(
-                        ThreatFactor(
-                            category = "Riesgo Crítico de Wangiri (Llamada Perdida Fraudulenta)",
-                            description = "Llamada proveniente de destino internacional de alto riesgo ($description). Diseñada para inducir devolución de llamada y generar cargos excesivos.",
-                            severityScore = 65,
-                            matchedSnippet = "+$prefix"
-                        )
+            val riskDestination = WANGIRI_HIGH_RISK_DESTINATIONS.entries
+                .firstOrNull { internationalDigits.startsWith(it.key) }
+            if (riskDestination != null) {
+                val (prefix, description) = riskDestination
+                detectedCountryOrOrigin = description
+                factors.add(
+                    ThreatFactor(
+                        category = "Riesgo Crítico de Wangiri (Llamada Perdida Fraudulenta)",
+                        description = "Llamada proveniente de destino internacional de alto riesgo ($description). Diseñada para inducir devolución de llamada y generar cargos excesivos.",
+                        severityScore = 65,
+                        matchedSnippet = "+$prefix"
                     )
-                    break
-                }
+                )
             }
         }
 
-        for (pattern in PREMIUM_RATE_PATTERNS) {
-            if (pattern.matches(cleanNumber)) {
-                factors.add(
-                    ThreatFactor(
-                        category = "Línea de Tarificación Adicional (Sobrecoste)",
-                        description = "El número pertenece a un rango de tarificación especial con cobro adicional elevado.",
-                        severityScore = 60,
-                        matchedSnippet = cleanNumber
-                    )
+        if (PREMIUM_RATE_PATTERNS.any { it.matches(cleanNumber) }) {
+            factors.add(
+                ThreatFactor(
+                    category = "Línea de Tarificación Adicional (Sobrecoste)",
+                    description = "El número pertenece a un rango de tarificación especial con cobro adicional elevado.",
+                    severityScore = 60,
+                    matchedSnippet = cleanNumber
                 )
-                break
-            }
+            )
         }
 
         if (cleanNumber.isNotEmpty()) {
-            var plusCount = 0
-            var hasInvalidChars = false
-            val digitsBuilder = StringBuilder()
-
-            for (i in 0 until cleanNumber.length) {
-                val ch = cleanNumber[i]
-                if (ch == '+') {
-                    plusCount++
-                } else if (ch.isDigit()) {
-                    digitsBuilder.append(ch)
-                } else {
-                    hasInvalidChars = true
-                }
-            }
+            val plusCount = cleanNumber.count { it == '+' }
+            val hasInvalidChars = cleanNumber.any { !it.isDigit() && it != '+' }
 
             val hasMultiplePlus = plusCount > 1 || cleanNumber.lastIndexOf('+') > 0
             if (hasMultiplePlus || hasInvalidChars) {
@@ -186,7 +171,7 @@ object CallDetectorEngine {
                 )
             }
 
-            val digitsOnly = digitsBuilder.toString()
+            val digitsOnly = cleanNumber.filter(Char::isDigit)
             if (digitsOnly.length < 5 && !EMERGENCY_SHORT_NUMBERS.contains(digitsOnly)) {
                 factors.add(
                     ThreatFactor(
@@ -227,25 +212,22 @@ object CallDetectorEngine {
         }
 
         if (cleanNumber.isNotEmpty()) {
-            for (customRegex in customBlockPatterns) {
-                if (SafeRegex.containsMatch(customRegex, cleanNumber) == true) {
-                    factors.add(
-                        ThreatFactor(
-                            category = "Regla de Bloqueo Telefónico Personalizada",
-                            description = "Coincidencia con un filtro de llamadas configurado por el usuario (${customRegex.pattern}).",
-                            severityScore = 100,
-                            matchedSnippet = customRegex.pattern
-                        )
+            val matchingRule = customBlockPatterns.firstOrNull {
+                SafeRegex.containsMatch(it, cleanNumber) == true
+            }
+            if (matchingRule != null) {
+                factors.add(
+                    ThreatFactor(
+                        category = "Regla de Bloqueo Telefónico Personalizada",
+                        description = "Coincidencia con un filtro de llamadas configurado por el usuario (${matchingRule.pattern}).",
+                        severityScore = 100,
+                        matchedSnippet = matchingRule.pattern
                     )
-                    break
-                }
+                )
             }
         }
 
-        var totalScore = 0
-        for (factor in factors) {
-            totalScore += factor.severityScore
-        }
+        val totalScore = factors.sumOf { it.severityScore }
         val boundedScore = min(100, max(0, totalScore))
 
         val threatLevel = when {

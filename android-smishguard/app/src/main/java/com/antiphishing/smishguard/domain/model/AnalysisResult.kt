@@ -8,5 +8,6 @@ data class AnalysisResult(
     val sanitizedBody: String,
     val extractedUrls: List<String>,
     val homoglyphsDetected: List<String>,
-    val summaryReason: String
+    val summaryReason: String,
+    val categoriaMensaje: String = "LEGITIMO"
 )

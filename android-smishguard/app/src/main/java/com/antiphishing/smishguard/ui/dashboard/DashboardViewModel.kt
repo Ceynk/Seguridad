@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.antiphishing.smishguard.data.repository.SecuritySettingsRepository
 import com.antiphishing.smishguard.data.repository.SmsRepository
-import com.antiphishing.smishguard.domain.model.SmsMessageData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

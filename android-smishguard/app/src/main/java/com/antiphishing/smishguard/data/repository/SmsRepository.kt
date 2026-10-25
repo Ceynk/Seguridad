@@ -24,28 +24,19 @@ class SmsRepository(
     private val smsDao: SmsDao,
     private val whitelistDao: WhitelistDao,
     private val customRuleDao: CustomRuleDao,
-    private val ruleCache: RuleCache
-    ,
+    private val ruleCache: RuleCache,
     private val communityBlacklistDao: CommunityBlacklistDao
 ) {
 
     fun getAllRecords(): Flow<List<SmsMessageData>> {
         return smsDao.getAllRecords().map { entities ->
-            val domainList = mutableListOf<SmsMessageData>()
-            for (entity in entities) {
-                domainList.add(convertEntityToDomain(entity))
-            }
-            domainList
+            entities.map(::convertEntityToDomain)
         }
     }
 
     fun getQuarantinedRecords(): Flow<List<SmsMessageData>> {
         return smsDao.getQuarantinedRecords().map { entities ->
-            val domainList = mutableListOf<SmsMessageData>()
-            for (entity in entities) {
-                domainList.add(convertEntityToDomain(entity))
-            }
-            domainList
+            entities.map(::convertEntityToDomain)
         }
     }
 
@@ -71,7 +62,7 @@ class SmsRepository(
 
     suspend fun addToWhitelist(sender: String, name: String? = null) {
         val trimmedSender = sender.trim()
-        val trimmedName = if (name != null) name.trim() else null
+        val trimmedName = name?.trim()
         val entry = WhitelistEntity(
             senderOrNumber = trimmedSender,
             contactName = trimmedName
@@ -169,8 +160,8 @@ class SmsRepository(
             threatLevel = analysis.level.name,
             isQuarantined = analysis.isQuarantined,
             factorsJson = serializeFactors(analysis.factors),
-            extractedUrls = analysis.extractedUrls.joinToString(",")
-            ,messageIdentity = messageIdentity
+            extractedUrls = analysis.extractedUrls.joinToString(","),
+            messageIdentity = messageIdentity
         )
         return smsDao.insertRecord(entity)
     }
@@ -297,19 +288,16 @@ class SmsRepository(
     }
 
     private fun convertEntityToDomain(record: SmsRecordEntity): SmsMessageData {
-        val urls = if (record.extractedUrls.isBlank()) {
-            emptyList()
-        } else if (record.extractedUrls.contains("|||")) {
-            record.extractedUrls.split("|||")
-        } else {
-            record.extractedUrls.split(",")
+        val urls = when {
+            record.extractedUrls.isBlank() -> emptyList()
+            "|||" in record.extractedUrls -> record.extractedUrls.split("|||")
+            else -> record.extractedUrls.split(",")
         }
 
-        var level = ThreatLevel.SAFE
-        try {
-            level = ThreatLevel.valueOf(record.threatLevel)
+        val level = try {
+            ThreatLevel.valueOf(record.threatLevel)
         } catch (e: Exception) {
-            level = ThreatLevel.SAFE
+            ThreatLevel.SAFE
         }
 
         return SmsMessageData(
