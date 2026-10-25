@@ -3,7 +3,9 @@ package com.antiphishing.smishguard.service
 import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Log
 import com.antiphishing.smishguard.SmishGuardApp
+import com.antiphishing.smishguard.data.repository.SmsRepository
 import com.antiphishing.smishguard.domain.detector.SmishDetectorEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -93,12 +95,28 @@ class NotificationFilterService : NotificationListenerService() {
                     aggressiveMode = settingsRepo.isAggressiveModeEnabled
                 )
 
-                if (analysis.isQuarantined) {
+                val identity = SmsRepository.identityFor(
+                    sender = title,
+                    body = text,
+                    timestamp = sbn.postTime
+                )
+                val recordId = smsRepo.saveAnalysis(
+                    sender = title,
+                    rawBody = text,
+                    analysis = analysis,
+                    messageIdentity = identity
+                )
+
+                if (recordId != -1L && analysis.isQuarantined) {
                     cancelNotification(sbn.key)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(TAG, "Error al analizar la notificación recibida", e)
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "NotificationFilterService"
     }
 }

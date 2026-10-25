@@ -39,6 +39,11 @@ describe("Extractor de Características de URLs", () => {
     expect(carArroba.tieneArroba).toBe(true);
   });
 
+  it("no debe marcar el identificador @ de un canal de YouTube", () => {
+    const carYouTube = extraerCaracteristicasUrl("https://www.youtube.com/@canal-ejemplo");
+    expect(carYouTube.tieneArroba).toBe(false);
+  });
+
   it("debe identificar palabras clave de autenticación, banca y urgencia", () => {
     const urlSensible = "http://tramites-urgentes.xyz/dian/fotomulta/pagos/verificar-clave";
     const car = extraerCaracteristicasUrl(urlSensible);

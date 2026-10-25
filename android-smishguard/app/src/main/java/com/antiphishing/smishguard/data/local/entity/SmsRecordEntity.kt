@@ -9,7 +9,8 @@ import androidx.room.PrimaryKey
     indices = [
         Index(value = ["timestamp"]),
         Index(value = ["isQuarantined"]),
-        Index(value = ["threatLevel"])
+        Index(value = ["threatLevel"]),
+        Index(value = ["messageIdentity"], unique = true)
     ]
 )
 data class SmsRecordEntity(
@@ -25,4 +26,6 @@ data class SmsRecordEntity(
     val factorsJson: String,
     val extractedUrls: String,
     val wasRestored: Boolean = false
+    ,
+    val messageIdentity: String = ""
 )

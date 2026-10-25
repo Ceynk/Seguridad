@@ -30,7 +30,7 @@ interface SmsDao {
     @Query("SELECT COUNT(*) FROM sms_records WHERE threatLevel = 'PHISHING'")
     fun getPhishingDetectedCount(): Flow<Int>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertRecord(record: SmsRecordEntity): Long
 
     @Update

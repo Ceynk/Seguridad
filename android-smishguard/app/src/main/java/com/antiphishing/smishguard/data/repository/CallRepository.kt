@@ -1,19 +1,16 @@
 package com.antiphishing.smishguard.data.repository
 
 import com.antiphishing.smishguard.data.local.dao.CallDao
-import com.antiphishing.smishguard.data.local.dao.CustomRuleDao
-import com.antiphishing.smishguard.data.local.dao.WhitelistDao
 import com.antiphishing.smishguard.data.local.entity.CallRecordEntity
 import com.antiphishing.smishguard.domain.model.CallAnalysisResult
 import com.antiphishing.smishguard.domain.model.ThreatFactor
 import kotlinx.coroutines.flow.Flow
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.util.concurrent.ConcurrentHashMap
 
 class CallRepository(
     private val callDao: CallDao,
-    private val whitelistDao: WhitelistDao,
-    private val customRuleDao: CustomRuleDao,
     private val ruleCache: RuleCache
 ) {
 
@@ -38,6 +35,12 @@ class CallRepository(
     }
 
     suspend fun saveCallAnalysis(analysis: CallAnalysisResult): Long {
+        val identity = identityFor(analysis.phoneNumber)
+        val now = System.currentTimeMillis()
+        val previous = recentCallIdentities.putIfAbsent(identity, now)
+        if (previous != null && now - previous < DUPLICATE_WINDOW_MILLIS) {
+            return -1L
+        }
         val entity = CallRecordEntity(
             phoneNumber = analysis.phoneNumber,
             timestamp = System.currentTimeMillis(),
@@ -50,6 +53,15 @@ class CallRepository(
             summaryReason = analysis.summaryReason
         )
         return callDao.insertCallRecord(entity)
+    }
+
+    companion object {
+        private const val DUPLICATE_WINDOW_MILLIS = 30_000L
+        private val recentCallIdentities = ConcurrentHashMap<String, Long>()
+
+        private fun identityFor(number: String): String {
+            return number.trim().replace(Regex("[\\s\\-().]"), "").ifBlank { "hidden" }
+        }
     }
 
     suspend fun deleteCallRecord(id: Long) {

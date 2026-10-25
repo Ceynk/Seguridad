@@ -131,7 +131,6 @@ object UrlThreatAnalyzer {
             return candidate.trimEnd('.', ',', ';', ':', ')', ']', '!', '?', '"', '\'')
         }
 
-        // 1. URLs con protocolo explícito (http, https, hxxp, ftp)
         val protoMatcher = PROTOCOL_URL_REGEX.matcher(text)
         while (protoMatcher.find() && urls.size < MAX_URLS) {
             val candidate = cleanCandidate(protoMatcher.group())
@@ -140,7 +139,6 @@ object UrlThreatAnalyzer {
             }
         }
 
-        // 2. URLs con www
         val wwwMatcher = WWW_URL_REGEX.matcher(text)
         while (wwwMatcher.find() && urls.size < MAX_URLS) {
             val candidate = cleanCandidate(wwwMatcher.group())
@@ -149,7 +147,6 @@ object UrlThreatAnalyzer {
             }
         }
 
-        // 3. Direcciones IP directas
         val ipMatcher = IP_URL_REGEX.matcher(text)
         while (ipMatcher.find() && urls.size < MAX_URLS) {
             val candidate = cleanCandidate(ipMatcher.group())
@@ -167,7 +164,6 @@ object UrlThreatAnalyzer {
             }
         }
 
-        // 4. Dominios sin protocolo (por ejemplo: bancolombia-reactivar.xyz)
         val bareMatcher = BARE_DOMAIN_REGEX.matcher(text)
         while (bareMatcher.find() && urls.size < MAX_URLS) {
             val candidate = cleanCandidate(bareMatcher.group(1) ?: bareMatcher.group())
@@ -242,7 +238,6 @@ object UrlThreatAnalyzer {
                 sanitized.substringAfter("://").substringAfter("/", "")
             }.lowercase()
 
-            // 1. IP Directa
             if (RAW_IP_PATTERN.matcher(domain).matches()) {
                 factors.add(
                     ThreatFactor(
@@ -254,7 +249,6 @@ object UrlThreatAnalyzer {
                 )
             }
 
-            // 2. Extensión de Dominio Sospechosa (TLD de alto riesgo)
             val tld = domain.substringAfterLast(".", "")
             if (HIGH_RISK_TLDS.contains(tld)) {
                 factors.add(
@@ -267,7 +261,6 @@ object UrlThreatAnalyzer {
                 )
             }
 
-            // 3. Acortadores de URL
             var isShortener = false
             for (shortener in KNOWN_SHORTENERS) {
                 if (domain == shortener || domain.endsWith(".$shortener")) {
@@ -286,7 +279,6 @@ object UrlThreatAnalyzer {
                 )
             }
 
-            // 4. Servicios de Alojamiento Gratuito o Túneles
             var isAbusedHost = false
             for (abused in ABUSED_FREE_HOSTS) {
                 if (domain == abused || domain.endsWith(".$abused")) {
@@ -313,7 +305,6 @@ object UrlThreatAnalyzer {
                 }
             }
 
-            // 5. Suplantación de Marca en URL (Lookalike)
             var brandSpoofed = false
             if (!isOfficialDomain) {
                 for ((brand, officialDomains) in OFFICIAL_BRAND_DOMAINS) {
@@ -338,7 +329,6 @@ object UrlThreatAnalyzer {
                 }
             }
 
-            // 6. Subdominios Excesivos (ej: login.banco.seguridad.portal.xyz)
             val domainLabels = domain.split('.')
             if (!isOfficialDomain && domainLabels.size > 4 && !RAW_IP_PATTERN.matcher(domain).matches()) {
                 factors.add(
@@ -351,7 +341,6 @@ object UrlThreatAnalyzer {
                 )
             }
 
-            // 7. Longitud Inusual de Enlace o Dominio
             if (!isOfficialDomain && (rawUrl.length > 85 || domain.length > 32)) {
                 factors.add(
                     ThreatFactor(
@@ -363,7 +352,6 @@ object UrlThreatAnalyzer {
                 )
             }
 
-            // 8. Caracteres Anómalos (@ en URL o exceso de guiones)
             if (rawUrl.contains("@")) {
                 factors.add(
                     ThreatFactor(
@@ -386,7 +374,6 @@ object UrlThreatAnalyzer {
                 )
             }
 
-            // 9. Palabras Clave de Fraude en Dominio o Ruta (en sitios no oficiales)
             var hasFraudKeyword = false
             for (kw in FRAUD_PATH_KEYWORDS) {
                 if (path.contains(kw) || (domain.contains(kw) && !brandSpoofed)) {
@@ -405,7 +392,6 @@ object UrlThreatAnalyzer {
                 )
             }
 
-            // 10. Uso Extraño de Números en Dominio (Leetspeak)
             if (LEETSPEAK_DOMAIN_PATTERN.matches(domain) && !isOfficialDomain) {
                 factors.add(
                     ThreatFactor(
@@ -417,7 +403,6 @@ object UrlThreatAnalyzer {
                 )
             }
 
-            // 11. Protocolo HTTP Inseguro con Palabras de Autenticación
             if (!isOfficialDomain && normalizedUrl.startsWith("http://") && !RAW_IP_PATTERN.matcher(domain).matches()) {
                 if (hasFraudKeyword || brandSpoofed) {
                     factors.add(
@@ -431,7 +416,6 @@ object UrlThreatAnalyzer {
                 }
             }
 
-            // 12. Alta Entropía en Dominio (Algoritmos de Generación de Dominios - DGA)
             val subLabel = domain.substringBeforeLast(".")
             val entropy = calculateShannonEntropy(subLabel)
             val hasHighConsonants = hasExcessiveConsonants(subLabel)

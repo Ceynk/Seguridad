@@ -4,6 +4,7 @@ import android.os.Build
 import android.telecom.Call
 import android.telecom.CallScreeningService
 import android.telecom.Connection
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.antiphishing.smishguard.SmishGuardApp
 import com.antiphishing.smishguard.domain.detector.CallDetectorEngine
@@ -11,13 +12,21 @@ import com.antiphishing.smishguard.domain.model.CallAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class CallScreeningServiceImpl : CallScreeningService() {
 
     companion object {
-        private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private const val TAG = "CallScreeningService"
+    }
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    override fun onDestroy() {
+        serviceScope.cancel()
+        super.onDestroy()
     }
 
     override fun onScreenCall(callDetails: Call.Details) {
@@ -70,7 +79,7 @@ class CallScreeningServiceImpl : CallScreeningService() {
                     networkVerificationFailed = networkVerificationFailed
                 )
 
-                callRepo.saveCallAnalysis(analysis)
+                val recordId = callRepo.saveCallAnalysis(analysis)
 
                 val displayPhone = if (rawNumber.isBlank()) {
                     "Número Oculto"
@@ -78,7 +87,7 @@ class CallScreeningServiceImpl : CallScreeningService() {
                     rawNumber
                 }
 
-                if (analysis.action == CallAction.BLOCK) {
+                if (recordId != -1L && analysis.action == CallAction.BLOCK) {
                     val blockBuilder = CallResponse.Builder()
                     blockBuilder.setDisallowCall(true)
                     blockBuilder.setRejectCall(true)
@@ -91,7 +100,7 @@ class CallScreeningServiceImpl : CallScreeningService() {
                         phoneNumber = displayPhone,
                         analysis = analysis
                     )
-                } else if (analysis.action == CallAction.WARN) {
+                } else if (recordId != -1L && analysis.action == CallAction.WARN) {
                     ThreatNotificationManager.showCallThreatAlert(
                         context = applicationContext,
                         phoneNumber = displayPhone,
@@ -99,14 +108,15 @@ class CallScreeningServiceImpl : CallScreeningService() {
                     )
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(TAG, "Error al analizar la llamada recibida", e)
             } finally {
                 try {
                     respondToCall(callDetails, responseBuilder.build())
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e(TAG, "No se pudo responder al servicio de filtrado de llamadas", e)
                 }
             }
         }
     }
+
 }

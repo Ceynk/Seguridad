@@ -211,6 +211,14 @@ export function extraerCaracteristicasUrl(urlEntrada: string): CaracteristicasUr
   const dominioPrincipal = urlNormalizada.dominioPrincipal;
   const ruta = urlNormalizada.ruta;
   const extensionTld = extraerExtensionTld(dominioPrincipal);
+  const tieneArroba = (() => {
+    try {
+      const url = new URL(urlCompleta);
+      return Boolean(url.username || url.password);
+    } catch {
+      return false;
+    }
+  })();
 
   const cantidadGuiones = (nombreHost.match(/-/g) || []).length;
   const cantidadPuntos = (nombreHost.match(/\./g) || []).length;
@@ -248,7 +256,7 @@ export function extraerCaracteristicasUrl(urlEntrada: string): CaracteristicasUr
     esIpDirecta: urlNormalizada.esIp,
     versionIp: urlNormalizada.versionIp,
     esPunycode: verificarEsPunycode(nombreHost),
-    tieneArroba: urlEntrada.includes("@"),
+    tieneArroba,
     porcentajeCodificacionUrl: calcularPorcentajeCodificacion(urlCompleta),
     cantidadGuiones,
     cantidadPuntos,

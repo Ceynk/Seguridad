@@ -1,6 +1,7 @@
 package com.antiphishing.smishguard
 
 import android.app.Application
+import android.util.Log
 import com.antiphishing.smishguard.data.local.AppDatabase
 import com.antiphishing.smishguard.data.repository.CallRepository
 import com.antiphishing.smishguard.data.repository.RuleCache
@@ -46,8 +47,6 @@ class SmishGuardApp : Application() {
         )
         callRepository = CallRepository(
             callDao = database.callDao(),
-            whitelistDao = database.whitelistDao(),
-            customRuleDao = database.customRuleDao(),
             ruleCache = ruleCache
         )
         settingsRepository = SecuritySettingsRepository(this)
@@ -59,7 +58,12 @@ class SmishGuardApp : Application() {
                 smsRepository.purgeExpiredRecords(30)
                 callRepository.purgeExpiredRecords(30)
             } catch (e: Exception) {
+                Log.e(TAG, "No se pudieron purgar los registros expirados", e)
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "SmishGuardApp"
     }
 }

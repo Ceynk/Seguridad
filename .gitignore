@@ -4,3 +4,8 @@ dist/
 *.log
 coverage/
 .vite/
+android-smishguard/**/build/
+android-smishguard/.gradle/
+android-smishguard/.kotlin/
+android-smishguard/.externalNativeBuild/
+android-smishguard/.cxx/

@@ -4,7 +4,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
+import android.util.Log
 import com.antiphishing.smishguard.SmishGuardApp
+import com.antiphishing.smishguard.data.repository.SmsRepository
 import com.antiphishing.smishguard.domain.detector.SmishDetectorEngine
 import com.antiphishing.smishguard.service.ThreatNotificationManager
 import kotlinx.coroutines.CoroutineScope
@@ -15,6 +17,7 @@ import kotlinx.coroutines.launch
 class SmsBroadcastReceiver : BroadcastReceiver() {
 
     companion object {
+        private const val TAG = "SmsBroadcastReceiver"
         private val receiverScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 
@@ -79,23 +82,31 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
                     aggressiveMode = settingsRepo.isAggressiveModeEnabled
                 )
 
-                smsRepo.saveAnalysis(sender = sender, rawBody = fullBody, analysis = analysis)
+                val identity = SmsRepository.identityFor(sender, fullBody, firstMessage.timestampMillis)
+                val recordId = smsRepo.saveAnalysis(
+                    sender = sender,
+                    rawBody = fullBody,
+                    analysis = analysis,
+                    messageIdentity = identity
+                )
 
-                if (analysis.isQuarantined) {
+                if (recordId != -1L && analysis.isQuarantined) {
                     ThreatNotificationManager.showThreatAlert(context, sender, analysis)
 
                     if (isOrdered) {
                         try {
                             abortBroadcast()
-                        } catch (e: Exception) {
+                        } catch (e: IllegalStateException) {
+                            Log.w(TAG, "No se pudo cancelar la difusión ordenada del SMS", e)
                         }
                     }
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(TAG, "Error al analizar el SMS recibido", e)
             } finally {
                 pendingResult.finish()
             }
         }
     }
+
 }

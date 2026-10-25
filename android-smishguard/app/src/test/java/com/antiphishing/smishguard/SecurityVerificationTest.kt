@@ -7,13 +7,8 @@ import com.antiphishing.smishguard.domain.model.ThreatLevel
 import org.junit.Assert.*
 import org.junit.Test
 
-/**
- * Suite de verificación técnica para sustentación académica.
- * Comprueba los 13 escenarios obligatorios de seguridad y control de navegación.
- */
 class SecurityVerificationTest {
 
-    // 1. URL normal y conocida
     @Test
     fun escenario01_urlNormalYConocida() {
         val url = "https://www.bancolombia.com"
@@ -24,7 +19,6 @@ class SecurityVerificationTest {
         assertTrue("No debe tener factores de amenaza", decision.factors.isEmpty())
     }
 
-    // 2. URL con estructura sospechosa
     @Test
     fun escenario02_urlConEstructuraSospechosa() {
         val url = "http://banco-login-verificar-cuenta-alerta.net/actualizar"
@@ -40,7 +34,6 @@ class SecurityVerificationTest {
         )
     }
 
-    // 3. URL de phishing conocida para pruebas
     @Test
     fun escenario03_urlDePhishingConocidaParaPruebas() {
         val url = "https://bbva-seguridad.duckdns.org/login"
@@ -54,7 +47,6 @@ class SecurityVerificationTest {
         )
     }
 
-    // 4. URL con IP en lugar de dominio
     @Test
     fun escenario04_urlConIpEnLugarDeDominio() {
         val url = "http://192.168.1.50/dgt"
@@ -67,7 +59,6 @@ class SecurityVerificationTest {
         )
     }
 
-    // 5. URL con subdominios sospechosos
     @Test
     fun escenario05_urlConSubdominiosSospechosos() {
         val url = "https://bancolombia.verificar.login.cuenta.sitio-trampa.xyz"
@@ -84,7 +75,6 @@ class SecurityVerificationTest {
         )
     }
 
-    // 6. URL con caracteres extraños (@ en URL)
     @Test
     fun escenario06_urlConCaracteresExtraños() {
         val url = "https://usuario:clave@sitio-trampa.com/login"
@@ -96,7 +86,6 @@ class SecurityVerificationTest {
         )
     }
 
-    // 7. URL acortada
     @Test
     fun escenario07_urlAcortada() {
         val url = "https://bit.ly/3xXyZ"
@@ -109,7 +98,6 @@ class SecurityVerificationTest {
         assertTrue(decision.threatScore >= 20)
     }
 
-    // 8. URL vacía o inválida
     @Test
     fun escenario08_urlVaciaOInvalida() {
         val decisionVacia = UrlThreatAnalyzer.analyzeSingleUrl("")
@@ -121,7 +109,6 @@ class SecurityVerificationTest {
         assertEquals(0, decisionEspacios.threatScore)
     }
 
-    // 9. Número telefónico normal
     @Test
     fun escenario09_numeroTelefonicoNormal() {
         val numero = "+573105551234"
@@ -133,7 +120,6 @@ class SecurityVerificationTest {
         assertEquals(0, resultado.threatScore)
     }
 
-    // 10. Número telefónico sospechoso
     @Test
     fun escenario10_numeroTelefonicoSospechoso() {
         val numeroMalformado = "++57300++1234"
@@ -147,7 +133,6 @@ class SecurityVerificationTest {
         )
     }
 
-    // 11. Número desconocido
     @Test
     fun escenario11_numeroDesconocido() {
         val numeroDesconocido = "+573019876543"
@@ -163,17 +148,14 @@ class SecurityVerificationTest {
         assertEquals(0, resultado.threatScore)
     }
 
-    // 12. Intentar abrir una URL maliciosa (Bloqueo previo a la navegación)
     @Test
     fun escenario12_intentarAbrirUrlMaliciosa() {
         val urlPeligrosa = "https://nequi-desbloqueo.pages.dev/login"
 
-        // El flujo del sistema evalúa la URL antes de ejecutar cualquier Intent
         val decision = UrlThreatAnalyzer.analyzeSingleUrl(urlPeligrosa)
 
         var intentNavegacionLanzado = false
         if (decision.isBlocked) {
-            // Se activa la pantalla de bloqueo y se detiene el flujo
             intentNavegacionLanzado = false
         } else {
             intentNavegacionLanzado = true
@@ -183,7 +165,6 @@ class SecurityVerificationTest {
         assertFalse("El Intent hacia el navegador NUNCA debe lanzarse si es malicioso", intentNavegacionLanzado)
     }
 
-    // 13. Intentar abrir una URL segura (Permite navegación)
     @Test
     fun escenario13_intentarAbrirUrlSegura() {
         val urlSegura = "https://www.google.com"
@@ -194,7 +175,6 @@ class SecurityVerificationTest {
         if (decision.isBlocked) {
             intentNavegacionLanzado = false
         } else {
-            // El enlace es seguro: se autoriza el lanzamiento del Intent
             intentNavegacionLanzado = true
         }
 

@@ -1,7 +1,7 @@
 package com.antiphishing.smishguard.data.repository
 
-import com.antiphishing.smishguard.data.local.dao.CustomRuleDao
 import com.antiphishing.smishguard.data.local.dao.SmsDao
+import com.antiphishing.smishguard.data.local.dao.CustomRuleDao
 import com.antiphishing.smishguard.data.local.dao.WhitelistDao
 import com.antiphishing.smishguard.data.local.entity.CustomRuleEntity
 import com.antiphishing.smishguard.data.local.entity.SmsRecordEntity
@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.security.MessageDigest
 
 class SmsRepository(
     private val smsDao: SmsDao,
@@ -115,7 +116,12 @@ class SmsRepository(
         ruleCache.invalidateRules()
     }
 
-    suspend fun saveAnalysis(sender: String, rawBody: String, analysis: AnalysisResult): Long {
+    suspend fun saveAnalysis(
+        sender: String,
+        rawBody: String,
+        analysis: AnalysisResult,
+        messageIdentity: String = identityFor(sender, rawBody)
+    ): Long {
         val storedRawBody = if (analysis.isQuarantined) {
             FieldCipher.encrypt(rawBody)
         } else {
@@ -132,6 +138,7 @@ class SmsRepository(
             isQuarantined = analysis.isQuarantined,
             factorsJson = serializeFactors(analysis.factors),
             extractedUrls = analysis.extractedUrls.joinToString(",")
+            ,messageIdentity = messageIdentity
         )
         return smsDao.insertRecord(entity)
     }
@@ -145,15 +152,34 @@ class SmsRepository(
         smsDao.updateRecord(updatedRecord)
     }
 
-    suspend fun getDecryptedOriginalBody(id: Long): String? {
+    sealed interface OriginalBodyResult {
+        data object Missing : OriginalBodyResult
+        data class Available(val value: String) : OriginalBodyResult
+        data class Unreadable(val reason: FieldCipher.DecryptionResult.FailureReason) : OriginalBodyResult
+    }
+
+    suspend fun getDecryptedOriginalBody(id: Long): OriginalBodyResult {
         val record = smsDao.getRecordById(id)
         if (record == null) {
-            return null
+            return OriginalBodyResult.Missing
         }
         return if (record.rawBody.isBlank()) {
-            record.sanitizedBody
+            OriginalBodyResult.Available(record.sanitizedBody)
         } else {
-            FieldCipher.decrypt(record.rawBody)
+            when (val result = FieldCipher.decrypt(record.rawBody)) {
+                is FieldCipher.DecryptionResult.Decrypted -> OriginalBodyResult.Available(result.value)
+                is FieldCipher.DecryptionResult.LegacyPlaintext -> OriginalBodyResult.Available(result.value)
+                is FieldCipher.DecryptionResult.Unreadable -> OriginalBodyResult.Unreadable(result.reason)
+            }
+        }
+    }
+
+    companion object {
+        fun identityFor(sender: String, body: String, timestamp: Long? = null): String {
+            val normalizedTimestamp = timestamp?.let { it / 60_000L }?.toString().orEmpty()
+            val input = listOf(sender.trim(), normalizedTimestamp, body).joinToString("\u001f")
+            val digest = MessageDigest.getInstance("SHA-256").digest(input.toByteArray(Charsets.UTF_8))
+            return digest.joinToString("") { "%02x".format(it) }
         }
     }
 

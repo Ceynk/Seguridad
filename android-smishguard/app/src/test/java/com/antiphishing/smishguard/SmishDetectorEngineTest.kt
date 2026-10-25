@@ -9,6 +9,50 @@ import org.junit.Test
 class SmishDetectorEngineTest {
 
     @Test
+    fun palabrasGenericasPorSiSolasNoPonenEnCuarentena() {
+        val result = SmishDetectorEngine.analyze(
+            sender = "Contacto",
+            body = "Mensaje urgente: recuerda verificar tu cuenta y revisar el pago."
+        )
+
+        assertTrue(result.threatScore in 0..49)
+        assertFalse(result.isQuarantined)
+    }
+
+    @Test
+    fun mensajeBancarioConUrlMaliciosaYSolicitudDeCredencialesSeAisla() {
+        val result = SmishDetectorEngine.analyze(
+            sender = "BBVA",
+            body = "Su cuenta fue bloqueada. Ingrese sus credenciales en https://bbva-alerta.duckdns.org/login para reactivarla."
+        )
+
+        assertTrue(result.isQuarantined)
+        assertTrue(result.threatScore >= 60)
+    }
+
+    @Test
+    fun mensajeDePaqueteriaLegitimoNoSeAisla() {
+        val result = SmishDetectorEngine.analyze(
+            sender = "Correos",
+            body = "Su paquete fue entregado hoy. Consulte el seguimiento en https://correos.es"
+        )
+
+        assertFalse(result.isQuarantined)
+        assertTrue(result.threatScore < 50)
+    }
+
+    @Test
+    fun mensajeDePaqueteriaFraudulentoSeAisla() {
+        val result = SmishDetectorEngine.analyze(
+            sender = "Correos",
+            body = "Paquete retenido: pague la tasa de aduana en https://correos-pago.xyz/entrega"
+        )
+
+        assertTrue(result.isQuarantined)
+        assertTrue(result.factors.any { it.category.contains("Paquetería") })
+    }
+
+    @Test
     fun pruebaDeteccionPhishingBancarioConUrlMaliciosa() {
         val sender = "BBVA"
         val body = "BBVA: Su cuenta ha sido bloqueada temporalmente. Ingrese a https://bbva-seguridad.duckdns.org/login para evitar la cancelacion de su tarjeta."

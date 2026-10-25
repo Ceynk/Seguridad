@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.telephony.TelephonyManager
+import android.util.Log
 import com.antiphishing.smishguard.SmishGuardApp
 import com.antiphishing.smishguard.domain.detector.CallDetectorEngine
 import com.antiphishing.smishguard.domain.model.CallAction
@@ -16,6 +17,7 @@ import kotlinx.coroutines.launch
 class CallStateReceiver : BroadcastReceiver() {
 
     companion object {
+        private const val TAG = "CallStateReceiver"
         private val receiverScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 
@@ -62,9 +64,9 @@ class CallStateReceiver : BroadcastReceiver() {
                     aggressiveMode = settingsRepo.isAggressiveModeEnabled
                 )
 
-                callRepo.saveCallAnalysis(analysis)
+                val recordId = callRepo.saveCallAnalysis(analysis)
 
-                if (analysis.action == CallAction.BLOCK || analysis.action == CallAction.WARN) {
+                if (recordId != -1L && (analysis.action == CallAction.BLOCK || analysis.action == CallAction.WARN)) {
                     ThreatNotificationManager.showCallThreatAlert(
                         context = context,
                         phoneNumber = incomingNumber,
@@ -72,10 +74,11 @@ class CallStateReceiver : BroadcastReceiver() {
                     )
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(TAG, "Error al analizar el estado de la llamada", e)
             } finally {
                 pendingResult.finish()
             }
         }
     }
+
 }

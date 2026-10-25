@@ -43,7 +43,6 @@ fun ManualAnalyzerScreen(
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
 
-    // Si se activó la decisión de bloqueo, se muestra la pantalla de bloqueo preventiva
     val currentBlocked = blockedDecision
     if (currentBlocked != null) {
         BlockedUrlScreen(
@@ -53,7 +52,6 @@ fun ManualAnalyzerScreen(
         return
     }
 
-    // Si el enlace fue validado como seguro, se abre en el navegador
     LaunchedEffect(safeUrlToOpen) {
         val url = safeUrlToOpen
         if (url != null) {
@@ -299,7 +297,6 @@ fun AnalysisResultView(
                 color = TextPrimary
             )
 
-            // Enlaces detectados con botón para probar apertura segura
             if (result.extractedUrls.isNotEmpty()) {
                 Surface(
                     shape = RoundedCornerShape(10.dp),
