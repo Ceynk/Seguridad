@@ -1,0 +1,66 @@
+# DATOS SINTETICOS creados para pruebas. No representan tasas reales de fraude ni de deteccion.
+# Formato: id|particion|etiqueta|remitente|mensaje  (particion: CAL = calibracion, VAL = validacion)
+id|particion|etiqueta|remitente|mensaje
+L01|CAL|LEGITIMO|Bancolombia|Bancolombia: Compraste $85.400 en EXITO COLOMBIA con tu T.Deb *4521 el 12/10/2026 a las 14:32. Si tienes dudas llama al 6013430000.
+L02|CAL|LEGITIMO|891333|Tu codigo de verificacion Nequi es 482913. No lo compartas con nadie. Nequi nunca te lo pedira.
+L03|CAL|LEGITIMO|Davivienda|Davivienda: Recibiste una transferencia por $1.200.000 de JUAN PEREZ en tu cuenta *7781.
+L04|CAL|LEGITIMO|Claro|Claro: Tu factura de octubre por $64.900 ya esta disponible. Consultala en https://www.claro.com.co/personas/mi-claro/factura?utm_source=sms&utm_campaign=fact_oct&id=88123
+L05|CAL|LEGITIMO|Rappi|Rappi: Tu pedido #A8823 va en camino. Siguelo aqui: https://rappi.com.co/orders/tracking?order=A8823&ref=sms&lang=es
+L06|CAL|LEGITIMO|Sura|Sura: Recuerda tu cita de medicina general el 05/11/2026 a las 7:20 am en la sede Industriales. Para cancelar responde NO.
+L07|CAL|LEGITIMO|Servientrega|Servientrega: Tu envio 2093384412 fue entregado el 30/10/2026. Consulta en https://www.servientrega.com/wps/portal/rastreo-envio?guia=2093384412
+L08|CAL|LEGITIMO|3104567890|Hola ma, ya llegue a la casa. Manana te llamo para lo del almuerzo del domingo.
+L09|CAL|LEGITIMO|DIAN|DIAN: Recuerde que el plazo para declarar renta vence segun su NIT. Informacion oficial en https://www.dian.gov.co/
+L10|CAL|LEGITIMO|Tigo|Tigo: Recargaste $20.000 exitosamente. Tu saldo es $23.450. Gracias por preferirnos.
+L11|CAL|LEGITIMO|Bancolombia|Bancolombia te informa: el pago de tu tarjeta de credito por $350.000 fue aplicado el 03/10/2026.
+L12|CAL|LEGITIMO|85432|Universidad de Antioquia: las inscripciones al semestre 2027-1 abren el 15/11. Info: https://www.udea.edu.co/wps/portal/udea/web/inicio/estudiar-udea/pregrado?convocatoria=2027-1
+L13|CAL|LEGITIMO|VitalFit|Hola Andres, tu plan en Gimnasio Vital Fit vence el 10/11. Renuevalo en recepcion o en https://vitalfitgym.co/planes?socio=1182
+L14|CAL|LEGITIMO|MercadoLibre|Mercado Libre: Tu compra llegara el martes 04/11. Detalles en https://www.mercadolibre.com.co/compras/detalle/2000004567?source=sms
+L15|CAL|LEGITIMO|Nequi|Nequi: Enviaste $45.000 a Laura M. el 28/10/2026 a las 9:12 pm. Si no fuiste tu, comunicate con nosotros desde la app Nequi.
+L16|VAL|LEGITIMO|EPM|EPM: Tu factura de servicios publicos por $187.320 vence el 18/11/2026. Paga por PSE desde https://www.epm.com.co/clientes/pagos?ref=SMS-1120
+L17|VAL|LEGITIMO|3157778899|Profe, le envio el enlace del taller de la clase: https://drive.google.com/file/d/1aB2cD3eF4gH5iJ6kL7mN8oP9/view?usp=sharing
+L18|VAL|LEGITIMO|Movistar|Movistar: Activaste el paquete de 5GB por 7 dias. Valor $10.000. Para consultar tu saldo marca *611.
+L19|VAL|LEGITIMO|Colsubsidio|Colsubsidio: Tu subsidio familiar de noviembre ya fue abonado. Consulta movimientos en https://www.colsubsidio.com/afiliados/subsidio?mes=11
+L20|VAL|LEGITIMO|LaRebaja|Drogueria La Rebaja: tu formula esta lista para recoger en el punto de la calle 80. Horario 7am a 9pm.
+L21|VAL|LEGITIMO|Davivienda|Davivienda: Ingresaste a la app desde un nuevo dispositivo el 29/10/2026. Si no reconoces este ingreso, llama a la linea 6013383838.
+S01|CAL|SOSPECHOSO|3201234567|Felicidades! Has sido seleccionado para un bono de $500.000 en compras. Reclamalo en bonosco.shop
+S02|CAL|SOSPECHOSO|Info|Gana dinero desde casa trabajando 2 horas al dia. Escribe al WhatsApp wa.me/573001112233
+S03|CAL|SOSPECHOSO|890123|Tu paquete esta retenido en bodega por direccion incompleta. Actualiza en bit.ly/3xEnv10
+S04|CAL|SOSPECHOSO|3009876543|Hola, soy de la oficina de cobranzas. Tienes un saldo pendiente. Comunicate hoy al 3009876543 para evitar reporte.
+S05|CAL|SOSPECHOSO|Promo|Ultimo dia: 70% de descuento en tenis originales. Compra en ofertas-tenis-col.store
+S06|CAL|SOSPECHOSO|3112223344|Hola! Te escribo por el arriendo del apartamento que publicaste, me envias fotos a este link? tinyurl.com/fotos-apto
+S07|CAL|SOSPECHOSO|87878|Credito aprobado hasta $5.000.000 sin codeudor. Solicitalo en prestamoya.click
+S08|CAL|SOSPECHOSO|Encuesta|Responde nuestra encuesta y recibe un premio sorpresa: encuestas-premios.online/co
+S09|CAL|SOSPECHOSO|3125556677|Mami cambie de numero, guarda este. Luego te escribo que necesito un favor.
+S10|CAL|SOSPECHOSO|SMS|Tienes un mensaje de voz pendiente. Escuchalo en http://vm-mensajes.xyz/play?id=7781
+S11|CAL|SOSPECHOSO|Loteria|Tu numero salio favorecido en el sorteo semanal. Comunicate al 3214445566 para conocer el premio.
+S12|CAL|SOSPECHOSO|3001239876|Invierte $200.000 y recibe $1.000.000 en 7 dias. Cupos limitados. t.me/inversionesco
+S13|CAL|SOSPECHOSO|Envios|Su envio no pudo ser entregado. Reprograme en https://reprogramar-envio.info/co?guia=8812
+S14|CAL|SOSPECHOSO|Ofertas|Hasta 50% en SOAT 2027. Compralo ya en soat-barato-co.com
+S15|CAL|SOSPECHOSO|Club|Has acumulado 12.500 puntos que vencen hoy. Redimelos en puntos-club.net
+S16|VAL|SOSPECHOSO|3176665544|Buenas, vi tu hoja de vida. Tenemos vacante con salario de $3.800.000. Info en forms.gle/a8K2pQ
+S17|VAL|SOSPECHOSO|Concurso|Participa por un iPhone 16 respondiendo 3 preguntas: premiosya.top
+S18|VAL|SOSPECHOSO|88001|Aviso: tu linea sera suspendida por falta de actualizacion de datos. Responde SI para mantenerla.
+S19|VAL|SOSPECHOSO|3134443322|Te comparto el comprobante del pago: is.gd/compr0bante
+S20|VAL|SOSPECHOSO|Info|Tienes un reembolso pendiente de $96.000. Consulta el estado en reembolsos-co.site
+S21|VAL|SOSPECHOSO|Tienda|Tu compra #4471 por $289.000 fue confirmada. Si no la reconoces contactanos en 3001112299.
+M01|CAL|MALICIOSO|MiBmacolombia|MiBmacolombia: Tu inscripcion al servicio CARDI'F quedo efectuada el 07/08/2026 por 287.896. Desconoces este movimiento? Anulalo aqui: svaglfm.org
+M02|CAL|MALICIOSO|Bancolombia|Bancolombia: Tu clave dinamica fue bloqueada. Ingresa a bancolombia-seguridad.com para reactivarla.
+M03|CAL|MALICIOSO|85954|Nequi: Se registro un retiro por $780.000. Si no fuiste tu cancela aqui: nequi-ayuda.co
+M04|CAL|MALICIOSO|Davivienda|Davivienda informa: se debito $1.450.000 por compra en AMAZON. Si no la reconoce ingrese: https://davivienda.seguro-clientes.com/anular
+M05|CAL|MALICIOSO|DIAN|DIAN: Tiene un embargo pendiente por deuda tributaria. Consulte el proceso en http://dian-embargos.net/proceso
+M06|CAL|MALICIOSO|3157772211|BANCOLOMBIA: su cuenta presenta inconsistencias, actualice sus datos en http://192.168.45.10/bco
+M07|CAL|MALICIOSO|Servientrega|Servientrega: su paquete requiere pago de $4.900 por aduana. Pague en servientrega-pagos.top
+M08|CAL|MALICIOSO|BBVA|BBVA: Activamos tu seguro de vida por $89.900 mensual. Para cancelarlo ingresa a bbva.co.cancelaciones-web.com
+M09|CAL|MALICIOSO|Nequi|Tu Nequi fue usado para pagar $320.000 en una suscripcion. Desconoces el cobro? Revierte aqui: bit.ly/nq-revertir
+M10|CAL|MALICIOSO|3209998877|Hola, te envie un codigo por error a tu celular, me lo reenvias porfa? Es urgente.
+M11|CAL|MALICIOSO|Netflix|Netflix: no pudimos procesar tu pago. Actualiza tu tarjeta en netfIix-pagos.com
+M12|CAL|MALICIOSO|Davlplata|DaviPlata: ganaste un bono del Gobierno por $480.000. Reclamalo con tu clave en daviplata-bono.xyz
+M13|CAL|MALICIOSO|BancoBogota|Banco de Bogota: Se programo un pago automatico por $612.300 a SEGUROS ALFA. Si no lo autorizaste, detenlo aqui: bdb-pagos.org
+M14|CAL|MALICIOSO|Bancolombia|Bancolombia: tu compra en APPLE.COM/BILL por $219.900 quedo registrada. No la hiciste? Gestiona en qzrtvbn.com
+M15|CAL|MALICIOSO|Claro|Claro: Tu linea tiene un saldo a favor de $150.000. Reclamalo ingresando tu cedula y clave en xn--clar-0ra.com
+M16|VAL|MALICIOSO|SIMIT|SIMIT: Usted tiene un comparendo pendiente de pago con descuento del 50% hasta hoy. Pague en simit-pagos-co.com
+M17|VAL|MALICIOSO|Bancolombia|Hola, tu afiliacion al seguro PROTEGIDO PLUS por 145.000 fue activada. Si no la solicitaste, anulala en kfhwqp.net
+M18|VAL|MALICIOSO|3011234567|Nequi: tu cuenta sera desactivada en 24 horas. Valida tu identidad en https://nequi.com.co.validacion-app.info
+M19|VAL|MALICIOSO|Scotiabank|Colpatria: Registramos un cargo de $98.700 por membresia PRIME. Para desistir: colpatria.membresias-co.net
+M20|VAL|MALICIOSO|BANCOLOMBlA|Bancolombia: Recibiste un reintegro de $356.000. Para recibirlo confirma tus datos en reintegros-bco.org
+M21|VAL|MALICIOSO|Movistar|Movistar: ganaste un celular Samsung por tu antiguedad. Paga solo el envio $25.000 en movistar-premios.site

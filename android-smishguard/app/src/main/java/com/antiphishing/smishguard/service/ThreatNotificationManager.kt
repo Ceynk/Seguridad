@@ -58,7 +58,7 @@ object ThreatNotificationManager {
             .take(2)
             .joinToString("\n") { "- ${it.category}" }
 
-        val contentText = "Riesgo ${analysis.threatScore}%: SMS interceptado y puesto en cuarentena."
+        val contentText = "Nivel ${analysis.level.label}: SMS interceptado y puesto en cuarentena."
 
         val bigStyle = NotificationCompat.BigTextStyle()
         bigStyle.bigText("$contentText\n\nMotivos detectados:\n$factorSummary")

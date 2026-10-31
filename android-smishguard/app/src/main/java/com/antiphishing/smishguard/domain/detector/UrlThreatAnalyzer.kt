@@ -21,7 +21,10 @@ object UrlThreatAnalyzer {
     private val PATRON_URL_WWW = Pattern.compile("(?i)\\bwww\\.[a-zA-Z0-9\\p{L}\\-\\.]+\\.[a-zA-Z]{2,}(/[^\\s<>'\"{}|\\\\^`]*)?")
     private val PATRON_URL_IP = Pattern.compile("(?i)\\b(?:https?://)?[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}(:[0-9]+)?(/[a-zA-Z0-9\\-\\._~:/?#\\[\\]@!$&'()*+,;=]*)?")
     private val PATRON_DOMINIO_SIN_PROTOCOLO = Pattern.compile(
-        "(?i)\\b([a-zA-Z0-9\\p{L}\\-]+(?:\\.[a-zA-Z0-9\\p{L}\\-]+)*\\.(?:com|co|es|net|org|edu|gov|gob|xyz|top|icu|tk|ml|ga|cf|gq|cam|click|fit|link|buzz|online|site|space|fun|host|work|shop|store|app|dev|cloud|live|info|pro|me|io|ly|gy|gl|at|cc|ws|lat|vip|sbs|cfd|cyou|bond|monster|rest|quest|support|help|so)(?:/[^\\s<>'\"{}|\\\\^`]*)?)\\b"
+        "(?i)\\b([a-zA-Z0-9\\p{L}\\-]+(?:\\.[a-zA-Z0-9\\p{L}\\-]+)*\\.(?:com|co|es|net|org|edu|gov|gob|xyz|top|icu|tk|ml|ga|cf|gq|cam|click|fit|link|buzz|online|site|space|fun|host|work|shop|store|app|dev|cloud|live|info|pro|me|io|ly|gy|gl|gle|gd|ee|vc|st|sh|ru|cn|pw|br|mx|cl|pe|uk|goog|club|biz|autos|qpon|at|cc|ws|lat|vip|sbs|cfd|cyou|bond|monster|rest|quest|support|help|so)(?:/[^\\s<>'\"{}|\\\\^`]*)?)\\b"
+    )
+    private val PATRON_ACORTADOR_SIN_PROTOCOLO = Pattern.compile(
+        "(?i)\\b((?:qrco\\.de|s\\.id)(?:/[^\\s<>'\"{}|\\\\^`]*)?)\\b"
     )
 
     private val PATRON_IP_DIRECTA = Pattern.compile("^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$")
@@ -29,7 +32,8 @@ object UrlThreatAnalyzer {
     private val ACORTADORES_CONOCIDOS = setOf(
         "bit.ly", "tinyurl.com", "t.co", "cutt.ly", "is.gd", "ow.ly", "rb.gy", "goo.gl",
         "shorturl.at", "t.ly", "buff.ly", "shorte.st", "adf.ly", "bc.vc", "s.id", "wa.me",
-        "acortar.link", "bitly.ws", "tiny.cc", "v.gd", "qrco.de", "short.gy", "linktr.ee"
+        "acortar.link", "bitly.ws", "tiny.cc", "v.gd", "qrco.de", "short.gy", "linktr.ee",
+        "t.me", "forms.gle"
     )
 
     private val EXTENSIONES_DE_RIESGO = setOf(
@@ -47,7 +51,7 @@ object UrlThreatAnalyzer {
         "onrender.com", "replit.app", "repl.co", "webflow.io", "framer.app", "translate.goog"
     )
 
-    private val DOMINIOS_OFICIALES_POR_MARCA = mapOf(
+    internal val DOMINIOS_OFICIALES_POR_MARCA = mapOf(
         "bancolombia" to setOf("bancolombia.com", "grupobancolombia.com", "transaccionesbancolombia.com", "bancolombia.com.co"),
         "nequi" to setOf("nequi.com.co", "nequi.com"),
         "daviplata" to setOf("daviplata.com", "daviplata.com.co"),
@@ -199,6 +203,14 @@ object UrlThreatAnalyzer {
             }
         }
 
+        val buscadorAcortador = PATRON_ACORTADOR_SIN_PROTOCOLO.matcher(texto)
+        while (buscadorAcortador.find() && enlaces.size < MAXIMO_ENLACES) {
+            val candidato = limpiarCandidatoEnlace(buscadorAcortador.group(1) ?: buscadorAcortador.group())
+            if (candidato.length > 3 && !contieneEnlaceExistente(enlaces, candidato)) {
+                enlaces.add(candidato)
+            }
+        }
+
         return enlaces.toList()
     }
 
@@ -342,13 +354,13 @@ object UrlThreatAnalyzer {
                 )
             }
 
-            if (!esDominioOficial && (enlaceOriginal.length > 85 || dominio.length > 32)) {
+            if (!esDominioOficial && (enlaceOriginal.length > 120 || dominio.length > 36)) {
                 factores.add(
                     ThreatFactor(
                         category = "Longitud Inusual de Enlace",
-                        description = "El enlace o dominio es excesivamente extenso, técnica utilizada para ofuscar la URL.",
-                        severityScore = 15,
-                        matchedSnippet = if (dominio.length > 32) dominio else enlaceOriginal
+                        description = "El enlace o dominio es inusualmente extenso.",
+                        severityScore = 5,
+                        matchedSnippet = if (dominio.length > 36) dominio else enlaceOriginal
                     )
                 )
             }
@@ -377,9 +389,12 @@ object UrlThreatAnalyzer {
             }
 
             var tienePalabraFraude = false
+            var palabraFraudeEnDominio = false
             for (palabraClave in PALABRAS_FRAUDE_EN_RUTA) {
-                if (ruta.contains(palabraClave) || (dominio.contains(palabraClave) && !marcaSuplantada)) {
+                val enDominio = dominio.contains(palabraClave) && !marcaSuplantada
+                if (ruta.contains(palabraClave) || enDominio) {
                     tienePalabraFraude = true
+                    palabraFraudeEnDominio = enDominio
                     break
                 }
             }
@@ -388,7 +403,7 @@ object UrlThreatAnalyzer {
                     ThreatFactor(
                         category = "Palabras Clave de Fraude en Enlace",
                         description = "La ruta o dominio contiene palabras frecuentemente asociadas a ingeniería social y captura de credenciales.",
-                        severityScore = 20,
+                        severityScore = if (palabraFraudeEnDominio) 20 else 10,
                         matchedSnippet = enlaceOriginal
                     )
                 )
@@ -405,7 +420,7 @@ object UrlThreatAnalyzer {
                 )
             }
 
-            if (!esDominioOficial && enlaceConProtocolo.startsWith("http://") && !PATRON_IP_DIRECTA.matcher(dominio).matches()) {
+            if (!esDominioOficial && enlaceLimpio.startsWith("http://", ignoreCase = true) && !PATRON_IP_DIRECTA.matcher(dominio).matches()) {
                 if (tienePalabraFraude || marcaSuplantada) {
                     factores.add(
                         ThreatFactor(
@@ -422,7 +437,8 @@ object UrlThreatAnalyzer {
             val entropia = calcularEntropiaShannon(etiquetaPrincipal)
             val excesoConsonantes = tieneExcesoConsonantes(etiquetaPrincipal)
 
-            if (!esDominioOficial && ((entropia > 3.8 && etiquetaPrincipal.length > 12) || (excesoConsonantes && etiquetaPrincipal.length > 10))) {
+            val altaEntropia = !esDominioOficial && ((entropia > 3.8 && etiquetaPrincipal.length > 12) || (excesoConsonantes && etiquetaPrincipal.length > 10))
+            if (altaEntropia) {
                 factores.add(
                     ThreatFactor(
                         category = "Alta Entropía en Dominio",
@@ -432,9 +448,100 @@ object UrlThreatAnalyzer {
                     )
                 )
             }
+
+            val esIp = PATRON_IP_DIRECTA.matcher(dominio).matches()
+            val registrable = obtenerDominioRegistrable(dominio)
+            val etiquetaRegistrable = registrable.substringBefore(".")
+
+            if (dominio.contains("xn--")) {
+                factores.add(
+                    ThreatFactor(
+                        category = CATEGORIA_PUNYCODE,
+                        description = "El dominio usa codificación punycode (xn--), técnica para imitar letras de una marca.",
+                        severityScore = 30,
+                        matchedSnippet = dominio
+                    )
+                )
+            }
+
+            if (!esDominioOficial && !esIp && !altaEntropia && pareceDominioAleatorio(etiquetaRegistrable)) {
+                factores.add(
+                    ThreatFactor(
+                        category = CATEGORIA_DOMINIO_ALEATORIO,
+                        description = "El nombre '$etiquetaRegistrable' tiene pocas vocales o muchas consonantes seguidas; no parece una marca o palabra real.",
+                        severityScore = 20,
+                        matchedSnippet = registrable
+                    )
+                )
+            }
+
+            if (!esDominioOficial && !esIp && dominio != registrable) {
+                val subdominios = dominio.removeSuffix(".$registrable")
+                for (marca in DOMINIOS_OFICIALES_POR_MARCA.keys) {
+                    if (marca.length >= 4 && dominioCoincideConMarca(subdominios, marca)) {
+                        factores.add(
+                            ThreatFactor(
+                                category = CATEGORIA_SUBDOMINIO_ENGANOSO,
+                                description = "La marca '$marca' aparece solo como subdominio; el dominio real es $registrable.",
+                                severityScore = 20,
+                                matchedSnippet = dominio
+                            )
+                        )
+                        break
+                    }
+                }
+            }
+
+            if (!esDominioOficial && !enlaceLimpio.contains("://")) {
+                factores.add(
+                    ThreatFactor(
+                        category = CATEGORIA_SIN_ESQUEMA,
+                        description = "El enlace se escribió sin http/https, forma común de evadir filtros de enlaces.",
+                        severityScore = 5,
+                        matchedSnippet = enlaceOriginal
+                    )
+                )
+            }
         }
 
         return factores
+    }
+
+    const val CATEGORIA_PUNYCODE = "Dominio Punycode (posible homógrafo)"
+    const val CATEGORIA_DOMINIO_ALEATORIO = "Dominio de Apariencia Aleatoria"
+    const val CATEGORIA_SUBDOMINIO_ENGANOSO = "Subdominio Engañoso"
+    const val CATEGORIA_SIN_ESQUEMA = "Enlace sin Esquema"
+
+    private val SUFIJOS_DOBLES = setOf(
+        "com.co", "org.co", "gov.co", "edu.co", "net.co", "mil.co", "nom.co",
+        "com.mx", "gob.mx", "com.br", "com.ar", "gob.es", "com.es", "org.es", "co.uk"
+    )
+
+    fun obtenerDominioRegistrable(dominio: String): String {
+        val partes = dominio.lowercase().trim('.').split('.')
+        if (partes.size <= 2) return partes.joinToString(".")
+        val ultimasDos = partes.takeLast(2).joinToString(".")
+        val cantidad = if (SUFIJOS_DOBLES.contains(ultimasDos)) 3 else 2
+        return partes.takeLast(cantidad).joinToString(".")
+    }
+
+    fun pareceDominioAleatorio(etiqueta: String): Boolean {
+        val letras = etiqueta.lowercase().filter { it in 'a'..'z' }
+        if (letras.length < 5 || letras.contains("xn")) return false
+        var vocales = 0
+        var consonantesSeguidas = 0
+        var maximoSeguidas = 0
+        for (letra in letras) {
+            if (letra in "aeiouy") {
+                vocales++
+                consonantesSeguidas = 0
+            } else {
+                consonantesSeguidas++
+                if (consonantesSeguidas > maximoSeguidas) maximoSeguidas = consonantesSeguidas
+            }
+        }
+        val proporcionVocales = vocales.toDouble() / letras.length
+        return proporcionVocales < 0.25 || maximoSeguidas >= 5
     }
 
     fun analyzeSingleUrl(url: String): UrlDecision {
@@ -492,7 +599,7 @@ object UrlThreatAnalyzer {
         val bloqueado = puntajeAcotado >= 50 || (tieneFactorCritico && puntajeAcotado >= 35)
 
         val motivo = when {
-            bloqueado -> "Enlace de alto riesgo bloqueado preventivamente por SmishGuard ($puntajeAcotado% de amenaza)."
+            bloqueado -> "Enlace de alto riesgo bloqueado preventivamente por SmishGuard."
             puntajeAcotado >= 30 -> "Enlace con características sospechosas detectadas."
             else -> "Enlace verificado sin anomalías conocidas."
         }
@@ -576,6 +683,9 @@ object UrlThreatAnalyzer {
         val dominioLimpio = dominio.lowercase().trim()
         if (dominioLimpio.isEmpty()) {
             return false
+        }
+        if (dominioLimpio.endsWith(".edu.co") || dominioLimpio.endsWith(".gov.co")) {
+            return true
         }
         for (oficial in TODOS_LOS_DOMINIOS_OFICIALES) {
             if (dominioLimpio == oficial || dominioLimpio.endsWith(".$oficial")) {

@@ -44,7 +44,8 @@ object SmishDetectorEngine {
         customBlockPatterns: List<Regex> = emptyList(),
         quarantineThreshold: Int = DEFAULT_QUARANTINE_THRESHOLD,
         aggressiveMode: Boolean = false,
-        communityEntries: Map<String, CommunityBlacklistEntity> = emptyMap()
+        communityEntries: Map<String, CommunityBlacklistEntity> = emptyMap(),
+        reputationSource: DomainReputationSource = SinReputacionExterna
     ): AnalysisResult {
         return analizarMensaje(
             remitente = sender,
@@ -53,7 +54,8 @@ object SmishDetectorEngine {
             patronesPersonalizados = customBlockPatterns,
             umbralCuarentena = quarantineThreshold,
             modoAgresivo = aggressiveMode,
-            entradasComunidad = communityEntries
+            entradasComunidad = communityEntries,
+            fuenteReputacion = reputationSource
         )
     }
 
@@ -64,7 +66,8 @@ object SmishDetectorEngine {
         patronesPersonalizados: List<Regex> = emptyList(),
         umbralCuarentena: Int = DEFAULT_QUARANTINE_THRESHOLD,
         modoAgresivo: Boolean = false,
-        entradasComunidad: Map<String, CommunityBlacklistEntity> = emptyMap()
+        entradasComunidad: Map<String, CommunityBlacklistEntity> = emptyMap(),
+        fuenteReputacion: DomainReputationSource = SinReputacionExterna
     ): AnalysisResult {
         if (estaEnListaBlanca) {
             return AnalysisResult(
@@ -112,13 +115,29 @@ object SmishDetectorEngine {
         val factoresEnlaces = UrlThreatAnalyzer.analizarEnlaces(enlacesDetectados)
         factores.addAll(factoresEnlaces)
 
+        val marcaRemitente = DetectorMarcas.buscarEnRemitente(remitente)
+        val marcaTexto = DetectorMarcas.buscarEnTexto(mensajeAcotado)
+        val enlacesExternos = filtrarEnlacesExternos(enlacesDetectados, remitente, marcaRemitente, factoresEnlaces)
+
+        if (marcaRemitente != null && !marcaRemitente.esExacta) {
+            factores.add(
+                ThreatFactor(
+                    category = "Suplantación de Marca en Remitente",
+                    description = "El remitente '$remitente' imita visualmente a la entidad '${marcaRemitente.marca}'.",
+                    severityScore = 25,
+                    matchedSnippet = remitente
+                )
+            )
+        }
+
         val todosEnlacesLegitimos = enlacesDetectados.isNotEmpty() &&
             UrlThreatAnalyzer.sonTodosEnlacesLegitimos(enlacesDetectados)
-        val tieneEnlaceNoVerificado = enlacesDetectados.isNotEmpty() && !todosEnlacesLegitimos
+        val tieneEnlaceNoVerificado = enlacesExternos.isNotEmpty()
 
         val coincidenciaEntidadTexto = PATRON_ENTIDAD_PROTEGIDA.find(mensajeNormalizado)
         val coincidenciaEntidadRemitente = PATRON_ENTIDAD_PROTEGIDA.find(remitente)
-        val mencionaEntidad = coincidenciaEntidadTexto != null || coincidenciaEntidadRemitente != null
+        val mencionaEntidad = coincidenciaEntidadTexto != null || coincidenciaEntidadRemitente != null ||
+            marcaTexto != null || marcaRemitente != null
 
         val yaTieneSuplantacionMarcaUrl = factoresEnlaces.any {
             it.category.contains("Suplantación de Marca")
@@ -127,18 +146,58 @@ object SmishDetectorEngine {
         if (mencionaEntidad && tieneEnlaceNoVerificado && !yaTieneSuplantacionMarcaUrl) {
             val nombreEntidad = coincidenciaEntidadTexto?.value
                 ?: coincidenciaEntidadRemitente?.value
+                ?: marcaRemitente?.marca
+                ?: marcaTexto?.marca
                 ?: remitente
             factores.add(
                 ThreatFactor(
                     category = "Dominio No Oficial para Entidad Mencionada",
                     description = "El mensaje hace referencia a '$nombreEntidad' pero dirige a un dominio externo no oficial.",
                     severityScore = 25,
-                    matchedSnippet = enlacesDetectados.firstOrNull()
+                    matchedSnippet = enlacesExternos.firstOrNull()
                 )
             )
         }
 
-        val tieneEnlaceMalicioso = factoresEnlaces.isNotEmpty() || (mencionaEntidad && tieneEnlaceNoVerificado)
+        val tieneEnlaceMalicioso = factoresEnlaces.any { it.severityScore >= 20 } ||
+            (mencionaEntidad && tieneEnlaceNoVerificado)
+
+        var reputacionMaliciosa = false
+        for (enlace in enlacesExternos) {
+            val dominio = UrlThreatAnalyzer.extraerDominioDeEnlace(enlace)
+            if (fuenteReputacion.consultar(dominio) == ReputacionDominio.MALICIOSO) {
+                reputacionMaliciosa = true
+                factores.add(
+                    ThreatFactor(
+                        category = "Reputación Externa de Dominio",
+                        description = "Una fuente de reputación reporta el dominio $dominio como malicioso.",
+                        severityScore = 60,
+                        matchedSnippet = dominio
+                    )
+                )
+            }
+        }
+
+        val marcaMencionada = marcaRemitente?.marca ?: marcaTexto?.marca
+        val entidadSuplantada = if (
+            marcaMencionada != null &&
+            enlacesExternos.any {
+                !DetectorMarcas.dominioEsOficialParaMarca(UrlThreatAnalyzer.extraerDominioDeEnlace(it), marcaMencionada)
+            }
+        ) marcaMencionada else null
+        val remitenteSinEspaciosCtx = remitente.trim().replace(PATRON_ESPACIOS, "")
+        val resultadoContextual = AnalizadorContextual.analizar(
+            AnalizadorContextual.Entrada(
+                textoNormalizado = NormalizadorTexto.normalizar(mensajeAcotado),
+                tieneEnlaceExterno = tieneEnlaceNoVerificado,
+                entidadSuplantada = entidadSuplantada,
+                remitenteImitaMarca = marcaRemitente?.takeIf { !it.esExacta }?.marca,
+                tieneRiesgoTecnicoDominio = factoresEnlaces.any { CATEGORIAS_RIESGO_TECNICO.contains(it.category) },
+                acortadorDesdeCelular = factoresEnlaces.any { it.category.contains("Enlace Acortado") } &&
+                    PATRON_CELULAR_PRIVADO.matches(remitenteSinEspaciosCtx)
+            )
+        )
+        factores.addAll(resultadoContextual.factores)
 
         val resultadoClasificacion = ClasificadorMensajesSms.clasificarMensaje(
             remitente = remitente,
@@ -146,11 +205,12 @@ object SmishDetectorEngine {
         )
 
         val factoresPatronesBrutos = PatternRuleEngine.evaluarPatrones(mensajeNormalizado)
-        val tieneIngenieriaSocialFuerte = detectarIngenieriaSocialFuerte(
-            factoresPatronesBrutos = factoresPatronesBrutos,
-            tieneEnlaces = enlacesDetectados.isNotEmpty(),
-            clasificacionMl = resultadoClasificacion.categoriaPredicha
-        )
+        val tieneIngenieriaSocialFuerte = resultadoContextual.combinacionCritica ||
+            detectarIngenieriaSocialFuerte(
+                factoresPatronesBrutos = factoresPatronesBrutos,
+                tieneEnlaces = enlacesDetectados.isNotEmpty(),
+                clasificacionMl = resultadoClasificacion.categoriaPredicha
+            )
 
         val esOtpLegitimo = PatternRuleEngine.esNotificacionOtpLegitima(mensajeNormalizado, tieneEnlaceMalicioso) &&
             !tieneIngenieriaSocialFuerte
@@ -218,11 +278,39 @@ object SmishDetectorEngine {
             entradasComunidad = entradasComunidad
         )
 
-        val puntajeFinal = puntajeCalculado.puntajeAcotado
-        val nivelAmenaza = when {
-            puntajeFinal >= 60 -> ThreatLevel.PHISHING
-            puntajeFinal >= 35 -> ThreatLevel.SUSPICIOUS
+        val tieneEvidenciaCritica = resultadoContextual.combinacionCritica ||
+            reputacionMaliciosa ||
+            homoglifos.isNotEmpty() ||
+            (mencionaEntidad && tieneEnlaceNoVerificado) ||
+            factoresEnlaces.any { CATEGORIAS_ENLACE_CRITICO.contains(it.category) } ||
+            factoresPatronesFiltrados.any { CATEGORIAS_PATRON_CRITICO.contains(it.category) }
+
+        val puntajeBase = if (
+            !tieneEvidenciaCritica &&
+            !puntajeCalculado.coincidenciaComunidadMaliciosa &&
+            !puntajeCalculado.coincidenciaReglaPersonalizada
+        ) {
+            min(puntajeCalculado.puntajeAcotado, PUNTAJE_MAXIMO_NO_CRITICO)
+        } else {
+            puntajeCalculado.puntajeAcotado
+        }
+        val nivelPorPuntaje = when {
+            puntajeBase >= UMBRAL_MALICIOSO -> ThreatLevel.PHISHING
+            puntajeBase >= UMBRAL_SOSPECHOSO -> ThreatLevel.SUSPICIOUS
             else -> ThreatLevel.SAFE
+        }
+        val combinacionVigente = factores.any { it.category == "Combinación de Riesgo" } &&
+            (!todosEnlacesLegitimos || resultadoContextual.combinacionCritica)
+        val nivelMinimo = when {
+            reputacionMaliciosa -> ThreatLevel.PHISHING
+            combinacionVigente -> resultadoContextual.nivelMinimo
+            else -> ThreatLevel.SAFE
+        }
+        val nivelAmenaza = if (nivelMinimo.ordinal > nivelPorPuntaje.ordinal) nivelMinimo else nivelPorPuntaje
+        val puntajeFinal = when (nivelAmenaza) {
+            ThreatLevel.PHISHING -> max(puntajeBase, UMBRAL_MALICIOSO)
+            ThreatLevel.SUSPICIOUS -> max(puntajeBase, UMBRAL_SOSPECHOSO)
+            ThreatLevel.SAFE -> puntajeBase
         }
 
         val enCuarentena = puntajeFinal >= umbralEfectivo
@@ -243,7 +331,7 @@ object SmishDetectorEngine {
             puntajeFinal = puntajeFinal,
             nivelAmenaza = nivelAmenaza,
             categoriaFinal = categoriaFinal,
-            cantidadFactores = factores.size
+            factores = factores
         )
 
         return AnalysisResult(
@@ -257,6 +345,58 @@ object SmishDetectorEngine {
             summaryReason = resumenMotivo,
             categoriaMensaje = categoriaFinal
         )
+    }
+
+    private val CATEGORIAS_RIESGO_TECNICO = setOf(
+        "Dirección IP Directa",
+        "Alta Entropía en Dominio",
+        UrlThreatAnalyzer.CATEGORIA_PUNYCODE,
+        UrlThreatAnalyzer.CATEGORIA_DOMINIO_ALEATORIO,
+        UrlThreatAnalyzer.CATEGORIA_SUBDOMINIO_ENGANOSO
+    )
+
+    private val CATEGORIAS_ENLACE_CRITICO = setOf(
+        "Suplantación de Marca en URL",
+        "Dirección IP Directa",
+        "Servicio de Alojamiento Gratuito o Túnel",
+        UrlThreatAnalyzer.CATEGORIA_PUNYCODE,
+        UrlThreatAnalyzer.CATEGORIA_SUBDOMINIO_ENGANOSO
+    )
+
+    private val CATEGORIAS_PATRON_CRITICO = setOf(
+        "Fraude Bancario y Financiero",
+        "Suplantación de Organismo Público",
+        "Extracción Activa de Credenciales o Clave",
+        "Extracción de Token Dinámico u OTP",
+        "Falsos Préstamos y Créditos Rápidos (Gota a Gota)",
+        "Suplantación de Billetera Digital o Banco (Nequi/Daviplata/Bancolombia)",
+        "Fraude Fiscal o Cobro Coactivo (DIAN/Tránsito)",
+        "Falso Débito o Alerta PSE",
+        "Suplantación de Operador Móvil / Bloqueo IMEI"
+    )
+
+    const val UMBRAL_MALICIOSO = 60
+    const val UMBRAL_SOSPECHOSO = 35
+    private const val PUNTAJE_MAXIMO_NO_CRITICO = 55
+
+    private fun filtrarEnlacesExternos(
+        enlaces: List<String>,
+        remitente: String,
+        marcaRemitente: DetectorMarcas.MarcaDetectada?,
+        factoresEnlaces: List<ThreatFactor>
+    ): List<String> {
+        val remitenteLetras = NormalizadorTexto.soloLetras(remitente)
+        val sinRiesgoEnUrl = factoresEnlaces.none { it.severityScore >= 15 }
+        val externos = ArrayList<String>()
+        for (enlace in enlaces) {
+            val dominio = UrlThreatAnalyzer.extraerDominioDeEnlace(enlace)
+            if (dominio.isBlank() || UrlThreatAnalyzer.esDominioOficialGeneral(dominio)) continue
+            val etiqueta = UrlThreatAnalyzer.obtenerDominioRegistrable(dominio).substringBefore(".")
+            val coherenteConRemitente = sinRiesgoEnUrl && marcaRemitente == null &&
+                remitenteLetras.length >= 3 && etiqueta == remitenteLetras
+            if (!coherenteConRemitente) externos.add(enlace)
+        }
+        return externos
     }
 
     private fun extraerEnlacesUnicos(mensajeOriginal: String, mensajeNormalizado: String): List<String> {
@@ -347,7 +487,6 @@ object SmishDetectorEngine {
             return
         }
 
-        val porcentajeSmishing = (resultadoClasificacion.probabilidadSmishing * 100.0).toInt()
         val puntajeMl = when {
             resultadoClasificacion.probabilidadSmishing >= 0.75 -> 38
             resultadoClasificacion.probabilidadSmishing >= 0.68 -> 30
@@ -363,7 +502,7 @@ object SmishDetectorEngine {
         factores.add(
             ThreatFactor(
                 category = "Modelo ML: Patrón de Smishing Detectado",
-                description = "El clasificador estadístico TF-IDF identificó probabilidad relevante de smishing ($porcentajeSmishing%).",
+                description = "El clasificador estadístico TF-IDF identificó un patrón lingüístico compatible con smishing.",
                 severityScore = puntajeMl,
                 matchedSnippet = fragmentoTerminos
             )
@@ -390,25 +529,26 @@ object SmishDetectorEngine {
         puntajeFinal: Int,
         nivelAmenaza: ThreatLevel,
         categoriaFinal: String,
-        cantidadFactores: Int
+        factores: List<ThreatFactor>
     ): String {
+        val motivosPrincipales = factores.take(3).joinToString("; ") { it.category }
         return when {
             puntajeCalculado.confianzaOtp && puntajeFinal == 0 ->
-                "Mensaje de autenticación o código de seguridad verificado (Legítimo)."
+                "Nivel Legítimo: mensaje de autenticación o código de seguridad verificado."
             puntajeCalculado.coincidenciaComunidadMaliciosa ->
-                "Indicador confirmado como malicioso por la comunidad."
+                "Nivel Malicioso: indicador confirmado como malicioso por la comunidad."
             puntajeCalculado.coincidenciaComunidadReporte ->
-                "Indicador reportado por la comunidad; continúa en evaluación."
+                "Nivel ${nivelAmenaza.label}: indicador reportado por la comunidad."
             puntajeCalculado.coincidenciaReglaPersonalizada && nivelAmenaza != ThreatLevel.PHISHING ->
-                "Mensaje aislado por una regla personalizada del usuario."
+                "Nivel ${nivelAmenaza.label}: mensaje aislado por una regla personalizada del usuario."
             nivelAmenaza == ThreatLevel.PHISHING ->
-                "Alto riesgo de Smishing detectado ($cantidadFactores factores de riesgo identificados)."
+                "Nivel Malicioso (${factores.size} motivos): $motivosPrincipales."
             nivelAmenaza == ThreatLevel.SUSPICIOUS ->
-                "Mensaje sospechoso con posibles elementos de coerción o anomalías."
+                "Nivel Sospechoso (${factores.size} motivos): $motivosPrincipales."
             categoriaFinal == ClasificadorMensajesSms.CATEGORIA_SPAM ->
-                "Mensaje publicitario o promoción comercial sin indicadores críticos de fraude."
+                "Nivel Legítimo (promoción comercial): sin indicadores críticos de fraude."
             else ->
-                "No se han detectado factores maliciosos conocidos."
+                "Nivel Legítimo: no se detectaron combinaciones de riesgo."
         }
     }
 
