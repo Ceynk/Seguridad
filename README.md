@@ -39,12 +39,13 @@ Reputación Local      Extractor URL          Registro Reglas        Módulo Hom
 ```
 
 ### Componentes Principales:
-- **Service Worker (`src/background/service-worker.ts`):** Intercepta la navegación web, coordina el análisis en segundo plano y aplica redirecciones defensivas.
-- **Extractor de Características (`src/analyzer/extractor-caracteristicas.ts`):** Extrae tokens, TLDs, longitud, caracteres especiales, direcciones IP y métricas léxicas.
-- **Módulo de Homoglifos (`src/analyzer/homoglifos.ts`):** Detecta sustituciones de caracteres visualmente similares y similitud tipográfica frente a marcas conocidas.
-- **Registro de Reglas (`src/rules/`):** Conjunto modular de reglas independientes que evalúan las características de la URL.
-- **Reputación Local (`src/reputation/`):** Consulta listas locales de dominios legítimos y listas de excepción configuradas por el usuario.
-- **Almacenamiento (`src/storage/`):** Wrapper tipado sobre `chrome.storage.local`.
+- **Trabajador de Servicio (`src/segundo-plano/trabajador-servicio.ts`):** Intercepta la navegación web, coordina el análisis en segundo plano y aplica redirecciones defensivas.
+- **Inspector de Documento (`src/contenido/inspector-documento.ts`):** Detecta formularios sensibles y campos de contraseña en el documento activo.
+- **Extractor de Características (`src/analizador/extractor-caracteristicas.ts`):** Extrae segmentos, TLDs, longitud, caracteres especiales, direcciones IP y métricas léxicas.
+- **Módulo de Homoglifos (`src/analizador/homoglifos.ts`):** Detecta sustituciones de caracteres visualmente similares y similitud tipográfica frente a marcas conocidas.
+- **Motor de Riesgo (`src/analizador/motor-riesgo.ts`):** Evalúa reglas heurísticas combinadas con reputación local.
+- **Reputación Local (`src/reputacion/reputacion-local.ts`):** Consulta listas locales de dominios legítimos y listas de excepción configuradas por el usuario.
+- **Almacenamiento (`src/almacenamiento/servicio-almacenamiento.ts`):** Adaptador tipado sobre `chrome.storage.local`.
 
 ---
 
@@ -65,39 +66,34 @@ Reputación Local      Extractor URL          Registro Reglas        Módulo Hom
 │   ├── manifest.json
 │   └── icons/
 ├── scripts/
-│   └── generar-iconos.js
+│   ├── generar-iconos.js
+│   └── procesar-csv.js
 ├── src/
-│   ├── analyzer/
+│   ├── almacenamiento/
+│   │   └── servicio-almacenamiento.ts
+│   ├── analizador/
 │   │   ├── extractor-caracteristicas.ts
 │   │   ├── homoglifos.ts
 │   │   └── motor-riesgo.ts
-│   ├── background/
-│   │   └── service-worker.ts
-│   ├── content/
-│   │   └── content-script.ts
-│   ├── pages/
+│   ├── contenido/
+│   │   └── inspector-documento.ts
+│   ├── paginas/
+│   │   ├── estilos-base.css
 │   │   ├── bloqueado/
-│   │   ├── opciones/
-│   │   └── popup/
-│   ├── reputation/
+│   │   ├── emergente/
+│   │   └── opciones/
+│   ├── reputacion/
 │   │   └── reputacion-local.ts
-│   ├── rules/
-│   │   ├── base-regla.ts
-│   │   ├── registro-reglas.ts
-│   │   ├── regla-estructura-url.ts
-│   │   ├── regla-ip-host.ts
-│   │   ├── regla-palabras-sospechosas.ts
-│   │   ├── regla-punycode-homografo.ts
-│   │   ├── regla-seguridad-protocolo.ts
-│   │   ├── regla-suplantacion-marca.ts
-│   │   └── regla-tld-sospechoso.ts
-│   ├── storage/
-│   │   └── servicio-almacenamiento.ts
-│   ├── types/
-│   └── utils/
+│   ├── segundo-plano/
+│   │   └── trabajador-servicio.ts
+│   ├── tipos/
+│   │   ├── analisis.ts
+│   │   ├── configuracion.ts
+│   │   └── reputacion.ts
+│   └── utilidades/
 │       ├── cripto-forense.ts
 │       └── normalizador-url.ts
-└── tests/
+└── pruebas/
 ```
 
 ---
@@ -150,13 +146,12 @@ npm test
 ```
 
 Suite de pruebas:
-- `tests/homoglifos.test.ts`: Distancia Levenshtein, desofuscación y marcas.
-- `tests/extractor-caracteristicas.test.ts`: Extracción sintáctica y diccionarios.
-- `tests/reglas.test.ts`: Evaluación individual de cada regla.
-- `tests/reputacion.test.ts`: Listas de reputación locales y del usuario.
-- `tests/motor-riesgo.test.ts`: Puntuación acumulada y clasificación.
-- `tests/falsos-positivos.test.ts`: Validación en dominios oficiales legítimos.
-- `tests/cripto-forense.test.ts`: Entropía de Shannon, hash SHA-256 y ficha técnica.
+- `pruebas/homoglifos.test.ts`: Distancia Levenshtein, desofuscación y marcas.
+- `pruebas/extractor-caracteristicas.test.ts`: Extracción sintáctica y diccionarios.
+- `pruebas/reputacion.test.ts`: Listas de reputación locales y del usuario.
+- `pruebas/motor-riesgo.test.ts`: Puntuación acumulada y clasificación.
+- `pruebas/falsos-positivos.test.ts`: Validación en dominios oficiales legítimos.
+- `pruebas/cripto-forense.test.ts`: Entropía de Shannon, hash SHA-256 y ficha técnica.
 
 ---
 

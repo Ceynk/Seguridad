@@ -1,24 +1,57 @@
 package com.antiphishing.smishguard.ui.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.FindInPage
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.outlined.FindInPage
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.ui.graphics.vector.ImageVector
 
-sealed class Screen(val route: String, val title: String, val icon: ImageVector? = null) {
-    data object Dashboard : Screen("dashboard", "Protección", Icons.Default.Security)
-    data object Quarantine : Screen("quarantine", "Cuarentena", Icons.Default.Lock)
-    data object ManualAnalyzer : Screen("analyzer", "Analizador", Icons.Default.BugReport)
-    data object Settings : Screen("settings", "Ajustes", Icons.Default.Settings)
-    data object Whitelist : Screen("whitelist", "Lista Blanca")
-    data object CustomRules : Screen("custom_rules", "Reglas Propias")
-    data object CommunityBlacklist : Screen("community_blacklist", "Lista Negra Comunitaria")
-    data object BlockedUrl : Screen("blocked_url", "Enlace Bloqueado")
+sealed class Screen(
+    val route: String,
+    val title: String,
+    val selectedIcon: ImageVector? = null,
+    val unselectedIcon: ImageVector? = null
+) {
+    data object Dashboard : Screen(
+        route = "dashboard",
+        title = "Inicio",
+        selectedIcon = Icons.Filled.Shield,
+        unselectedIcon = Icons.Outlined.Shield
+    )
+
+    data object Quarantine : Screen(
+        route = "quarantine",
+        title = "Cuarentena",
+        selectedIcon = Icons.Filled.Inventory2,
+        unselectedIcon = Icons.Outlined.Inventory2
+    )
+
+    data object ManualAnalyzer : Screen(
+        route = "analyzer",
+        title = "Analizador",
+        selectedIcon = Icons.Filled.FindInPage,
+        unselectedIcon = Icons.Outlined.FindInPage
+    )
+
+    data object Settings : Screen(
+        route = "settings",
+        title = "Ajustes",
+        selectedIcon = Icons.Filled.Tune,
+        unselectedIcon = Icons.Outlined.Tune
+    )
+
+    data object Whitelist : Screen("whitelist", "Lista blanca")
+    data object CustomRules : Screen("custom_rules", "Reglas personalizadas")
+    data object CommunityBlacklist : Screen("community_blacklist", "Lista negra comunitaria")
 
     companion object {
-        val bottomNavItems: List<Screen>
-            get() = listOf(Dashboard, Quarantine, ManualAnalyzer, Settings)
+        val bottomNavItems: List<Screen> by lazy {
+            listOf(Dashboard, Quarantine, ManualAnalyzer, Settings)
+        }
     }
 }

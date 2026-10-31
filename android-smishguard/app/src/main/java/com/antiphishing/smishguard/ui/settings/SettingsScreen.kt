@@ -1,348 +1,447 @@
 package com.antiphishing.smishguard.ui.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Rule
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.outlined.Rule
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.CleaningServices
+import androidx.compose.material.icons.outlined.DeleteSweep
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.VerifiedUser
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.antiphishing.smishguard.ui.theme.*
+import com.antiphishing.smishguard.ui.components.PanelDivider
+import com.antiphishing.smishguard.ui.components.ResponsiveContentBox
+import com.antiphishing.smishguard.ui.components.ScreenHeader
+import com.antiphishing.smishguard.ui.components.SectionLabel
+import com.antiphishing.smishguard.ui.components.SectionPanel
+import com.antiphishing.smishguard.ui.components.SemanticTone
+import com.antiphishing.smishguard.ui.components.StatusTag
+import com.antiphishing.smishguard.ui.components.smishGuardSwitchColors
+import com.antiphishing.smishguard.ui.theme.SmishGuardTheme
+import kotlin.math.roundToInt
 
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onNavigateToWhitelist: () -> Unit,
-    onNavigateToCustomRules: () -> Unit
-    ,
+    onNavigateToCustomRules: () -> Unit,
     onNavigateToCommunityBlacklist: () -> Unit
 ) {
     val threshold by viewModel.quarantineThreshold.collectAsState()
     val aggressiveMode by viewModel.aggressiveMode.collectAsState()
     val silentDismiss by viewModel.silentDismissNotif.collectAsState()
+    val whitelist by viewModel.whitelist.collectAsState()
+    val customRules by viewModel.customRules.collectAsState()
+    val communityEntries by viewModel.communityEntries.collectAsState()
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBackground)
-            .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(top = 24.dp, bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            Column {
-                Text(
-                    text = "Ajustes de Seguridad",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = CyberCyan
-                )
-                Text(
-                    text = "Personaliza el motor de detección y niveles de aislamiento.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
-                )
-            }
-        }
+    val colors = SmishGuardTheme.colors
+    var sliderValue by remember(threshold) { mutableFloatStateOf(threshold.toFloat()) }
+    var clearDialogType by remember { mutableStateOf<String?>(null) }
 
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = DarkSurface)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Sensibilidad de Detección",
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary
-                        )
-                        Text(
-                            text = "Umbral: $threshold%",
-                            fontWeight = FontWeight.Bold,
-                            color = CyberCyan
-                        )
-                    }
+    val displayThreshold = sliderValue.roundToInt()
+    val sensitivityProfile = when {
+        displayThreshold <= 35 -> "Estricto"
+        displayThreshold <= 55 -> "Equilibrado"
+        else -> "Conservador"
+    }
 
-                    Text(
-                        text = "Los mensajes con una puntuación de riesgo igual o mayor a $threshold% serán enviados a Cuarentena.",
-                        fontSize = 12.sp,
-                        color = TextSecondary
-                    )
+    val activeCustomRulesCount = remember(customRules) {
+        customRules.count { it.isEnabled }
+    }
 
-                    Slider(
-                        value = threshold.toFloat(),
-                        onValueChange = { viewModel.setQuarantineThreshold(it.toInt()) },
-                        valueRange = 20f..80f,
-                        steps = 11,
-                        colors = SliderDefaults.colors(
-                            thumbColor = CyberCyan,
-                            activeTrackColor = CyberCyan
-                        )
-                    )
-                }
-            }
-        }
-
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = DarkSurface)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    SettingToggleRow(
-                        title = "Suprimir Notificaciones de Phishing",
-                        subtitle = "Cancela silenciosamente la notificación si el SMS es malicioso.",
-                        checked = silentDismiss,
-                        onCheckedChange = { viewModel.setSilentDismissNotif(it) }
-                    )
-
-                    HorizontalDivider(color = DarkSurfaceCard)
-
-                    SettingToggleRow(
-                        title = "Modo Heurístico Agresivo",
-                        subtitle = "Aumenta la penalización a dominios nuevos o enlaces acortados desconocidos.",
-                        checked = aggressiveMode,
-                        onCheckedChange = { viewModel.setAggressiveMode(it) }
-                    )
-                }
-            }
-        }
-
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                RuleNavCard(
-                    title = "Lista Blanca de Remitentes",
-                    subtitle = "Contactos y números de confianza que nunca serán bloqueados.",
-                    icon = Icons.Default.VerifiedUser,
-                    onClick = onNavigateToWhitelist
-                )
-
-                RuleNavCard(
-                    title = "Reglas Personalizadas (Regex o Palabras)",
-                    subtitle = "Añade tus propias palabras clave o patrones de bloqueo.",
-                    icon = Icons.AutoMirrored.Filled.Rule,
-                    onClick = onNavigateToCustomRules
-                )
-
-                RuleNavCard(
-                    title = "Lista Negra Comunitaria",
-                    subtitle = "Añade enlaces, dominios o números y comparte solo ese indicador.",
-                    icon = Icons.Default.CloudUpload,
-                    onClick = onNavigateToCommunityBlacklist
+    ResponsiveContentBox {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(top = 20.dp, bottom = 28.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                ScreenHeader(
+                    title = "Ajustes",
+                    subtitle = "Parámetros de detección, listas y almacenamiento"
                 )
             }
-        }
 
-        item {
-            var showClearDialog by remember { mutableStateOf(false) }
-            var clearType by remember { mutableStateOf("") }
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = DarkSurface)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "Mantenimiento y Almacenamiento",
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary,
-                        fontSize = 14.sp
-                    )
-
-                    OutlinedButton(
-                        onClick = {
-                            clearType = "VAULT"
-                            showClearDialog = true
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = ThreatWarningYellow),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Icon(Icons.Default.CleaningServices, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Vaciar Cuarentena")
-                    }
-
-                    OutlinedButton(
-                        onClick = {
-                            clearType = "ALL"
-                            showClearDialog = true
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = ThreatDangerRed),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Limpiar Historial de Análisis")
-                    }
-                }
-            }
-
-            if (showClearDialog) {
-                AlertDialog(
-                    onDismissRequest = { showClearDialog = false },
-                    title = {
-                        Text(
-                            text = if (clearType == "VAULT") "Vaciar Cuarentena" else "Limpiar Historial",
-                            color = TextPrimary
-                        )
-                    },
-                    text = {
-                        Text(
-                            text = if (clearType == "VAULT")
-                                "¿Deseas eliminar todos los mensajes de la lista de cuarentena?"
-                            else
-                                "¿Deseas eliminar todos los registros analizados del historial?",
-                            color = TextSecondary
-                        )
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                if (clearType == "VAULT") viewModel.clearQuarantined()
-                                else viewModel.clearAllRecords()
-                                showClearDialog = false
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = ThreatDangerRed, contentColor = TextPrimary)
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SectionLabel(text = "Motor de detección")
+                    SectionPanel {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text("Confirmar")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showClearDialog = false }) {
-                            Text("Cancelar", color = TextSecondary)
-                        }
-                    },
-                    containerColor = DarkSurface
-                )
-            }
-        }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Umbral de cuarentena",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = colors.textPrimary
+                                )
+                                StatusTag(
+                                    text = "$displayThreshold% · $sensitivityProfile",
+                                    tone = SemanticTone.ACCENT
+                                )
+                            }
 
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = DarkSurfaceCard)
-            ) {
+                            Text(
+                                text = "Aísla mensajes con riesgo igual o superior al $displayThreshold%.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.textSecondary
+                            )
+
+                            Slider(
+                                value = sliderValue,
+                                onValueChange = { sliderValue = it },
+                                onValueChangeFinished = {
+                                    viewModel.setQuarantineThreshold(sliderValue.roundToInt())
+                                },
+                                valueRange = 20f..80f,
+                                steps = 11,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = colors.accent,
+                                    activeTrackColor = colors.accent,
+                                    inactiveTrackColor = colors.surfaceSubtle,
+                                    activeTickColor = Color.Transparent,
+                                    inactiveTickColor = Color.Transparent
+                                )
+                            )
+                        }
+
+                        PanelDivider()
+
+                        SettingToggleItem(
+                            title = "Suprimir notificaciones de phishing",
+                            subtitle = "Cancela el aviso de mensajería cuando el SMS es puesto en cuarentena.",
+                            checked = silentDismiss,
+                            onCheckedChange = viewModel::setSilentDismissNotif
+                        )
+
+                        PanelDivider()
+
+                        SettingToggleItem(
+                            title = "Heurística estricta",
+                            subtitle = "Incrementa la penalización en dominios recientes y acortadores.",
+                            checked = aggressiveMode,
+                            onCheckedChange = viewModel::setAggressiveMode
+                        )
+                    }
+                }
+            }
+
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SectionLabel(text = "Listas y reglas")
+                    SectionPanel {
+                        NavigationSettingItem(
+                            icon = Icons.Outlined.VerifiedUser,
+                            title = "Lista blanca de remitentes",
+                            subtitle = "Contactos y números exentos de bloqueo",
+                            countText = if (whitelist.isNotEmpty()) "${whitelist.size}" else null,
+                            onClick = onNavigateToWhitelist
+                        )
+
+                        PanelDivider()
+
+                        NavigationSettingItem(
+                            icon = Icons.AutoMirrored.Outlined.Rule,
+                            title = "Reglas personalizadas",
+                            subtitle = "Palabras clave y expresiones regulares propias",
+                            countText = if (customRules.isNotEmpty()) "$activeCustomRulesCount/${customRules.size}" else null,
+                            onClick = onNavigateToCustomRules
+                        )
+
+                        PanelDivider()
+
+                        NavigationSettingItem(
+                            icon = Icons.Outlined.Public,
+                            title = "Lista negra comunitaria",
+                            subtitle = "Indicadores reportados sin exponer datos personales",
+                            countText = if (communityEntries.isNotEmpty()) "${communityEntries.size}" else null,
+                            onClick = onNavigateToCommunityBlacklist
+                        )
+                    }
+                }
+            }
+
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SectionLabel(text = "Datos locales")
+                    SectionPanel {
+                        MaintenanceActionItem(
+                            icon = Icons.Outlined.CleaningServices,
+                            title = "Vaciar cuarentena",
+                            subtitle = "Elimina los mensajes actualmente aislados",
+                            tint = colors.warning,
+                            onClick = { clearDialogType = "VAULT" }
+                        )
+
+                        PanelDivider()
+
+                        MaintenanceActionItem(
+                            icon = Icons.Outlined.DeleteSweep,
+                            title = "Borrar historial completo",
+                            subtitle = "Elimina contadores y registros locales de SMS y llamadas",
+                            tint = colors.danger,
+                            onClick = { clearDialogType = "ALL" }
+                        )
+                    }
+                }
+            }
+
+            item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(horizontal = 4.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.PrivacyTip,
+                        imageVector = Icons.Outlined.Lock,
                         contentDescription = null,
-                        tint = ThreatSafeGreen,
-                        modifier = Modifier.size(32.dp)
+                        tint = colors.textMuted,
+                        modifier = Modifier.size(15.dp)
                     )
-                    Column {
-                        Text(
-                            text = "Compromiso de Privacidad Total",
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary,
-                            fontSize = 13.sp
-                        )
-                        Text(
-                            text = "SmishGuard opera 100% en tu dispositivo. Ningún mensaje, número, enlace o estadística se envía a servidores externos.",
-                            color = TextSecondary,
-                            fontSize = 11.sp
-                        )
-                    }
+                    Text(
+                        text = "Procesamiento 100% local en el dispositivo · Purga automática cada 30 días",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.textMuted
+                    )
                 }
             }
         }
     }
-}
 
-@Composable
-fun SettingToggleRow(
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, fontWeight = FontWeight.SemiBold, color = TextPrimary, fontSize = 14.sp)
-            Text(text = subtitle, color = TextSecondary, fontSize = 12.sp)
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = CyberCyan,
-                checkedTrackColor = CyberCyanDark.copy(alpha = 0.5f)
-            )
+    val dialogType = clearDialogType
+    if (dialogType != null) {
+        val isVault = dialogType == "VAULT"
+        AlertDialog(
+            onDismissRequest = { clearDialogType = null },
+            title = {
+                Text(
+                    text = if (isVault) "Vaciar cuarentena" else "Borrar historial completo",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = colors.textPrimary
+                )
+            },
+            text = {
+                Text(
+                    text = if (isVault) {
+                        "Se eliminarán permanentemente todos los mensajes almacenados en cuarentena."
+                    } else {
+                        "Se eliminarán todos los registros locales de mensajes y llamadas analizados."
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.textSecondary
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (isVault) {
+                            viewModel.clearQuarantined()
+                        } else {
+                            viewModel.clearAllRecords()
+                        }
+                        clearDialogType = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.danger,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Eliminar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { clearDialogType = null }) {
+                    Text("Cancelar", color = colors.textSecondary)
+                }
+            },
+            containerColor = colors.surface,
+            shape = RoundedCornerShape(12.dp)
         )
     }
 }
 
 @Composable
-fun RuleNavCard(
+private fun SettingToggleItem(
     title: String,
     subtitle: String,
-    icon: ImageVector,
-    onClick: () -> Unit
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
 ) {
-    Card(
+    val colors = SmishGuardTheme.colors
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface)
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
+                .weight(1f)
+                .padding(end = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            Icon(imageVector = icon, contentDescription = null, tint = CyberCyan, modifier = Modifier.size(24.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = title, fontWeight = FontWeight.Bold, color = TextPrimary, fontSize = 14.sp)
-                Text(text = subtitle, color = TextSecondary, fontSize = 12.sp)
-            }
-            Icon(imageVector = Icons.Default.ChevronRight, contentDescription = null, tint = TextSecondary)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = colors.textPrimary
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.textSecondary
+            )
         }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = smishGuardSwitchColors()
+        )
+    }
+}
+
+@Composable
+private fun NavigationSettingItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    countText: String?,
+    onClick: () -> Unit
+) {
+    val colors = SmishGuardTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = colors.accent,
+            modifier = Modifier.size(21.dp)
+        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium,
+                color = colors.textPrimary
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.textSecondary
+            )
+        }
+        if (countText != null) {
+            StatusTag(text = countText, tone = SemanticTone.NEUTRAL)
+        }
+        Icon(
+            imageVector = Icons.Outlined.ChevronRight,
+            contentDescription = null,
+            tint = colors.textMuted,
+            modifier = Modifier.size(18.dp)
+        )
+    }
+}
+
+@Composable
+private fun MaintenanceActionItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    tint: Color,
+    onClick: () -> Unit
+) {
+    val colors = SmishGuardTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(20.dp)
+        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = tint
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.textSecondary
+            )
+        }
+        Icon(
+            imageVector = Icons.Outlined.ChevronRight,
+            contentDescription = null,
+            tint = colors.textMuted,
+            modifier = Modifier.size(18.dp)
+        )
     }
 }

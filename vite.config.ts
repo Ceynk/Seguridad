@@ -2,6 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 
+const ENTRADAS_FIJAS = new Set(["trabajador-servicio", "inspector-documento"]);
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -14,22 +16,17 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        popup: path.resolve(__dirname, "src/pages/popup/index.html"),
-        bloqueado: path.resolve(__dirname, "src/pages/bloqueado/index.html"),
-        opciones: path.resolve(__dirname, "src/pages/opciones/index.html"),
-        "service-worker": path.resolve(__dirname, "src/background/service-worker.ts"),
-        "content-script": path.resolve(__dirname, "src/content/content-script.ts"),
+        emergente: path.resolve(__dirname, "src/paginas/emergente/index.html"),
+        bloqueado: path.resolve(__dirname, "src/paginas/bloqueado/index.html"),
+        opciones: path.resolve(__dirname, "src/paginas/opciones/index.html"),
+        "trabajador-servicio": path.resolve(__dirname, "src/segundo-plano/trabajador-servicio.ts"),
+        "inspector-documento": path.resolve(__dirname, "src/contenido/inspector-documento.ts"),
       },
       output: {
-        entryFileNames: (chunkInfo) => {
-          if (chunkInfo.name === "service-worker") {
-            return "service-worker.js";
-          }
-          if (chunkInfo.name === "content-script") {
-            return "content-script.js";
-          }
-          return "assets/[name]-[hash].js";
-        },
+        entryFileNames: (fragmento) =>
+          ENTRADAS_FIJAS.has(fragmento.name)
+            ? `${fragmento.name}.js`
+            : "assets/[name]-[hash].js",
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: "assets/[name]-[hash].[ext]",
       },

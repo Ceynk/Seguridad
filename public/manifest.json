@@ -10,7 +10,7 @@
     "128": "icons/icon-128.png"
   },
   "action": {
-    "default_popup": "src/pages/popup/index.html",
+    "default_popup": "src/paginas/emergente/index.html",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png",
@@ -19,17 +19,17 @@
     }
   },
   "background": {
-    "service_worker": "service-worker.js",
+    "service_worker": "trabajador-servicio.js",
     "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content-script.js"],
+      "js": ["inspector-documento.js"],
       "run_at": "document_idle"
     }
   ],
-  "options_page": "src/pages/opciones/index.html",
+  "options_page": "src/paginas/opciones/index.html",
   "permissions": [
     "webNavigation",
     "storage",

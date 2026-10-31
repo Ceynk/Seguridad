@@ -11,16 +11,29 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
 import com.antiphishing.smishguard.SmishGuardApp
 import com.antiphishing.smishguard.ui.navigation.AppNavigation
 import com.antiphishing.smishguard.ui.navigation.Screen
-import com.antiphishing.smishguard.ui.theme.DarkBackground
 import com.antiphishing.smishguard.ui.theme.SmishGuardTheme
 
+private data class LaunchRouting(
+    val destination: String = Screen.Dashboard.route,
+    val sharedSender: String = "",
+    val sharedBody: String = "",
+    val token: Long = System.nanoTime()
+)
+
 class MainActivity : ComponentActivity() {
+
+    private var pendingRouting by mutableStateOf<LaunchRouting?>(null)
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -43,63 +56,102 @@ class MainActivity : ComponentActivity() {
         requestRequiredPermissions()
 
         val app = application as SmishGuardApp
-        var initialSharedSender = ""
-        var initialSharedBody = ""
-        var targetDestination = Screen.Dashboard.route
-
-        val navigateTarget = intent.getStringExtra("navigate_to")
-        if (navigateTarget == "quarantine") {
-            targetDestination = Screen.Quarantine.route
-        } else if (intent.action == Intent.ACTION_SEND) {
-            val intentType = intent.type
-            if (intentType != null && intentType.startsWith("text/")) {
-                val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
-                if (sharedText != null && sharedText.isNotBlank()) {
-                    initialSharedBody = sharedText
-                    targetDestination = Screen.ManualAnalyzer.route
-                }
-            }
-        } else if (intent.action == Intent.ACTION_VIEW) {
-            val dataUri = intent.data
-            if (dataUri != null) {
-                val scheme = dataUri.scheme?.lowercase()
-                if (scheme == "http" || scheme == "https") {
-                    initialSharedBody = dataUri.toString()
-                    targetDestination = Screen.ManualAnalyzer.route
-                } else if (scheme == "sms" || scheme == "smsto") {
-                    initialSharedSender = dataUri.schemeSpecificPart ?: ""
-                    initialSharedBody = intent.getStringExtra("sms_body") ?: intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
-                    targetDestination = Screen.ManualAnalyzer.route
-                }
-            }
-        } else if (intent.action == Intent.ACTION_SENDTO) {
-            val dataUri = intent.data
-            if (dataUri != null) {
-                initialSharedSender = dataUri.schemeSpecificPart ?: ""
-            }
-            initialSharedBody = intent.getStringExtra("sms_body") ?: intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
-            if (initialSharedSender.isNotBlank() || initialSharedBody.isNotBlank()) {
-                targetDestination = Screen.ManualAnalyzer.route
-            }
-        }
+        val initialRouting = parseRoutingFromIntent(intent)
 
         setContent {
             SmishGuardTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = DarkBackground
+                    color = SmishGuardTheme.colors.background
                 ) {
                     val navController = rememberNavController()
+                    val latestRouting = pendingRouting
+
+                    LaunchedEffect(latestRouting?.token) {
+                        if (latestRouting != null) {
+                            navController.navigate(latestRouting.destination) {
+                                val startId = navController.graph.findStartDestination().id
+                                popUpTo(startId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    }
+
                     AppNavigation(
                         navController = navController,
                         app = app,
-                        startDestination = targetDestination,
-                        initialSharedSender = initialSharedSender,
-                        initialSharedBody = initialSharedBody
+                        startDestination = initialRouting.destination,
+                        initialSharedSender = latestRouting?.sharedSender ?: initialRouting.sharedSender,
+                        initialSharedBody = latestRouting?.sharedBody ?: initialRouting.sharedBody
                     )
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingRouting = parseRoutingFromIntent(intent)
+    }
+
+    private fun parseRoutingFromIntent(incomingIntent: Intent?): LaunchRouting {
+        if (incomingIntent == null) {
+            return LaunchRouting()
+        }
+
+        var sharedSender = ""
+        var sharedBody = ""
+        var targetDestination = Screen.Dashboard.route
+
+        val navigateTarget = incomingIntent.getStringExtra("navigate_to")
+        if (navigateTarget == "quarantine") {
+            targetDestination = Screen.Quarantine.route
+        } else if (navigateTarget == "dashboard") {
+            targetDestination = Screen.Dashboard.route
+        } else if (incomingIntent.action == Intent.ACTION_SEND) {
+            val intentType = incomingIntent.type
+            if (intentType != null && intentType.startsWith("text/")) {
+                val sharedText = incomingIntent.getStringExtra(Intent.EXTRA_TEXT)
+                if (!sharedText.isNullOrBlank()) {
+                    sharedBody = sharedText
+                    targetDestination = Screen.ManualAnalyzer.route
+                }
+            }
+        } else if (incomingIntent.action == Intent.ACTION_VIEW) {
+            val dataUri = incomingIntent.data
+            if (dataUri != null) {
+                val scheme = dataUri.scheme?.lowercase()
+                if (scheme == "http" || scheme == "https") {
+                    sharedBody = dataUri.toString()
+                    targetDestination = Screen.ManualAnalyzer.route
+                } else if (scheme == "sms" || scheme == "smsto") {
+                    sharedSender = dataUri.schemeSpecificPart.orEmpty()
+                    sharedBody = incomingIntent.getStringExtra("sms_body")
+                        ?: incomingIntent.getStringExtra(Intent.EXTRA_TEXT)
+                        ?: ""
+                    targetDestination = Screen.ManualAnalyzer.route
+                }
+            }
+        } else if (incomingIntent.action == Intent.ACTION_SENDTO) {
+            val dataUri = incomingIntent.data
+            if (dataUri != null) {
+                sharedSender = dataUri.schemeSpecificPart.orEmpty()
+            }
+            sharedBody = incomingIntent.getStringExtra("sms_body")
+                ?: incomingIntent.getStringExtra(Intent.EXTRA_TEXT)
+                ?: ""
+            if (sharedSender.isNotBlank() || sharedBody.isNotBlank()) {
+                targetDestination = Screen.ManualAnalyzer.route
+            }
+        }
+
+        return LaunchRouting(
+            destination = targetDestination,
+            sharedSender = sharedSender,
+            sharedBody = sharedBody
+        )
     }
 
     private fun requestRequiredPermissions() {
@@ -140,7 +192,7 @@ class MainActivity : ComponentActivity() {
                         roleLauncher.launch(roleRequestIntent)
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
     }

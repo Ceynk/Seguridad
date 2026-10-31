@@ -1,11 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SmishGuard</string>
-    <string name="app_tagline">Protección Antiphishing SMS y Honeypot</string>
     <string name="notification_service_label">SmishGuard Filtro de Notificaciones</string>
-    <string name="threat_detected_title">Alerta de Smishing Detectada</string>
-    <string name="threat_detected_desc">Se ha interceptado un SMS sospechoso de %1$s y ha sido puesto en cuarentena segura.</string>
     <string name="channel_threats_name">Alertas de Smishing</string>
     <string name="channel_threats_desc">Notificaciones urgentes cuando se intercepta un SMS malicioso o suplantado.</string>
-    <string name="channel_status_name">Estado del Servicio</string>
-    <string name="channel_status_desc">Notificaciones sobre el estado de la protección en tiempo real.</string>
 </resources>

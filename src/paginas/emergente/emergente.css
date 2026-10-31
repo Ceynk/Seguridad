@@ -1,0 +1,200 @@
+@import "../estilos-base.css";
+
+body {
+  width: 360px;
+  min-height: 500px;
+  background-color: var(--fondo-aplicacion);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.contenedor-aplicacion { display: flex; flex-direction: column; height: 100vh; }
+.cabecera-aplicacion {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background-color: var(--fondo-superficie); border-bottom: 1px solid var(--color-borde);
+}
+.marca { display: flex; align-items: center; gap: 8px; }
+.nombre-marca { font-weight: 600; font-size: 14px; }
+.icono-marca { color: var(--color-marca); }
+.acciones-cabecera { display: flex; align-items: center; gap: 12px; }
+
+.interruptor { position: relative; display: inline-block; width: 32px; height: 18px; }
+.interruptor input { opacity: 0; width: 0; height: 0; }
+.deslizador-interruptor {
+  position: absolute; cursor: pointer; inset: 0;
+  background-color: #cbd5e1; transition: 0.2s; border-radius: 18px;
+}
+.deslizador-interruptor::before {
+  position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px;
+  background-color: #ffffff; transition: 0.2s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+input:checked + .deslizador-interruptor { background-color: var(--color-seguro); }
+input:checked + .deslizador-interruptor::before { transform: translateX(14px); }
+
+.boton-icono {
+  background: transparent; border: none; color: var(--texto-secundario);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color 0.2s;
+}
+.boton-icono:hover { color: var(--texto-primario); }
+
+.barra-pestanas {
+  display: flex; background-color: var(--fondo-superficie);
+  border-bottom: 1px solid var(--color-borde); padding: 0 16px;
+}
+.boton-pestana {
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  padding: 12px 0; margin-right: 20px; font-size: 13px; font-weight: 500;
+  color: var(--texto-secundario); cursor: pointer; transition: all 0.2s;
+}
+.boton-pestana:hover { color: var(--texto-primario); }
+.boton-pestana.activa { color: var(--color-marca); border-bottom-color: var(--color-marca); }
+
+.contenido-principal { flex: 1; padding: 16px; overflow-y: auto; }
+.panel-pestana { display: flex; flex-direction: column; gap: 16px; height: 100%; }
+.estado-carga {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 200px; color: var(--texto-secundario); gap: 12px;
+}
+.giratorio { animation: girar 1s linear infinite; color: var(--color-marca); }
+@keyframes girar { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.tarjeta-estado {
+  padding: 16px; border-radius: 8px; border: 1px solid transparent;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.estado-seguro { background-color: var(--fondo-seguro); border-color: #a7f3d0; }
+.estado-seguro .icono-estado { color: var(--color-seguro); }
+.estado-seguro .titulo-estado { color: #065f46; }
+.estado-seguro .relleno-barra-riesgo { background-color: var(--color-seguro); }
+
+.estado-sospechoso { background-color: var(--fondo-advertencia); border-color: var(--borde-advertencia); }
+.estado-sospechoso .icono-estado { color: var(--color-advertencia); }
+.estado-sospechoso .titulo-estado { color: #92400e; }
+.estado-sospechoso .relleno-barra-riesgo { background-color: var(--color-advertencia); }
+
+.estado-peligroso { background-color: var(--fondo-peligro); border-color: var(--borde-peligro); }
+.estado-peligroso .icono-estado { color: var(--color-peligro); }
+.estado-peligroso .titulo-estado { color: #991b1b; }
+.estado-peligroso .relleno-barra-riesgo { background-color: var(--color-peligro); }
+
+.cabecera-estado { display: flex; align-items: center; gap: 12px; }
+.grupo-titulo-estado { display: flex; flex-direction: column; }
+.titulo-estado { font-size: 16px; font-weight: 700; line-height: 1.2; }
+.subtitulo-estado { font-size: 12px; color: var(--texto-secundario); }
+
+.contenedor-barra-riesgo { display: flex; flex-direction: column; gap: 6px; }
+.etiquetas-barra-riesgo {
+  display: flex; justify-content: space-between; font-size: 11px;
+  font-weight: 600; text-transform: uppercase; color: var(--texto-secundario);
+}
+.pista-barra-riesgo { height: 6px; background-color: rgba(0, 0, 0, 0.05); border-radius: 3px; overflow: hidden; }
+.relleno-barra-riesgo { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+.tarjeta-dominio {
+  background-color: var(--fondo-superficie); border: 1px solid var(--color-borde);
+  border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.etiqueta-dominio { font-size: 11px; font-weight: 600; color: var(--texto-secundario); text-transform: uppercase; }
+.valor-dominio { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+.caracter-alerta {
+  color: var(--color-peligro); font-weight: 700; background-color: var(--fondo-peligro);
+  padding: 0 2px; border-radius: 2px;
+}
+
+.seccion-indicadores, .lista-indicadores { display: flex; flex-direction: column; gap: 8px; }
+.cabecera-seccion {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; padding: 4px 0; color: var(--texto-secundario);
+}
+.cabecera-seccion h3 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.elemento-indicador {
+  background-color: var(--fondo-superficie); border: 1px solid var(--color-borde);
+  border-radius: 6px; padding: 10px;
+}
+.principal-indicador {
+  display: flex; justify-content: space-between; align-items: center;
+  font-weight: 600; font-size: 12px; margin-bottom: 2px;
+}
+.puntaje-indicador { color: var(--color-advertencia); }
+.descripcion-indicador { font-size: 11px; color: var(--texto-secundario); }
+
+.descripcion-seccion { font-size: 12px; color: var(--texto-secundario); margin-bottom: 4px; }
+.formulario-busqueda { display: flex; flex-direction: column; gap: 12px; }
+.envoltorio-entrada { position: relative; display: flex; align-items: center; }
+.icono-busqueda { position: absolute; left: 10px; color: var(--texto-atenuado); }
+.entrada-busqueda {
+  width: 100%; padding: 10px 10px 10px 32px; border: 1px solid var(--color-borde);
+  border-radius: 6px; font-size: 13px; outline: none; transition: border-color 0.2s;
+}
+.entrada-busqueda:focus { border-color: var(--color-marca); }
+
+.seccion-ejemplos { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.etiqueta-ejemplos { font-size: 11px; color: var(--texto-secundario); }
+.contenedor-ejemplos { display: flex; flex-wrap: wrap; gap: 6px; }
+.ficha-ejemplo {
+  background-color: var(--fondo-superficie); border: 1px solid var(--color-borde);
+  color: var(--texto-secundario); padding: 4px 8px; border-radius: 4px;
+  font-size: 11px; cursor: pointer; transition: all 0.2s;
+}
+.ficha-ejemplo:hover { background-color: var(--fondo-superficie-activo); color: var(--texto-primario); }
+
+.cuadricula-estadisticas {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin-top: auto; padding-top: 16px;
+}
+.caja-estadistica {
+  background-color: var(--fondo-superficie); border: 1px solid var(--color-borde);
+  border-radius: 6px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.valor-estadistica { font-size: 16px; font-weight: 700; }
+.etiqueta-estadistica { font-size: 10px; color: var(--texto-secundario); text-transform: uppercase; }
+
+.cabecera-csirt { display: flex; align-items: center; gap: 8px; }
+.cabecera-csirt h3 { font-size: 14px; font-weight: 600; }
+.registro-csirt {
+  background-color: var(--fondo-superficie); border: 1px solid var(--color-borde);
+  border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 12px;
+}
+.fila-registro { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+.etiqueta-registro { color: var(--texto-secundario); font-weight: 500; }
+.valor-registro { font-weight: 500; max-width: 200px; text-align: right; }
+.bloque-registro {
+  display: flex; flex-direction: column; gap: 6px;
+  padding-top: 8px; border-top: 1px dashed var(--color-borde);
+}
+
+.insignia-seguro, .insignia-sospechoso, .insignia-malicioso {
+  padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px;
+}
+.insignia-seguro { background-color: var(--fondo-seguro); color: #065f46; }
+.insignia-sospechoso { background-color: var(--fondo-advertencia); color: #92400e; }
+.insignia-malicioso { background-color: var(--fondo-peligro); color: #991b1b; }
+
+.etiquetas-mitre { display: flex; flex-wrap: wrap; gap: 4px; }
+.etiqueta-mitre {
+  background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #475569;
+  font-family: var(--fuente-mono); font-size: 10px; padding: 2px 6px; border-radius: 4px;
+}
+
+.boton {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; border: none;
+}
+.boton-primario { background-color: var(--color-marca); color: #ffffff; }
+.boton-primario:hover { background-color: var(--color-marca-activo); }
+.boton-borde { background-color: transparent; border: 1px solid var(--color-borde); color: var(--texto-primario); }
+.boton-borde:hover { background-color: var(--fondo-superficie-activo); }
+.botones-accion { display: flex; gap: 8px; margin-top: auto; }
+
+.pie-aplicacion {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; border-top: 1px solid var(--color-borde); background-color: var(--fondo-superficie);
+}
+.acciones-pie { display: flex; gap: 12px; }
+.enlace-pie {
+  background: transparent; border: none; color: var(--texto-atenuado);
+  font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+}
+.enlace-pie:hover { color: var(--texto-primario); }
+.version-pie { font-size: 11px; color: var(--texto-atenuado); }

@@ -1,22 +1,57 @@
 package com.antiphishing.smishguard.ui.settings
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Rule
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Rule
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.antiphishing.smishguard.ui.theme.*
+import com.antiphishing.smishguard.ui.components.EmptyStateView
+import com.antiphishing.smishguard.ui.components.PanelDivider
+import com.antiphishing.smishguard.ui.components.ResponsiveContentBox
+import com.antiphishing.smishguard.ui.components.SectionPanel
+import com.antiphishing.smishguard.ui.components.SemanticTone
+import com.antiphishing.smishguard.ui.components.StatusTag
+import com.antiphishing.smishguard.ui.components.smishGuardSwitchColors
+import com.antiphishing.smishguard.ui.components.smishGuardTextFieldColors
+import com.antiphishing.smishguard.ui.theme.SmishGuardTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,6 +60,8 @@ fun CustomRulesScreen(
     onBack: () -> Unit
 ) {
     val customRules by viewModel.customRules.collectAsState()
+    val colors = SmishGuardTheme.colors
+
     var showAddDialog by remember { mutableStateOf(false) }
     var patternInput by remember { mutableStateOf("") }
     var descInput by remember { mutableStateOf("") }
@@ -33,121 +70,140 @@ fun CustomRulesScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Reglas de Detección Propias", color = TextPrimary) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = TextPrimary)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBackground)
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    validationError = null
-                    showAddDialog = true
-                },
-                containerColor = CyberCyan,
-                contentColor = DarkBackground
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Añadir Regla")
-            }
-        },
-        containerColor = DarkBackground
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 80.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item {
-                Text(
-                    text = "Define palabras clave o expresiones regulares (Regex) para aislar mensajes específicos.",
-                    fontSize = 12.sp,
-                    color = TextSecondary
-                )
-            }
-
-            if (customRules.isEmpty()) {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
+            Column {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Reglas personalizadas",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = colors.textPrimary
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Rule,
-                                contentDescription = null,
-                                tint = TextSecondary,
-                                modifier = Modifier.size(40.dp)
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "No hay reglas personalizadas creadas",
-                                color = TextSecondary,
-                                fontSize = 13.sp
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                contentDescription = "Atrás",
+                                tint = colors.textPrimary
                             )
                         }
-                    }
-                }
-            } else {
-                items(customRules, key = { it.id }) { rule ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = DarkSurface)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(14.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = rule.pattern,
-                                    fontWeight = FontWeight.Bold,
-                                    fontFamily = FontFamily.Monospace,
-                                    color = if (rule.isEnabled) CyberCyan else TextSecondary
-                                )
-                                if (rule.description.isNotBlank()) {
-                                    Text(text = rule.description, fontSize = 12.sp, color = TextSecondary)
-                                }
-                                val ruleTypeText = if (rule.isRegex) {
-                                    "Tipo: Expresión Regular (Regex)"
-                                } else {
-                                    "Tipo: Palabra clave exacta"
-                                }
-                                Text(
-                                    text = ruleTypeText,
-                                    fontSize = 11.sp,
-                                    color = TextSecondary.copy(alpha = 0.7f)
-                                )
+                    },
+                    actions = {
+                        TextButton(
+                            onClick = {
+                                validationError = null
+                                showAddDialog = true
                             }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Add,
+                                contentDescription = null,
+                                tint = colors.accent,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Crear",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = colors.accent
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.background)
+                )
+                PanelDivider()
+            }
+        },
+        containerColor = colors.background
+    ) { padding ->
+        ResponsiveContentBox(modifier = Modifier.padding(padding)) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                item {
+                    Text(
+                        text = "Define frases exactas o patrones Regex para forzar el aislamiento de mensajes.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.textSecondary
+                    )
+                }
 
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Switch(
-                                    checked = rule.isEnabled,
-                                    onCheckedChange = { viewModel.toggleCustomRule(rule) },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = CyberCyan,
-                                        checkedTrackColor = CyberCyanDark.copy(alpha = 0.5f)
-                                    )
-                                )
-                                IconButton(onClick = { viewModel.deleteCustomRule(rule) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = ThreatDangerRed)
+                if (customRules.isEmpty()) {
+                    item {
+                        EmptyStateView(
+                            icon = Icons.AutoMirrored.Outlined.Rule,
+                            title = "Sin reglas definidas",
+                            subtitle = "Pulsa «Crear» para añadir una palabra clave o expresión regular."
+                        )
+                    }
+                } else {
+                    item {
+                        SectionPanel {
+                            customRules.forEachIndexed { index, rule ->
+                                if (index > 0) {
+                                    PanelDivider()
+                                }
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(end = 10.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Text(
+                                                text = rule.pattern,
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontFamily = FontFamily.Monospace,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = if (rule.isEnabled) colors.textPrimary else colors.textMuted
+                                            )
+                                            StatusTag(
+                                                text = if (rule.isRegex) "Regex" else "Texto",
+                                                tone = if (rule.isEnabled) SemanticTone.ACCENT else SemanticTone.NEUTRAL
+                                            )
+                                        }
+                                        if (rule.description.isNotBlank()) {
+                                            Text(
+                                                text = rule.description,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = colors.textSecondary
+                                            )
+                                        }
+                                    }
+
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Switch(
+                                            checked = rule.isEnabled,
+                                            onCheckedChange = { viewModel.toggleCustomRule(rule) },
+                                            colors = smishGuardSwitchColors()
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        IconButton(
+                                            onClick = { viewModel.deleteCustomRule(rule) },
+                                            modifier = Modifier.size(36.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.DeleteOutline,
+                                                contentDescription = "Eliminar regla",
+                                                tint = colors.danger,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -159,7 +215,13 @@ fun CustomRulesScreen(
         if (showAddDialog) {
             AlertDialog(
                 onDismissRequest = { showAddDialog = false },
-                title = { Text("Nueva Regla de Bloqueo", color = TextPrimary) },
+                title = {
+                    Text(
+                        text = "Nueva regla de bloqueo",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = colors.textPrimary
+                    )
+                },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedTextField(
@@ -168,38 +230,66 @@ fun CustomRulesScreen(
                                 patternInput = it
                                 validationError = null
                             },
-                            label = { Text("Patrón o Palabra clave") },
-                            placeholder = { Text("Ej: promo-descuento o bono de regalo") },
+                            label = { Text(if (isRegex) "Expresión regular" else "Palabra o frase") },
+                            placeholder = {
+                                Text(if (isRegex) "Ej: bono\\s+solidario" else "Ej: premio exclusivo")
+                            },
                             singleLine = true,
-                            isError = validationError != null
+                            isError = validationError != null,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = smishGuardTextFieldColors()
                         )
+
                         val currentError = validationError
                         if (currentError != null) {
                             Text(
                                 text = currentError,
-                                color = ThreatDangerRed,
-                                fontSize = 12.sp
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.danger
                             )
                         }
+
                         OutlinedTextField(
                             value = descInput,
                             onValueChange = { descInput = it },
-                            label = { Text("Descripción o Motivo (Opcional)") },
-                            singleLine = true
+                            label = { Text("Nota (opcional)") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = smishGuardTextFieldColors()
                         )
+
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    isRegex = !isRegex
+                                    validationError = null
+                                }
+                                .padding(vertical = 4.dp)
                         ) {
-                            Text("¿Es expresión regular (Regex)?", fontSize = 13.sp, color = TextPrimary)
-                            Checkbox(
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Usar expresión regular (Regex)",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = colors.textPrimary
+                                )
+                                Text(
+                                    text = "Validado contra patrones costosos (ReDoS)",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.textMuted
+                                )
+                            }
+                            Switch(
                                 checked = isRegex,
                                 onCheckedChange = {
                                     isRegex = it
                                     validationError = null
                                 },
-                                colors = CheckboxDefaults.colors(checkedColor = CyberCyan)
+                                colors = smishGuardSwitchColors()
                             )
                         }
                     }
@@ -219,17 +309,23 @@ fun CustomRulesScreen(
                                 }
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = CyberCyan, contentColor = DarkBackground)
+                        enabled = patternInput.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colors.accent,
+                            contentColor = colors.onAccent
+                        ),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Crear Regla")
+                        Text("Crear regla")
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddDialog = false }) {
-                        Text("Cancelar", color = TextSecondary)
+                        Text("Cancelar", color = colors.textSecondary)
                     }
                 },
-                containerColor = DarkSurface
+                containerColor = colors.surface,
+                shape = RoundedCornerShape(12.dp)
             )
         }
     }
