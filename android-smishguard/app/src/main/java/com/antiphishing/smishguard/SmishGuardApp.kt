@@ -11,10 +11,17 @@ import com.antiphishing.smishguard.data.repository.SecuritySettingsRepository
 import com.antiphishing.smishguard.data.repository.SmsRepository
 import com.antiphishing.smishguard.domain.detector.ClasificadorMensajesSms
 import com.antiphishing.smishguard.service.ThreatNotificationManager
+import com.antiphishing.smishguard.sync.CommunitySyncWorker
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 class SmishGuardApp : Application() {
 
@@ -55,10 +62,22 @@ class SmishGuardApp : Application() {
         )
         callRepository = CallRepository(
             callDao = database.callDao(),
-            ruleCache = ruleCache
+            ruleCache = ruleCache,
+            personalBlacklistDao = database.personalBlacklistDao()
         )
         settingsRepository = SecuritySettingsRepository(this)
         communityApiClient = CommunityApiClient()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "community-blacklist-sync",
+            ExistingPeriodicWorkPolicy.KEEP,
+            PeriodicWorkRequestBuilder<CommunitySyncWorker>(6, TimeUnit.HOURS)
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                )
+                .build()
+        )
 
         ThreatNotificationManager.createNotificationChannels(this)
 
@@ -79,7 +98,9 @@ class SmishGuardApp : Application() {
                         Log.w(TAG, "No se pudo sincronizar ${pendiente.indicador}", e)
                     }
                 }
-                smsRepository.saveCommunityEntries(communityApiClient.descargar())
+                val indicadores = communityApiClient.descargar()
+                val inteligencia = communityApiClient.descargarInteligencia()
+                smsRepository.saveCommunityEntries(indicadores + inteligencia)
             } catch (e: Exception) {
                 Log.e(TAG, "No se pudieron purgar los registros expirados", e)
             }

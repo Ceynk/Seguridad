@@ -3,6 +3,7 @@ package com.antiphishing.smishguard
 import com.antiphishing.smishguard.domain.detector.CallDetectorEngine
 import com.antiphishing.smishguard.domain.model.CallAction
 import com.antiphishing.smishguard.domain.model.ThreatLevel
+import com.antiphishing.smishguard.data.repository.SecuritySettingsRepository
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -160,5 +161,34 @@ class CallDetectorEngineTest {
         )
 
         assertNotNull(result)
+    }
+
+    @Test
+    fun numeroInternacionalValidoNoSeBloqueaPorSerExtranjero() {
+        val result = CallDetectorEngine.analyzeCall("+34600123456")
+
+        assertEquals(CallAction.ALLOW, result.action)
+        assertFalse(result.isBlocked)
+    }
+
+    @Test
+    fun numeroConReportesComunitariosConfirmadosSeBloquea() {
+        val result = CallDetectorEngine.analyzeCall(
+            incomingNumber = "+573105551234",
+            communityConfirmed = true
+        )
+
+        assertEquals(CallAction.BLOCK, result.action)
+        assertTrue(result.factors.any { it.category.contains("comunitaria") })
+    }
+
+    @Test
+    fun politicaBloqueaTodasLasLlamadasInternacionales() {
+        val result = CallDetectorEngine.analyzeCall(
+            incomingNumber = "+34600123456",
+            internationalPolicy = SecuritySettingsRepository.InternationalCallPolicy.BLOCK_ALL
+        )
+
+        assertEquals(CallAction.BLOCK, result.action)
     }
 }

@@ -53,6 +53,7 @@ import com.antiphishing.smishguard.ui.components.SemanticTone
 import com.antiphishing.smishguard.ui.components.StatusTag
 import com.antiphishing.smishguard.ui.components.smishGuardSwitchColors
 import com.antiphishing.smishguard.ui.theme.SmishGuardTheme
+import com.antiphishing.smishguard.data.repository.SecuritySettingsRepository
 import kotlin.math.roundToInt
 
 @Composable
@@ -65,6 +66,9 @@ fun SettingsScreen(
     val threshold by viewModel.quarantineThreshold.collectAsState()
     val aggressiveMode by viewModel.aggressiveMode.collectAsState()
     val silentDismiss by viewModel.silentDismissNotif.collectAsState()
+    val blockPrivateCalls by viewModel.blockPrivateCalls.collectAsState()
+    val blockInvalidCalls by viewModel.blockInvalidCalls.collectAsState()
+    val internationalPolicy by viewModel.internationalCallPolicy.collectAsState()
     val whitelist by viewModel.whitelist.collectAsState()
     val customRules by viewModel.customRules.collectAsState()
     val communityEntries by viewModel.communityEntries.collectAsState()
@@ -165,6 +169,48 @@ fun SettingsScreen(
                             subtitle = "Incrementa la penalización en dominios recientes y acortadores.",
                             checked = aggressiveMode,
                             onCheckedChange = viewModel::setAggressiveMode
+                        )
+
+                        PanelDivider()
+
+                        SettingToggleItem(
+                            title = "Bloquear números privados",
+                            subtitle = "Bloquea llamadas sin identificador cuando el operador no entrega el número.",
+                            checked = blockPrivateCalls,
+                            onCheckedChange = viewModel::setBlockPrivateCalls
+                        )
+
+                        PanelDivider()
+
+                        SettingToggleItem(
+                            title = "Bloquear numeración inválida",
+                            subtitle = "Bloquea identificadores que no cumplen la numeración telefónica válida.",
+                            checked = blockInvalidCalls,
+                            onCheckedChange = viewModel::setBlockInvalidCalls
+                        )
+
+                        PanelDivider()
+
+                        NavigationSettingItem(
+                            icon = Icons.Outlined.Public,
+                            title = "Llamadas internacionales",
+                            subtitle = "Política aplicada a números válidos de otros países.",
+                            countText = when (internationalPolicy) {
+                                SecuritySettingsRepository.InternationalCallPolicy.ALLOW -> "Permitir"
+                                SecuritySettingsRepository.InternationalCallPolicy.BLOCK_ALL -> "Bloquear todas"
+                                SecuritySettingsRepository.InternationalCallPolicy.BLOCK_SUSPICIOUS -> "Solo sospechosas"
+                            },
+                            onClick = {
+                                val next = when (internationalPolicy) {
+                                    SecuritySettingsRepository.InternationalCallPolicy.BLOCK_SUSPICIOUS ->
+                                        SecuritySettingsRepository.InternationalCallPolicy.ALLOW
+                                    SecuritySettingsRepository.InternationalCallPolicy.ALLOW ->
+                                        SecuritySettingsRepository.InternationalCallPolicy.BLOCK_ALL
+                                    SecuritySettingsRepository.InternationalCallPolicy.BLOCK_ALL ->
+                                        SecuritySettingsRepository.InternationalCallPolicy.BLOCK_SUSPICIOUS
+                                }
+                                viewModel.setInternationalCallPolicy(next)
+                            }
                         )
                     }
                 }

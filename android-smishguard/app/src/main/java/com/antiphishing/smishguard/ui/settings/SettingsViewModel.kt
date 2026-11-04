@@ -34,6 +34,16 @@ class SettingsViewModel(
     private val _silentDismissNotif = MutableStateFlow(settingsRepository.isSilentDismissNotifEnabled)
     val silentDismissNotif: StateFlow<Boolean> = _silentDismissNotif.asStateFlow()
 
+    private val _blockPrivateCalls = MutableStateFlow(settingsRepository.blockPrivateCalls)
+    val blockPrivateCalls: StateFlow<Boolean> = _blockPrivateCalls.asStateFlow()
+
+    private val _blockInvalidCalls = MutableStateFlow(settingsRepository.blockInvalidCalls)
+    val blockInvalidCalls: StateFlow<Boolean> = _blockInvalidCalls.asStateFlow()
+
+    private val _internationalCallPolicy = MutableStateFlow(settingsRepository.internationalCallPolicy)
+    val internationalCallPolicy: StateFlow<SecuritySettingsRepository.InternationalCallPolicy> =
+        _internationalCallPolicy.asStateFlow()
+
     val whitelist: StateFlow<List<WhitelistEntity>> = smsRepository.getAllWhitelist()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -56,6 +66,21 @@ class SettingsViewModel(
     fun setSilentDismissNotif(enabled: Boolean) {
         settingsRepository.isSilentDismissNotifEnabled = enabled
         _silentDismissNotif.value = enabled
+    }
+
+    fun setBlockPrivateCalls(enabled: Boolean) {
+        settingsRepository.blockPrivateCalls = enabled
+        _blockPrivateCalls.value = enabled
+    }
+
+    fun setBlockInvalidCalls(enabled: Boolean) {
+        settingsRepository.blockInvalidCalls = enabled
+        _blockInvalidCalls.value = enabled
+    }
+
+    fun setInternationalCallPolicy(policy: SecuritySettingsRepository.InternationalCallPolicy) {
+        settingsRepository.internationalCallPolicy = policy
+        _internationalCallPolicy.value = policy
     }
 
     fun addWhitelistEntry(sender: String, name: String?) {

@@ -11,11 +11,13 @@ import com.antiphishing.smishguard.data.local.dao.CommunityBlacklistDao
 import com.antiphishing.smishguard.data.local.dao.CustomRuleDao
 import com.antiphishing.smishguard.data.local.dao.SmsDao
 import com.antiphishing.smishguard.data.local.dao.WhitelistDao
+import com.antiphishing.smishguard.data.local.dao.PersonalBlacklistDao
 import com.antiphishing.smishguard.data.local.entity.CallRecordEntity
 import com.antiphishing.smishguard.data.local.entity.CommunityBlacklistEntity
 import com.antiphishing.smishguard.data.local.entity.CustomRuleEntity
 import com.antiphishing.smishguard.data.local.entity.SmsRecordEntity
 import com.antiphishing.smishguard.data.local.entity.WhitelistEntity
+import com.antiphishing.smishguard.data.local.entity.PersonalBlacklistEntity
 
 @Database(
     entities = [
@@ -23,9 +25,10 @@ import com.antiphishing.smishguard.data.local.entity.WhitelistEntity
         CallRecordEntity::class,
         WhitelistEntity::class,
         CustomRuleEntity::class,
-        CommunityBlacklistEntity::class
+        CommunityBlacklistEntity::class,
+        PersonalBlacklistEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -33,6 +36,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun smsDao(): SmsDao
     abstract fun callDao(): CallDao
     abstract fun whitelistDao(): WhitelistDao
+    abstract fun personalBlacklistDao(): PersonalBlacklistDao
     abstract fun customRuleDao(): CustomRuleDao
     abstract fun communityBlacklistDao(): CommunityBlacklistDao
 
@@ -74,6 +78,21 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS personal_blacklist (" +
+                        "numeroE164 TEXT NOT NULL PRIMARY KEY, " +
+                        "pais TEXT, " +
+                        "motivo TEXT NOT NULL, " +
+                        "origen TEXT NOT NULL, " +
+                        "nivelRiesgo TEXT NOT NULL, " +
+                        "fechaRegistro INTEGER NOT NULL, " +
+                        "activo INTEGER NOT NULL)"
+                )
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             val currentInstance = INSTANCE
             if (currentInstance != null) {
@@ -89,7 +108,7 @@ abstract class AppDatabase : RoomDatabase() {
                         context.applicationContext,
                         AppDatabase::class.java,
                         "smishguard_vault.db"
-                    ).addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).build()
+                    ).addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7).build()
                     INSTANCE = newInstance
                     newInstance
                 }

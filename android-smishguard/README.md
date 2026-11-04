@@ -56,7 +56,7 @@ El motor de deteccion integra multiples capas de analisis forense en tiempo real
 
 ---
 
-## 4. Contrato del API Comunitaria
+## 4. Contrato del API Comunitaria e inteligencia telefónica
 
 La sincronizacion esta desactivada cuando `COMMUNITY_API_URL` esta vacia. Para activarla, define esa variable al compilar. La lista es global al servidor: no se envia ni se exige ningun identificador del dispositivo.
 
@@ -65,6 +65,16 @@ La sincronizacion esta desactivada cuando `COMMUNITY_API_URL` esta vacia. Para a
   - Respuesta: `{"indicador":"ejemplo.com","tipo":"dominio","reportes":1,"esMalicioso":false}`
 - `GET /v1/lista-negra`
   - Respuesta: arreglo con objetos del mismo formato.
+- `GET /v1/lista-negra?desde=<epoch-millis>`
+  - Devuelve solamente indicadores actualizados después del cursor indicado.
+- `GET /v1/inteligencia?desde=<epoch-millis>`
+  - Devuelve registros de inteligencia telefónica colombiana en E.164.
+- `GET /v1/estado`
+  - Devuelve cantidad de números, países, fuentes y última actualización.
+- `POST /v1/reportes` para un número
+  - Cuerpo: `{"indicador":"+573001234567","tipo":"numero","categoria":"sospechoso","fuente":"comunidad"}`
+  - Solo acepta números colombianos válidos en E.164. Un reporte no bloquea globalmente
+    por sí solo; la confirmación requiere evidencia acumulada.
 
 El cliente nunca envia SMS, remitentes, contactos, identificadores del dispositivo ni datos personales. La descarga de la lista no incluye parametros del usuario.
 
@@ -79,9 +89,20 @@ El servidor esta en `../servidor`. Requiere Node.js 20 o posterior.
    - Dispositivo fisico: usa la direccion IP local del equipo, por ejemplo `http://192.168.1.20:8787`
 4. Para una instalacion publica, usa HTTPS y define `ALLOW_ORIGIN` con el origen permitido.
 
-Los datos se guardan en `servidor/datos/lista-negra.json`. El servidor solo almacena el indicador, su tipo, el numero de reportes y la fecha de actualizacion. No recibe SMS ni identificadores del dispositivo.
+Los datos se guardan en `servidor/datos/lista-negra.json` como un documento versionado
+con inteligencia, reportes, historial de cambios y ejecuciones de fuentes. No recibe SMS,
+contactos ni identificadores del dispositivo. La matriz de fuentes, sus limitaciones y
+el estado real de implementación está en [FUENTES-INTELIGENCIA.md](FUENTES-INTELIGENCIA.md).
 
-## 6. Tecnologias Utilizadas
+La aplicación mantiene el cursor de sincronización local y ejecuta la actualización incremental con WorkManager cada seis horas cuando hay conectividad. La evaluación de llamadas no espera al servidor: usa únicamente Room y la reputación descargada previamente. Una instalación nueva no contiene números precargados ficticios.
+
+## 6. Protección de llamadas
+
+El `CallScreeningService` normaliza números con libphonenumber usando Colombia (`CO`) como región predeterminada y guarda los válidos en formato E.164. La clasificación combina lista negra personal, reportes comunitarios, verificación de red, numeración inválida, reglas personalizadas y patrones Wangiri/tarificación especial. Un número internacional válido no se bloquea solo por ser extranjero.
+
+Las políticas de números privados, inválidos e internacionales se almacenan independientemente en preferencias. El bloqueo requiere que la puntuación de señales alcance el umbral configurado o que exista una confirmación de lista negra. Android debe establecer la aplicación como identificador y filtro de llamadas predeterminado para activar `CallScreeningService`.
+
+## 7. Tecnologias Utilizadas
 
 - Lenguaje: Kotlin 2.0.0
 - Interfaz de Usuario: Jetpack Compose y Material 3
@@ -92,7 +113,7 @@ Los datos se guardan en `servidor/datos/lista-negra.json`. El servidor solo alma
 
 ---
 
-## 7. Instrucciones para Abrir y Compilar en Android Studio
+## 8. Instrucciones para Abrir y Compilar en Android Studio
 
 1. Abrir Android Studio.
 2. Seleccionar la opcion Open y abrir la carpeta del proyecto:

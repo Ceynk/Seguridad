@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.antiphishing.smishguard.SmishGuardApp
 import com.antiphishing.smishguard.domain.detector.CallDetectorEngine
+import com.antiphishing.smishguard.domain.detector.PhoneNumberNormalizer
 import com.antiphishing.smishguard.domain.model.CallAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,12 +64,19 @@ class CallScreeningServiceImpl : CallScreeningService() {
         serviceScope.launch {
             var responseBuilder = CallResponse.Builder()
             try {
+                val normalizedNumber = PhoneNumberNormalizer.normalize(rawNumber).e164
                 val isWhitelisted = if (rawNumber.isNotBlank()) {
-                    callRepo.isNumberWhitelisted(rawNumber)
+                    callRepo.isNumberWhitelisted(normalizedNumber ?: rawNumber)
                 } else {
                     false
                 }
+                val isPersonallyBlocked = normalizedNumber?.let {
+                    callRepo.isPersonallyBlocked(it)
+                } == true
                 val customPatterns = smsRepo.getActiveCustomRegexes()
+                val communityEntry = normalizedNumber?.let {
+                    smsRepo.getCommunityEntriesByIndicator()[it]
+                }
 
                 val analysis = CallDetectorEngine.analyzeCall(
                     incomingNumber = rawNumber,
@@ -76,7 +84,12 @@ class CallScreeningServiceImpl : CallScreeningService() {
                     customBlockPatterns = customPatterns,
                     blockThreshold = settingsRepo.quarantineThreshold,
                     aggressiveMode = settingsRepo.isAggressiveModeEnabled,
-                    networkVerificationFailed = networkVerificationFailed
+                    networkVerificationFailed = networkVerificationFailed,
+                    communityReports = communityEntry?.reportes ?: 0,
+                    blockPrivateNumbers = settingsRepo.blockPrivateCalls,
+                    blockInvalidNumbers = settingsRepo.blockInvalidCalls,
+                    internationalPolicy = settingsRepo.internationalCallPolicy,
+                    communityConfirmed = communityEntry?.esMalicioso == true || isPersonallyBlocked
                 )
 
                 val recordId = callRepo.saveCallAnalysis(analysis)

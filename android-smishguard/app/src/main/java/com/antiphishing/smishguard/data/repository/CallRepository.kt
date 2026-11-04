@@ -1,7 +1,9 @@
 package com.antiphishing.smishguard.data.repository
 
 import com.antiphishing.smishguard.data.local.dao.CallDao
+import com.antiphishing.smishguard.data.local.dao.PersonalBlacklistDao
 import com.antiphishing.smishguard.data.local.entity.CallRecordEntity
+import com.antiphishing.smishguard.data.local.entity.PersonalBlacklistEntity
 import com.antiphishing.smishguard.domain.model.CallAnalysisResult
 import com.antiphishing.smishguard.domain.model.ThreatFactor
 import kotlinx.coroutines.flow.Flow
@@ -11,7 +13,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 class CallRepository(
     private val callDao: CallDao,
-    private val ruleCache: RuleCache
+    private val ruleCache: RuleCache,
+    private val personalBlacklistDao: PersonalBlacklistDao
 ) {
 
     fun getAllCallRecords(): Flow<List<CallRecordEntity>> {
@@ -32,6 +35,22 @@ class CallRepository(
 
     suspend fun isNumberWhitelisted(number: String): Boolean {
         return ruleCache.isWhitelisted(number)
+    }
+
+    suspend fun isPersonallyBlocked(numberE164: String): Boolean {
+        return personalBlacklistDao.contieneActivo(numberE164)
+    }
+
+    fun getPersonalBlacklist(): Flow<List<PersonalBlacklistEntity>> {
+        return personalBlacklistDao.obtenerTodos()
+    }
+
+    suspend fun addToPersonalBlacklist(entry: PersonalBlacklistEntity) {
+        personalBlacklistDao.guardar(entry)
+    }
+
+    suspend fun removeFromPersonalBlacklist(numberE164: String) {
+        personalBlacklistDao.desactivar(numberE164)
     }
 
     suspend fun saveCallAnalysis(analysis: CallAnalysisResult): Long {

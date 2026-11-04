@@ -4,6 +4,7 @@ import com.antiphishing.smishguard.domain.model.CallAction
 import com.antiphishing.smishguard.domain.model.CallAnalysisResult
 import com.antiphishing.smishguard.domain.model.ThreatFactor
 import com.antiphishing.smishguard.domain.model.ThreatLevel
+import com.antiphishing.smishguard.data.repository.SecuritySettingsRepository
 import com.antiphishing.smishguard.util.SafeRegex
 import kotlin.math.max
 import kotlin.math.min
@@ -57,7 +58,14 @@ object CallDetectorEngine {
         customBlockPatterns: List<Regex> = emptyList(),
         blockThreshold: Int = DEFAULT_BLOCK_THRESHOLD,
         aggressiveMode: Boolean = false,
-        networkVerificationFailed: Boolean = false
+        networkVerificationFailed: Boolean = false,
+        communityReports: Int = 0,
+        communityConfirmed: Boolean = false,
+        privateNumber: Boolean = incomingNumber.isBlank(),
+        blockPrivateNumbers: Boolean = false,
+        blockInvalidNumbers: Boolean = true,
+        internationalPolicy: SecuritySettingsRepository.InternationalCallPolicy =
+            SecuritySettingsRepository.InternationalCallPolicy.BLOCK_SUSPICIOUS
     ): CallAnalysisResult {
         val cleanNumber = incomingNumber.trim().replace(CLEAN_CHARS, "")
         val effectiveThreshold = if (aggressiveMode) {
@@ -79,6 +87,24 @@ object CallDetectorEngine {
             )
         }
 
+        if (privateNumber) {
+            val score = if (blockPrivateNumbers || aggressiveMode) 100 else 30
+            val factor = ThreatFactor(
+                category = "Número Oculto o Privado",
+                description = "La llamada no presenta un identificador telefónico.",
+                severityScore = score,
+                matchedSnippet = null
+            )
+            return resultFor(
+                incomingNumber = incomingNumber,
+                score = score,
+                factors = listOf(factor),
+                countryOrOrigin = "Identificador oculto",
+                threshold = effectiveThreshold,
+                forceBlock = blockPrivateNumbers
+            )
+        }
+
         if (EMERGENCY_SHORT_NUMBERS.contains(cleanNumber)) {
             return CallAnalysisResult(
                 phoneNumber = incomingNumber,
@@ -94,19 +120,8 @@ object CallDetectorEngine {
 
         val factors = mutableListOf<ThreatFactor>()
         var detectedCountryOrOrigin: String? = null
-
-        if (cleanNumber.isEmpty()) {
-            val emptyScore = if (aggressiveMode) 70 else 30
-            factors.add(
-                ThreatFactor(
-                    category = "Número Oculto o Privado",
-                    description = "La llamada no presenta identificador. Es una táctica habitual en extorsión y vishing.",
-                    severityScore = emptyScore,
-                    matchedSnippet = null
-                )
-            )
-            detectedCountryOrOrigin = "Identificador oculto"
-        }
+        val normalized = PhoneNumberNormalizer.normalize(incomingNumber)
+        val isInternational = normalized.isValid && PhoneNumberNormalizer.isInternational(incomingNumber)
 
         if (networkVerificationFailed) {
             factors.add(
@@ -142,6 +157,50 @@ object CallDetectorEngine {
                     )
                 )
             }
+        }
+
+        if (isInternational && internationalPolicy == SecuritySettingsRepository.InternationalCallPolicy.BLOCK_ALL) {
+            factors.add(
+                ThreatFactor(
+                    category = "Política de llamadas internacionales",
+                    description = "El usuario configuró el bloqueo de todas las llamadas internacionales.",
+                    severityScore = 100,
+                    matchedSnippet = normalized.e164
+                )
+            )
+        }
+
+        val hasInvalidCharacters = cleanNumber.any { !it.isDigit() && it != '+' }
+        val hasMalformedPlus = cleanNumber.count { it == '+' } > 1 || cleanNumber.indexOf('+') > 0
+        if (!normalized.isValid && blockInvalidNumbers && !hasInvalidCharacters && !hasMalformedPlus) {
+            factors.add(
+                ThreatFactor(
+                    category = "Número telefónico inválido",
+                    description = "El identificador no corresponde a una numeración válida según libphonenumber.",
+                    severityScore = 70,
+                    matchedSnippet = incomingNumber
+                )
+            )
+        }
+
+        if (communityConfirmed || communityReports >= 5) {
+            factors.add(
+                ThreatFactor(
+                    category = "Lista negra comunitaria confirmada",
+                    description = "El número tiene reportes independientes suficientes para considerarlo malicioso.",
+                    severityScore = 100,
+                    matchedSnippet = normalized.e164 ?: incomingNumber
+                )
+            )
+        } else if (communityReports > 0) {
+            factors.add(
+                ThreatFactor(
+                    category = "Reportes comunitarios",
+                    description = "El número tiene reportes comunitarios pendientes de confirmación.",
+                    severityScore = min(45, communityReports * 10),
+                    matchedSnippet = normalized.e164 ?: incomingNumber
+                )
+            )
         }
 
         if (PREMIUM_RATE_PATTERNS.any { it.matches(cleanNumber) }) {
@@ -236,7 +295,9 @@ object CallDetectorEngine {
             else -> ThreatLevel.SAFE
         }
 
-        val isBlocked = boundedScore >= effectiveThreshold
+        val isBlocked = boundedScore >= effectiveThreshold &&
+            (internationalPolicy != SecuritySettingsRepository.InternationalCallPolicy.BLOCK_SUSPICIOUS ||
+                !isInternational || boundedScore >= effectiveThreshold)
 
         val action = when {
             isBlocked -> CallAction.BLOCK
@@ -245,7 +306,7 @@ object CallDetectorEngine {
         }
 
         val summaryReason = when (action) {
-            CallAction.BLOCK -> "Llamada maliciosa bloqueada automáticamente ($boundedScore% de riesgo detectado)."
+            CallAction.BLOCK -> "Llamada bloqueada automáticamente por las señales de riesgo analizadas."
             CallAction.WARN -> "Llamada sospechosa: procedencia o numeración con anomalías."
             CallAction.ALLOW -> "Número verificado sin anomalías de riesgo."
         }
@@ -257,7 +318,7 @@ object CallDetectorEngine {
         }
 
         return CallAnalysisResult(
-            phoneNumber = displayPhone,
+            phoneNumber = normalized.e164 ?: displayPhone,
             threatScore = boundedScore,
             level = threatLevel,
             isBlocked = isBlocked,
@@ -265,6 +326,32 @@ object CallDetectorEngine {
             factors = factors,
             countryOrOrigin = detectedCountryOrOrigin,
             summaryReason = summaryReason
+        )
+    }
+
+    private fun resultFor(
+        incomingNumber: String,
+        score: Int,
+        factors: List<ThreatFactor>,
+        countryOrOrigin: String?,
+        threshold: Int,
+        forceBlock: Boolean
+    ): CallAnalysisResult {
+        val boundedScore = min(100, max(0, score))
+        val blocked = forceBlock || boundedScore >= threshold
+        return CallAnalysisResult(
+            phoneNumber = if (incomingNumber.isBlank()) "Número oculto" else incomingNumber,
+            threatScore = boundedScore,
+            level = if (boundedScore >= 60) ThreatLevel.PHISHING else ThreatLevel.SUSPICIOUS,
+            isBlocked = blocked,
+            action = if (blocked) CallAction.BLOCK else CallAction.WARN,
+            factors = factors,
+            countryOrOrigin = countryOrOrigin,
+            summaryReason = if (blocked) {
+                "Llamada bloqueada automáticamente por la política configurada."
+            } else {
+                "Llamada sospechosa pendiente de precaución."
+            }
         )
     }
 }
