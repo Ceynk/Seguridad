@@ -9,6 +9,7 @@ import com.antiphishing.smishguard.domain.detector.SmishDetectorEngine
 import com.antiphishing.smishguard.domain.detector.UrlDecision
 import com.antiphishing.smishguard.domain.detector.UrlThreatAnalyzer
 import com.antiphishing.smishguard.domain.model.AnalysisResult
+import com.antiphishing.smishguard.domain.model.ThreatLevel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,6 +46,14 @@ class ManualAnalyzerViewModel(
 
     private val _safeUrlToOpen = MutableStateFlow<String?>(null)
     val safeUrlToOpen: StateFlow<String?> = _safeUrlToOpen.asStateFlow()
+
+    private val _reportMessage = MutableStateFlow<String?>(null)
+    val reportMessage: StateFlow<String?> = _reportMessage.asStateFlow()
+
+    private var lastReportId: String? = null
+    private var lastTrustedEntries: List<String> = emptyList()
+    private val _canUndoReport = MutableStateFlow(false)
+    val canUndoReport: StateFlow<Boolean> = _canUndoReport.asStateFlow()
 
     val presets = listOf(
         PresetSmishTemplate(
@@ -169,11 +178,65 @@ class ManualAnalyzerViewModel(
         _safeUrlToOpen.value = null
     }
 
+    fun reportClassification(userLevel: ThreatLevel, keepOriginal: Boolean) {
+        val result = _analysisResult.value ?: return
+        val sender = _senderInput.value
+        val body = _bodyInput.value
+        viewModelScope.launch {
+            val report = smsRepository.saveUserReport(
+                assignedLevel = result.level,
+                userLevel = userLevel,
+                sender = sender,
+                body = body,
+                keepOriginal = keepOriginal
+            )
+            lastReportId = report.id
+            _canUndoReport.value = true
+            if (userLevel == ThreatLevel.SAFE) {
+                lastTrustedEntries = buildList {
+                    if (sender.isNotBlank()) {
+                    add(sender)
+                    }
+                    addAll(
+                    result.extractedUrls
+                    .map(UrlThreatAnalyzer::extraerDominioDeEnlace)
+                    .filter(String::isNotBlank)
+                    .distinct()
+                    )
+                }
+                lastTrustedEntries.forEach { smsRepository.addToWhitelist(it) }
+            } else {
+                lastTrustedEntries = emptyList()
+            }
+            _reportMessage.value = "Reporte guardado en el dispositivo."
+        }
+    }
+
+    fun consumeReportMessage() {
+        _reportMessage.value = null
+    }
+
+    fun undoLastReport() {
+        val reportId = lastReportId ?: return
+        viewModelScope.launch {
+            smsRepository.deleteUserReport(reportId)
+            lastTrustedEntries.forEach { smsRepository.removeFromWhitelist(it) }
+            lastReportId = null
+            lastTrustedEntries = emptyList()
+            _canUndoReport.value = false
+            _reportMessage.value = "Reporte deshecho."
+        }
+    }
+
     fun clear() {
         _senderInput.value = ""
         _bodyInput.value = ""
         _analysisResult.value = null
         _blockedDecision.value = null
         _safeUrlToOpen.value = null
+        _reportMessage.value = null
+        _canUndoReport.value = false
+        lastReportId = null
+        lastTrustedEntries = emptyList()
     }
 }

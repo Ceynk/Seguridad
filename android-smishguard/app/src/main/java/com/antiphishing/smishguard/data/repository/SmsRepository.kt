@@ -4,29 +4,42 @@ import com.antiphishing.smishguard.data.local.dao.SmsDao
 import com.antiphishing.smishguard.data.local.dao.CustomRuleDao
 import com.antiphishing.smishguard.data.local.dao.CommunityBlacklistDao
 import com.antiphishing.smishguard.data.local.dao.WhitelistDao
+import com.antiphishing.smishguard.data.local.dao.UserReportDao
 import com.antiphishing.smishguard.data.local.entity.CustomRuleEntity
 import com.antiphishing.smishguard.data.local.entity.CommunityBlacklistEntity
 import com.antiphishing.smishguard.data.local.entity.SmsRecordEntity
 import com.antiphishing.smishguard.data.local.entity.WhitelistEntity
+import com.antiphishing.smishguard.data.local.entity.UserReportEntity
 import com.antiphishing.smishguard.data.security.FieldCipher
 import com.antiphishing.smishguard.domain.model.AnalysisResult
 import com.antiphishing.smishguard.domain.model.SmsMessageData
 import com.antiphishing.smishguard.domain.model.ThreatFactor
 import com.antiphishing.smishguard.domain.model.ThreatLevel
 import com.antiphishing.smishguard.util.SafeRegex
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.Flow
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.security.MessageDigest
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 class SmsRepository(
     private val smsDao: SmsDao,
     private val whitelistDao: WhitelistDao,
     private val customRuleDao: CustomRuleDao,
     private val ruleCache: RuleCache,
-    private val communityBlacklistDao: CommunityBlacklistDao
+    private val communityBlacklistDao: CommunityBlacklistDao,
+    private val userReportDao: UserReportDao
 ) {
+
+    private data class CachedAnalysis(
+        val result: AnalysisResult,
+        val createdAt: Long
+    )
+
+    private val analysisCache = ConcurrentHashMap<String, CachedAnalysis>()
+    private val analysisCacheDurationMs = 5 * 60 * 1000L
 
     fun getAllRecords(): Flow<List<SmsMessageData>> {
         return smsDao.getAllRecords().map { entities ->
@@ -38,6 +51,10 @@ class SmsRepository(
         return smsDao.getQuarantinedRecords().map { entities ->
             entities.map(::convertEntityToDomain)
         }
+    }
+
+    suspend fun getQuarantinedPage(limit: Int, offset: Int): List<SmsMessageData> {
+        return smsDao.getQuarantinedPage(limit, offset).map(::convertEntityToDomain)
     }
 
     fun getTotalAnalyzedCount(): Flow<Int> {
@@ -77,6 +94,47 @@ class SmsRepository(
         ruleCache.invalidateWhitelist()
     }
 
+    fun getUserReports(): Flow<List<UserReportEntity>> {
+        return userReportDao.getAll()
+    }
+
+    suspend fun saveUserReport(
+        assignedLevel: ThreatLevel,
+        userLevel: ThreatLevel,
+        sender: String,
+        body: String,
+        keepOriginal: Boolean
+    ): UserReportEntity {
+        val report = UserReportEntity(
+            id = UUID.randomUUID().toString(),
+            assignedLevel = assignedLevel.name,
+            userLevel = userLevel.name,
+            timestamp = System.currentTimeMillis(),
+            messageHash = identityFor(sender, body),
+            sender = sender.trim(),
+            originalBodyEncrypted = if (keepOriginal) FieldCipher.encrypt(body) else null
+        )
+        userReportDao.insert(report)
+        return report
+    }
+
+    suspend fun deleteUserReport(id: String) {
+        userReportDao.deleteById(id)
+    }
+
+    suspend fun clearUserReports() {
+        userReportDao.deleteAll()
+    }
+
+    suspend fun decryptReportBody(report: UserReportEntity): String? {
+        val encrypted = report.originalBodyEncrypted ?: return null
+        return when (val result = FieldCipher.decrypt(encrypted)) {
+            is FieldCipher.DecryptionResult.Decrypted -> result.value
+            is FieldCipher.DecryptionResult.LegacyPlaintext -> result.value
+            is FieldCipher.DecryptionResult.Unreadable -> null
+        }
+    }
+
     fun getAllCustomRules(): Flow<List<CustomRuleEntity>> {
         return customRuleDao.getAllRules()
     }
@@ -90,7 +148,20 @@ class SmsRepository(
     }
 
     suspend fun getCommunityEntriesByIndicator(): Map<String, CommunityBlacklistEntity> {
-        return communityBlacklistDao.obtenerTodosAhora().associateBy { it.indicador }
+        return ruleCache.getCommunityEntriesByIndicator()
+    }
+
+    fun getCachedAnalysis(messageIdentity: String): AnalysisResult? {
+        val cached = analysisCache[messageIdentity] ?: return null
+        if (System.currentTimeMillis() - cached.createdAt >= analysisCacheDurationMs) {
+            analysisCache.remove(messageIdentity)
+            return null
+        }
+        return cached.result
+    }
+
+    fun cacheAnalysis(messageIdentity: String, analysis: AnalysisResult) {
+        analysisCache[messageIdentity] = CachedAnalysis(analysis, System.currentTimeMillis())
     }
 
     fun getCommunityEntries(): Flow<List<CommunityBlacklistEntity>> {

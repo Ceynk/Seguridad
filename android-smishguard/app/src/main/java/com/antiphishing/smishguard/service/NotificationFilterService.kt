@@ -75,22 +75,22 @@ class NotificationFilterService : NotificationListenerService() {
                 val isWhitelisted = smsRepo.isSenderWhitelisted(title)
                 val customPatterns = smsRepo.getActiveCustomRegexes()
                 val communityEntries = smsRepo.getCommunityEntriesByIndicator()
-
-                val analysis = SmishDetectorEngine.analyze(
-                    sender = title,
-                    body = text,
-                    isWhitelisted = isWhitelisted,
-                    customBlockPatterns = customPatterns,
-                    quarantineThreshold = settingsRepo.quarantineThreshold,
-                    aggressiveMode = settingsRepo.isAggressiveModeEnabled,
-                    communityEntries = communityEntries
-                )
-
                 val identity = SmsRepository.identityFor(
                     sender = title,
                     body = text,
                     timestamp = sbn.postTime
                 )
+
+                val analysis = smsRepo.getCachedAnalysis(identity)
+                    ?: SmishDetectorEngine.analyze(
+                        sender = title,
+                        body = text,
+                        isWhitelisted = isWhitelisted,
+                        customBlockPatterns = customPatterns,
+                        quarantineThreshold = settingsRepo.quarantineThreshold,
+                        aggressiveMode = settingsRepo.isAggressiveModeEnabled,
+                        communityEntries = communityEntries
+                    ).also { smsRepo.cacheAnalysis(identity, it) }
                 val recordId = smsRepo.saveAnalysis(
                     sender = title,
                     rawBody = text,

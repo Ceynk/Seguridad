@@ -18,6 +18,13 @@ interface SmsDao {
     @Query("SELECT * FROM sms_records WHERE isQuarantined = 1 AND wasRestored = 0 ORDER BY timestamp DESC")
     fun getQuarantinedRecords(): Flow<List<SmsRecordEntity>>
 
+    @Query(
+        "SELECT * FROM sms_records " +
+            "WHERE isQuarantined = 1 AND wasRestored = 0 " +
+            "ORDER BY timestamp DESC LIMIT :limit OFFSET :offset"
+    )
+    suspend fun getQuarantinedPage(limit: Int, offset: Int): List<SmsRecordEntity>
+
     @Query("SELECT * FROM sms_records WHERE id = :id")
     suspend fun getRecordById(id: Long): SmsRecordEntity?
 

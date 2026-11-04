@@ -4,8 +4,11 @@ import android.Manifest
 import android.app.role.RoleManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.app.AlertDialog
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,6 +43,12 @@ class MainActivity : ComponentActivity() {
     ) { permissions ->
         val phoneStateGranted = permissions[Manifest.permission.READ_PHONE_STATE] == true
         val receiveSmsGranted = permissions[Manifest.permission.RECEIVE_SMS] == true
+        val deniedPermissions = permissions.filterValues { !it }.keys
+        if (deniedPermissions.isNotEmpty() && deniedPermissions.all {
+                !shouldShowRequestPermissionRationale(it)
+            }) {
+            showPermissionSettingsDialog()
+        }
         if (phoneStateGranted || receiveSmsGranted) {
             requestCallScreeningRole()
         }
@@ -52,8 +61,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        requestRequiredPermissions()
 
         val app = application as SmishGuardApp
         val initialRouting = parseRoutingFromIntent(intent)
@@ -88,6 +95,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        requestRequiredPermissions()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -160,14 +169,8 @@ class MainActivity : ComponentActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
             permissionsToRequest.add(Manifest.permission.RECEIVE_SMS)
         }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(Manifest.permission.READ_SMS)
-        }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
             permissionsToRequest.add(Manifest.permission.READ_PHONE_STATE)
-        }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(Manifest.permission.READ_CALL_LOG)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -176,10 +179,39 @@ class MainActivity : ComponentActivity() {
         }
 
         if (permissionsToRequest.isNotEmpty()) {
-            permissionLauncher.launch(permissionsToRequest.toTypedArray())
+            AlertDialog.Builder(this)
+                .setTitle("Permisos necesarios")
+                .setMessage(
+                    "SmishGuard necesita recibir SMS para analizarlos en el dispositivo. " +
+                        "También puede pedir acceso al estado del teléfono para filtrar llamadas y " +
+                        "notificaciones para avisarte de amenazas. No se lee el historial completo de SMS."
+                )
+                .setPositiveButton("Continuar") { _, _ ->
+                    permissionLauncher.launch(permissionsToRequest.toTypedArray())
+                }
+                .setNegativeButton("Ahora no", null)
+                .show()
         } else {
             requestCallScreeningRole()
         }
+    }
+
+    private fun showPermissionSettingsDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Permiso rechazado")
+            .setMessage(
+                "La protección asociada al permiso rechazado está desactivada. " +
+                    "Puedes activarla en Ajustes cuando quieras."
+            )
+            .setPositiveButton("Abrir Ajustes") { _, _ ->
+                val intent = Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:$packageName")
+                )
+                startActivity(intent)
+            }
+            .setNegativeButton("Continuar", null)
+            .show()
     }
 
     private fun requestCallScreeningRole() {

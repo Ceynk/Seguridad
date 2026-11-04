@@ -24,6 +24,7 @@ class SecuritySettingsRepository(context: Context) {
         private const val KEY_BLOCK_INVALID = "block_invalid_calls"
         private const val KEY_INTERNATIONAL_POLICY = "international_call_policy"
         private const val KEY_COMMUNITY_CURSOR = "community_sync_cursor"
+        private const val KEY_COMMUNITY_SYNC_ENABLED = "community_sync_enabled"
     }
 
     var isProtectionEnabled: Boolean
@@ -68,4 +69,8 @@ class SecuritySettingsRepository(context: Context) {
     var communitySyncCursor: Long
         get() = prefs.getLong(KEY_COMMUNITY_CURSOR, 0L)
         set(value) = prefs.edit().putLong(KEY_COMMUNITY_CURSOR, value).apply()
+
+    var isCommunitySyncEnabled: Boolean
+        get() = prefs.getBoolean(KEY_COMMUNITY_SYNC_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_COMMUNITY_SYNC_ENABLED, value).apply()
 }

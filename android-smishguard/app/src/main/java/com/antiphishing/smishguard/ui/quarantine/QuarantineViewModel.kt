@@ -10,6 +10,7 @@ import com.antiphishing.smishguard.domain.model.ThreatFactor
 import com.antiphishing.smishguard.domain.model.ThreatLevel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -37,9 +38,14 @@ class QuarantineViewModel(
     private val callRepository: CallRepository? = null
 ) : ViewModel() {
 
-    val quarantinedMessages: StateFlow<List<SmsMessageData>> =
-        smsRepository.getQuarantinedRecords()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    private val pageSize = 50
+    private var loadedOffset = 0
+    private val _quarantinedMessages = MutableStateFlow<List<SmsMessageData>>(emptyList())
+    val quarantinedMessages: StateFlow<List<SmsMessageData>> = _quarantinedMessages
+    private val _isLoadingMore = MutableStateFlow(false)
+    val isLoadingMore: StateFlow<Boolean> = _isLoadingMore
+    private val _hasMoreMessages = MutableStateFlow(true)
+    val hasMoreMessages: StateFlow<Boolean> = _hasMoreMessages
 
     val callRecords: StateFlow<List<CallLogUiItem>> =
         (callRepository?.getAllCallRecords()?.map { records ->
@@ -67,16 +73,47 @@ class QuarantineViewModel(
         }?.flowOn(Dispatchers.Default) ?: flowOf(emptyList()))
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    init {
+        loadMoreMessages()
+    }
+
+    fun loadMoreMessages() {
+        if (_isLoadingMore.value) {
+            return
+        }
+        viewModelScope.launch {
+            _isLoadingMore.value = true
+            val page = smsRepository.getQuarantinedPage(pageSize, loadedOffset)
+            if (page.isNotEmpty()) {
+                _quarantinedMessages.value = _quarantinedMessages.value + page
+                loadedOffset += page.size
+            }
+            _hasMoreMessages.value = page.size == pageSize
+            _isLoadingMore.value = false
+        }
+    }
+
     fun restoreMessage(messageId: Long) {
         viewModelScope.launch {
             smsRepository.restoreQuarantinedMessage(messageId)
+            reloadMessages()
         }
     }
 
     fun deleteMessage(messageId: Long) {
         viewModelScope.launch {
             smsRepository.deleteRecord(messageId)
+            reloadMessages()
         }
+    }
+
+    private suspend fun reloadMessages() {
+        loadedOffset = 0
+        _quarantinedMessages.value = emptyList()
+        _hasMoreMessages.value = true
+        val page = smsRepository.getQuarantinedPage(pageSize, loadedOffset)
+        _quarantinedMessages.value = page
+        loadedOffset = page.size
     }
 
     fun deleteCallRecord(callId: Long) {

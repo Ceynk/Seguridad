@@ -6,73 +6,72 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+private val SmishGuardFontFamily = FontFamily.Default
+
 val Typography = Typography(
     headlineMedium = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = SmishGuardFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 24.sp,
         lineHeight = 30.sp,
         letterSpacing = (-0.4).sp
     ),
     headlineSmall = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = SmishGuardFontFamily,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 21.sp,
-        lineHeight = 27.sp,
-        letterSpacing = (-0.3).sp
+        fontSize = 20.sp,
+        lineHeight = 28.sp
     ),
     titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = SmishGuardFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 18.sp,
         lineHeight = 24.sp,
-        letterSpacing = (-0.2).sp
     ),
     titleMedium = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = SmishGuardFontFamily,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 15.sp,
-        lineHeight = 21.sp
+        fontSize = 16.sp,
+        lineHeight = 24.sp
     ),
     titleSmall = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = SmishGuardFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp
     ),
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = SmishGuardFontFamily,
         fontWeight = FontWeight.Normal,
-        fontSize = 15.sp,
+        fontSize = 16.sp,
         lineHeight = 22.sp
     ),
     bodyMedium = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = SmishGuardFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp
     ),
     bodySmall = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = SmishGuardFontFamily,
         fontWeight = FontWeight.Normal,
-        fontSize = 12.5.sp,
+        fontSize = 12.sp,
         lineHeight = 18.sp
     ),
     labelLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = SmishGuardFontFamily,
         fontWeight = FontWeight.Medium,
-        fontSize = 13.5.sp,
-        lineHeight = 18.sp
+        fontSize = 14.sp,
+        lineHeight = 20.sp
     ),
     labelMedium = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = SmishGuardFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.2.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = SmishGuardFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 11.sp,
         lineHeight = 14.sp,

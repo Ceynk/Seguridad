@@ -7,6 +7,7 @@ import com.antiphishing.smishguard.util.SafeRegex
 import com.antiphishing.smishguard.util.SenderKey
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import com.antiphishing.smishguard.data.local.entity.CommunityBlacklistEntity
 
 class RuleCache(
     private val whitelistDao: WhitelistDao,
@@ -18,6 +19,10 @@ class RuleCache(
     @Volatile private var whitelist: List<String>? = null
     @Volatile private var customRegexes: List<Regex>? = null
     @Volatile private var communityIndicators: Set<String>? = null
+    @Volatile private var communityEntries: Map<String, CommunityBlacklistEntity>? = null
+    @Volatile private var communityEntriesAt: Long = 0L
+
+    private val communityCacheDurationMs = 10 * 60 * 1000L
 
     suspend fun isWhitelisted(senderOrNumber: String): Boolean {
         if (senderOrNumber.isBlank()) {
@@ -95,5 +100,27 @@ class RuleCache(
 
     fun invalidateCommunityIndicators() {
         communityIndicators = null
+        communityEntries = null
+        communityEntriesAt = 0L
+    }
+
+    suspend fun getCommunityEntriesByIndicator(): Map<String, CommunityBlacklistEntity> {
+        val now = System.currentTimeMillis()
+        val cached = communityEntries
+        if (cached != null && now - communityEntriesAt < communityCacheDurationMs) {
+            return cached
+        }
+        return mutex.withLock {
+            val current = communityEntries
+            val currentTime = System.currentTimeMillis()
+            if (current != null && currentTime - communityEntriesAt < communityCacheDurationMs) {
+                current
+            } else {
+                val fetched = communityBlacklistDao.obtenerTodosAhora().associateBy { it.indicador }
+                communityEntries = fetched
+                communityEntriesAt = currentTime
+                fetched
+            }
+        }
     }
 }

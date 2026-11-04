@@ -14,7 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.GppBad
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.antiphishing.smishguard.domain.model.ThreatFactor
 import com.antiphishing.smishguard.domain.model.ThreatLevel
+import com.antiphishing.smishguard.ui.theme.SmishGuardSpacing
 import com.antiphishing.smishguard.ui.theme.SmishGuardTheme
 import java.time.Instant
 import java.time.ZoneId
@@ -98,7 +102,7 @@ fun StatusTag(
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(6.dp),
+        shape = MaterialTheme.shapes.small,
         color = bg,
         border = BorderStroke(1.dp, border)
     ) {
@@ -107,8 +111,71 @@ fun StatusTag(
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
             color = fg,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+            modifier = Modifier.padding(
+                horizontal = SmishGuardSpacing.sm,
+                vertical = SmishGuardSpacing.xs
+            )
         )
+    }
+}
+
+@Composable
+fun ThreatStatusBadge(
+    level: ThreatLevel,
+    modifier: Modifier = Modifier
+) {
+    val colors = SmishGuardTheme.colors
+    val (label, icon, tone) = when (level) {
+        ThreatLevel.SAFE -> Triple("LEGÍTIMO", Icons.Outlined.CheckCircle, SemanticTone.SAFE)
+        ThreatLevel.SUSPICIOUS -> Triple("SOSPECHOSO", Icons.Outlined.WarningAmber, SemanticTone.WARNING)
+        ThreatLevel.PHISHING -> Triple("MALICIOSO", Icons.Outlined.GppBad, SemanticTone.DANGER)
+    }
+    val tint = when (tone) {
+        SemanticTone.SAFE -> colors.safe
+        SemanticTone.WARNING -> colors.warning
+        SemanticTone.DANGER -> colors.danger
+        else -> colors.textPrimary
+    }
+    val container = when (tone) {
+        SemanticTone.SAFE -> colors.safeContainer
+        SemanticTone.WARNING -> colors.warningContainer
+        SemanticTone.DANGER -> colors.dangerContainer
+        else -> colors.surfaceSubtle
+    }
+    val border = when (tone) {
+        SemanticTone.SAFE -> colors.safeBorder
+        SemanticTone.WARNING -> colors.warningBorder
+        SemanticTone.DANGER -> colors.dangerBorder
+        else -> colors.border
+    }
+
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.small,
+        color = container,
+        border = BorderStroke(1.dp, border)
+    ) {
+        Row(
+            modifier = Modifier.padding(
+                horizontal = SmishGuardSpacing.sm,
+                vertical = SmishGuardSpacing.xs
+            ),
+            horizontalArrangement = Arrangement.spacedBy(SmishGuardSpacing.xs),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = tint
+            )
+        }
     }
 }
 
@@ -178,7 +245,7 @@ fun SectionPanel(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(10.dp),
+        shape = MaterialTheme.shapes.medium,
         color = containerColor,
         border = BorderStroke(1.dp, borderColor),
         shadowElevation = 0.dp,
@@ -210,8 +277,8 @@ fun MonospaceBlock(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(colors.surfaceSubtle, RoundedCornerShape(6.dp))
-            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .background(colors.surfaceSubtle, MaterialTheme.shapes.small)
+            .padding(horizontal = SmishGuardSpacing.md, vertical = SmishGuardSpacing.sm)
     ) {
         if (!label.isNullOrBlank()) {
             Text(
@@ -219,7 +286,7 @@ fun MonospaceBlock(
                 style = MaterialTheme.typography.labelSmall,
                 color = colors.textMuted
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(SmishGuardSpacing.xs))
         }
         Text(
             text = text,
@@ -246,14 +313,14 @@ fun ThreatFactorRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = SmishGuardSpacing.sm),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top
     ) {
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(end = 12.dp),
+                .padding(end = SmishGuardSpacing.sm),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             Text(
@@ -273,7 +340,7 @@ fun ThreatFactorRow(
                     fontFamily = FontFamily.Monospace,
                     fontSize = 11.5.sp,
                     color = colors.accent,
-                    modifier = Modifier.padding(top = 2.dp)
+                    modifier = Modifier.padding(top = SmishGuardSpacing.xs)
                 )
             }
         }
@@ -296,7 +363,7 @@ fun EmptyStateView(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 28.dp),
+                .padding(horizontal = SmishGuardSpacing.lg, vertical = SmishGuardSpacing.xl),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {

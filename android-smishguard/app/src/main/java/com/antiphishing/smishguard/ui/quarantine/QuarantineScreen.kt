@@ -74,8 +74,10 @@ import com.antiphishing.smishguard.ui.components.SectionPanel
 import com.antiphishing.smishguard.ui.components.SemanticTone
 import com.antiphishing.smishguard.ui.components.StatusTag
 import com.antiphishing.smishguard.ui.components.ThreatFactorRow
-import com.antiphishing.smishguard.ui.components.scoreToSemanticTone
+import com.antiphishing.smishguard.ui.components.ThreatStatusBadge
 import com.antiphishing.smishguard.ui.components.smishGuardTextFieldColors
+import com.antiphishing.smishguard.ui.theme.SmishGuardDimensions
+import com.antiphishing.smishguard.ui.theme.SmishGuardSpacing
 import com.antiphishing.smishguard.ui.theme.SmishGuardTheme
 
 @Composable
@@ -84,6 +86,8 @@ fun QuarantineScreen(
     initialTab: Int = 0
 ) {
     val messages by viewModel.quarantinedMessages.collectAsState()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+    val hasMoreMessages by viewModel.hasMoreMessages.collectAsState()
     val callRecords by viewModel.callRecords.collectAsState()
     val colors = SmishGuardTheme.colors
 
@@ -271,6 +275,16 @@ fun QuarantineScreen(
                             }
                         )
                     }
+                    if (filteredMessages.size == messages.size && hasMoreMessages && !isLoadingMore) {
+                        item {
+                            TextButton(
+                                onClick = viewModel::loadMoreMessages,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Cargar más mensajes")
+                            }
+                        }
+                    }
                 }
             } else {
                 if (filteredCalls.isEmpty()) {
@@ -398,10 +412,11 @@ private fun SegmentOption(
         modifier = modifier
             .background(
                 color = if (selected) colors.surface else androidx.compose.ui.graphics.Color.Transparent,
-                shape = RoundedCornerShape(6.dp)
+                shape = MaterialTheme.shapes.small
             )
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp, horizontal = 10.dp),
+            .heightIn(min = SmishGuardDimensions.minTouchTarget)
+            .padding(horizontal = SmishGuardSpacing.sm),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -431,7 +446,7 @@ private fun QuarantineFilterChip(
                 style = MaterialTheme.typography.labelMedium
             )
         },
-        shape = RoundedCornerShape(6.dp),
+        shape = MaterialTheme.shapes.small,
         border = FilterChipDefaults.filterChipBorder(
             enabled = true,
             selected = selected,
@@ -467,8 +482,8 @@ private fun QuarantinedMessagePanel(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(SmishGuardSpacing.md),
+                verticalArrangement = Arrangement.spacedBy(SmishGuardSpacing.sm)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -494,10 +509,7 @@ private fun QuarantinedMessagePanel(
                     )
                 }
 
-                StatusTag(
-                    text = "Riesgo ${message.threatScore}%",
-                    tone = scoreToSemanticTone(message.threatScore)
-                )
+                ThreatStatusBadge(level = message.threatLevel)
             }
 
             MonospaceBlock(
@@ -517,10 +529,10 @@ private fun QuarantinedMessagePanel(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(
                         onClick = onRestore,
-                        shape = RoundedCornerShape(6.dp),
+                        shape = MaterialTheme.shapes.small,
                         border = BorderStroke(1.dp, colors.border),
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                        modifier = Modifier.heightIn(min = 34.dp),
+                        modifier = Modifier.heightIn(min = SmishGuardDimensions.minTouchTarget),
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = colors.textPrimary
                         )
@@ -536,10 +548,10 @@ private fun QuarantinedMessagePanel(
 
                     OutlinedButton(
                         onClick = onRequestWhitelist,
-                        shape = RoundedCornerShape(6.dp),
+                        shape = MaterialTheme.shapes.small,
                         border = BorderStroke(1.dp, colors.border),
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                        modifier = Modifier.heightIn(min = 34.dp),
+                        modifier = Modifier.heightIn(min = SmishGuardDimensions.minTouchTarget),
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = colors.textSecondary
                         )
@@ -557,7 +569,8 @@ private fun QuarantinedMessagePanel(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TextButton(
                         onClick = { isExpanded = !isExpanded },
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                        contentPadding = PaddingValues(horizontal = SmishGuardSpacing.sm, vertical = 4.dp),
+                        modifier = Modifier.heightIn(min = SmishGuardDimensions.minTouchTarget)
                     ) {
                         Text(
                             text = if (isExpanded) "Ocultar" else "Análisis (${message.threatFactors.size})",
@@ -574,7 +587,7 @@ private fun QuarantinedMessagePanel(
 
                     IconButton(
                         onClick = onDelete,
-                        modifier = Modifier.size(34.dp)
+                        modifier = Modifier.size(SmishGuardDimensions.minTouchTarget)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.DeleteOutline,
@@ -623,8 +636,10 @@ private fun QuarantinedMessagePanel(
                                 }
                             }
                         },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(6.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = SmishGuardDimensions.minTouchTarget),
+                        shape = MaterialTheme.shapes.small,
                         border = BorderStroke(1.dp, colors.border),
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
                     ) {
@@ -663,8 +678,10 @@ private fun QuarantinedMessagePanel(
                             clipboardManager.setText(AnnotatedString(report))
                             reportCopied = true
                         },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(6.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = SmishGuardDimensions.minTouchTarget),
+                        shape = MaterialTheme.shapes.small,
                         border = BorderStroke(1.dp, colors.border),
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
                     ) {

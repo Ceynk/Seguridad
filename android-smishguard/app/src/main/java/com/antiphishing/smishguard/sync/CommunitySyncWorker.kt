@@ -15,6 +15,9 @@ class CommunitySyncWorker(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val application = applicationContext as? SmishGuardApp ?: return@withContext Result.failure()
+        if (!application.settingsRepository.isCommunitySyncEnabled) {
+            return@withContext Result.success()
+        }
         return@withContext try {
             for (pendiente in application.smsRepository.getPendingCommunityEntries()) {
                 val sincronizado = application.communityApiClient.enviar(

@@ -1,10 +1,12 @@
 package com.antiphishing.smishguard.ui.dashboard
 
 import android.Manifest
+import android.app.Activity
 import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -68,6 +70,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -164,8 +167,18 @@ fun DashboardScreen(
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) {
+    ) { permissions ->
         coverage = checkSystemCoverage(context)
+        val deniedPermissions = permissions.filterValues { !it }.keys
+        if (deniedPermissions.isNotEmpty() && context is Activity && deniedPermissions.all {
+                !ActivityCompat.shouldShowRequestPermissionRationale(context, it)
+            }) {
+            val settingsIntent = Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:${context.packageName}")
+            )
+            context.startActivity(settingsIntent)
+        }
     }
 
     val roleLauncher = rememberLauncherForActivityResult(
@@ -223,7 +236,7 @@ fun DashboardScreen(
                     onToggle = viewModel::toggleProtection,
                     onRequestSmsPermission = {
                         permissionLauncher.launch(
-                            arrayOf(Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS)
+                            arrayOf(Manifest.permission.RECEIVE_SMS)
                         )
                     },
                     onRequestCallProtection = {
@@ -237,8 +250,7 @@ fun DashboardScreen(
                         } else {
                             permissionLauncher.launch(
                                 arrayOf(
-                                    Manifest.permission.READ_PHONE_STATE,
-                                    Manifest.permission.READ_CALL_LOG
+                                    Manifest.permission.READ_PHONE_STATE
                                 )
                             )
                         }

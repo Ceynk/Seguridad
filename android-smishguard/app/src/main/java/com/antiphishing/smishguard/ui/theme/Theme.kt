@@ -14,6 +14,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
@@ -63,12 +64,28 @@ private val DarkColorScheme = darkColorScheme(
     onErrorContainer = DarkDanger
 )
 
+val SmishGuardCornerRadius = 8.dp
+
+object SmishGuardSpacing {
+    val xs = 4.dp
+    val sm = 8.dp
+    val md = 16.dp
+    val lg = 24.dp
+    val xl = 32.dp
+}
+
+object SmishGuardDimensions {
+    val minTouchTarget: Dp = 48.dp
+}
+
+private val SmishGuardShape = RoundedCornerShape(SmishGuardCornerRadius)
+
 val SmishGuardShapes = Shapes(
-    extraSmall = RoundedCornerShape(4.dp),
-    small = RoundedCornerShape(6.dp),
-    medium = RoundedCornerShape(10.dp),
-    large = RoundedCornerShape(12.dp),
-    extraLarge = RoundedCornerShape(14.dp)
+    extraSmall = SmishGuardShape,
+    small = SmishGuardShape,
+    medium = SmishGuardShape,
+    large = SmishGuardShape,
+    extraLarge = SmishGuardShape
 )
 
 val LocalSmishGuardColors = staticCompositionLocalOf { LightSmishGuardColors }

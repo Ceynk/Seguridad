@@ -25,11 +25,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.ContentPaste
-import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.GppMaybe
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
@@ -42,6 +39,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -56,7 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.antiphishing.smishguard.domain.model.AnalysisResult
@@ -67,11 +65,11 @@ import com.antiphishing.smishguard.ui.components.ResponsiveContentBox
 import com.antiphishing.smishguard.ui.components.ScreenHeader
 import com.antiphishing.smishguard.ui.components.SectionLabel
 import com.antiphishing.smishguard.ui.components.SectionPanel
-import com.antiphishing.smishguard.ui.components.SemanticTone
-import com.antiphishing.smishguard.ui.components.StatusTag
 import com.antiphishing.smishguard.ui.components.ThreatFactorRow
+import com.antiphishing.smishguard.ui.components.ThreatStatusBadge
 import com.antiphishing.smishguard.ui.components.smishGuardTextFieldColors
-import com.antiphishing.smishguard.ui.components.toSemanticTone
+import com.antiphishing.smishguard.ui.theme.SmishGuardDimensions
+import com.antiphishing.smishguard.ui.theme.SmishGuardSpacing
 import com.antiphishing.smishguard.ui.theme.SmishGuardTheme
 
 @Composable
@@ -84,11 +82,29 @@ fun ManualAnalyzerScreen(
     val analysisResult by viewModel.analysisResult.collectAsState()
     val blockedDecision by viewModel.blockedDecision.collectAsState()
     val safeUrlToOpen by viewModel.safeUrlToOpen.collectAsState()
+    val reportMessage by viewModel.reportMessage.collectAsState()
+    val canUndoReport by viewModel.canUndoReport.collectAsState()
 
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val focusManager = LocalFocusManager.current
     val colors = SmishGuardTheme.colors
+
+    LaunchedEffect(reportMessage) {
+        if (reportMessage != null) {
+            Toast.makeText(context, reportMessage, Toast.LENGTH_SHORT).show()
+            viewModel.consumeReportMessage()
+        }
+    }
+
+    if (canUndoReport) {
+        TextButton(
+            onClick = viewModel::undoLastReport,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            Text("Deshacer último reporte")
+        }
+    }
 
     val currentBlocked = blockedDecision
     if (currentBlocked != null) {
@@ -309,7 +325,8 @@ fun ManualAnalyzerScreen(
                 item {
                     AnalysisResultPanel(
                         result = currentResult,
-                        onOpenUrl = viewModel::attemptOpenUrl
+                        onOpenUrl = viewModel::attemptOpenUrl,
+                        onReport = viewModel::reportClassification
                     )
                 }
             }
@@ -320,27 +337,19 @@ fun ManualAnalyzerScreen(
 @Composable
 private fun AnalysisResultPanel(
     result: AnalysisResult,
-    onOpenUrl: (String) -> Unit
+    onOpenUrl: (String) -> Unit,
+    onReport: (ThreatLevel, Boolean) -> Unit
 ) {
     val colors = SmishGuardTheme.colors
     val clipboardManager = LocalClipboardManager.current
     var copied by remember(result) { mutableStateOf(false) }
+    var showFullUrls by remember(result) { mutableStateOf(false) }
+    var keepOriginalForExport by remember(result) { mutableStateOf(false) }
 
-    val tone = result.level.toSemanticTone()
-    val levelColor = when (result.level) {
-        ThreatLevel.PHISHING -> colors.danger
-        ThreatLevel.SUSPICIOUS -> colors.warning
-        ThreatLevel.SAFE -> colors.safe
-    }
     val panelBorder = when (result.level) {
         ThreatLevel.PHISHING -> colors.dangerBorder
         ThreatLevel.SUSPICIOUS -> colors.warningBorder
         ThreatLevel.SAFE -> colors.safeBorder
-    }
-    val statusIcon = when (result.level) {
-        ThreatLevel.PHISHING -> Icons.Outlined.ErrorOutline
-        ThreatLevel.SUSPICIOUS -> Icons.Outlined.GppMaybe
-        ThreatLevel.SAFE -> Icons.Outlined.CheckCircle
     }
     val categoryLabel = when (result.categoriaMensaje) {
         "SMISHING" -> "Clasificación: Smishing"
@@ -352,60 +361,83 @@ private fun AnalysisResultPanel(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(SmishGuardSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(SmishGuardSpacing.md)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
                 Row(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(end = 8.dp),
+                        .padding(end = SmishGuardSpacing.sm),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(SmishGuardSpacing.sm)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(
-                                color = when (result.level) {
-                                    ThreatLevel.PHISHING -> colors.dangerContainer
-                                    ThreatLevel.SUSPICIOUS -> colors.warningContainer
-                                    ThreatLevel.SAFE -> colors.safeContainer
-                                },
-                                shape = RoundedCornerShape(8.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = statusIcon,
-                            contentDescription = null,
-                            tint = levelColor,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
                     Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
                         Text(
-                            text = result.level.label,
+                            text = "Resultado del análisis",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = levelColor
+                            color = colors.textPrimary
                         )
+
+                        PanelDivider()
+                        SectionLabel(text = "Corregir clasificación")
+                        Text(
+                            text = "El reporte se guarda solo en este dispositivo.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.textSecondary
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = { onReport(ThreatLevel.SAFE, keepOriginalForExport) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Era legítimo")
+                            }
+                            OutlinedButton(
+                                onClick = { onReport(ThreatLevel.SUSPICIOUS, keepOriginalForExport) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Era sospechoso")
+                            }
+                            OutlinedButton(
+                                onClick = { onReport(ThreatLevel.PHISHING, keepOriginalForExport) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Era malicioso")
+                            }
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = keepOriginalForExport,
+                                onCheckedChange = { keepOriginalForExport = it }
+                            )
+                            Text(
+                                text = "Conservar el texto cifrado para una exportación posterior",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.textSecondary
+                            )
+                        }
                         Text(
                             text = categoryLabel,
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.textMuted
                         )
+                        Text(
+                            text = "Riesgo: ${result.threatScore}/100",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = colors.textSecondary
+                        )
                     }
                 }
-
-                StatusTag(
-                    text = "${result.threatScore} / 100",
-                    tone = tone
-                )
+                ThreatStatusBadge(level = result.level)
             }
 
             Text(
@@ -416,7 +448,7 @@ private fun AnalysisResultPanel(
 
             if (result.homoglyphsDetected.isNotEmpty()) {
                 Surface(
-                    shape = RoundedCornerShape(6.dp),
+                    shape = MaterialTheme.shapes.small,
                     color = colors.warningContainer,
                     border = BorderStroke(1.dp, colors.warningBorder),
                     modifier = Modifier.fillMaxWidth()
@@ -450,8 +482,11 @@ private fun AnalysisResultPanel(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(colors.surfaceSubtle, RoundedCornerShape(6.dp))
-                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                                .background(colors.surfaceSubtle, MaterialTheme.shapes.small)
+                                .padding(
+                                    horizontal = SmishGuardSpacing.sm,
+                                    vertical = SmishGuardSpacing.sm
+                                ),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -462,13 +497,15 @@ private fun AnalysisResultPanel(
                                 color = colors.textPrimary,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(end = 8.dp)
+                                    .padding(end = SmishGuardSpacing.sm),
+                                maxLines = if (showFullUrls) Int.MAX_VALUE else 2,
+                                overflow = TextOverflow.Ellipsis
                             )
 
                             val isPhishing = result.level == ThreatLevel.PHISHING
                             OutlinedButton(
                                 onClick = { onOpenUrl(url) },
-                                shape = RoundedCornerShape(6.dp),
+                                shape = MaterialTheme.shapes.small,
                                 border = BorderStroke(
                                     1.dp,
                                     if (isPhishing) colors.dangerBorder else colors.border
@@ -478,7 +515,7 @@ private fun AnalysisResultPanel(
                                     contentColor = if (isPhishing) colors.danger else colors.textPrimary
                                 ),
                                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                modifier = Modifier.heightIn(min = 32.dp)
+                                modifier = Modifier.heightIn(min = SmishGuardDimensions.minTouchTarget)
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
@@ -489,6 +526,22 @@ private fun AnalysisResultPanel(
                                 Text(
                                     text = if (isPhishing) "Verificar bloqueo" else "Abrir",
                                     style = MaterialTheme.typography.labelMedium
+                                )
+                            }
+                        }
+                        if (url.length > 48) {
+                            TextButton(
+                                onClick = { showFullUrls = !showFullUrls },
+                                contentPadding = PaddingValues(
+                                    horizontal = SmishGuardSpacing.sm,
+                                    vertical = 0.dp
+                                ),
+                                modifier = Modifier.heightIn(min = SmishGuardDimensions.minTouchTarget)
+                            ) {
+                                Text(
+                                    text = if (showFullUrls) "Ocultar enlace completo" else "Ver enlace completo",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = colors.accent
                                 )
                             }
                         }
@@ -527,8 +580,8 @@ private fun AnalysisResultPanel(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 40.dp),
-                shape = RoundedCornerShape(8.dp),
+                    .heightIn(min = SmishGuardDimensions.minTouchTarget),
+                shape = MaterialTheme.shapes.small,
                 border = BorderStroke(1.dp, colors.border),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = if (copied) colors.safe else colors.textPrimary

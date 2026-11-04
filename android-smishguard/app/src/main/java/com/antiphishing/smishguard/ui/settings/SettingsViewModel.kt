@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.antiphishing.smishguard.data.local.entity.CustomRuleEntity
 import com.antiphishing.smishguard.data.local.entity.WhitelistEntity
+import com.antiphishing.smishguard.data.local.entity.UserReportEntity
 import com.antiphishing.smishguard.data.repository.CallRepository
 import com.antiphishing.smishguard.data.repository.CommunityApiClient
 import com.antiphishing.smishguard.data.repository.CommunityIndicatorNormalizer
@@ -44,6 +45,9 @@ class SettingsViewModel(
     val internationalCallPolicy: StateFlow<SecuritySettingsRepository.InternationalCallPolicy> =
         _internationalCallPolicy.asStateFlow()
 
+    private val _communitySyncEnabled = MutableStateFlow(settingsRepository.isCommunitySyncEnabled)
+    val communitySyncEnabled: StateFlow<Boolean> = _communitySyncEnabled.asStateFlow()
+
     val whitelist: StateFlow<List<WhitelistEntity>> = smsRepository.getAllWhitelist()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -51,6 +55,9 @@ class SettingsViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val communityEntries = smsRepository.getCommunityEntries()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val userReports: StateFlow<List<UserReportEntity>> = smsRepository.getUserReports()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun setQuarantineThreshold(value: Int) {
@@ -81,6 +88,11 @@ class SettingsViewModel(
     fun setInternationalCallPolicy(policy: SecuritySettingsRepository.InternationalCallPolicy) {
         settingsRepository.internationalCallPolicy = policy
         _internationalCallPolicy.value = policy
+    }
+
+    fun setCommunitySyncEnabled(enabled: Boolean) {
+        settingsRepository.isCommunitySyncEnabled = enabled
+        _communitySyncEnabled.value = enabled
     }
 
     fun addWhitelistEntry(sender: String, name: String?) {
@@ -136,6 +148,43 @@ class SettingsViewModel(
         viewModelScope.launch {
             smsRepository.clearAllQuarantined()
         }
+    }
+
+    fun deleteUserReport(id: String) {
+        viewModelScope.launch {
+            smsRepository.deleteUserReport(id)
+        }
+    }
+
+    fun exportUserReports(includeOriginal: Boolean, onResult: (String) -> Unit) {
+        viewModelScope.launch {
+            val reports = userReports.value
+            val builder = StringBuilder()
+            builder.append("id,nivel_asignado,nivel_usuario,fecha,huella_mensaje,texto_original\n")
+            for (report in reports) {
+                val original = if (includeOriginal) {
+                    smsRepository.decryptReportBody(report).orEmpty()
+                } else {
+                    ""
+                }
+                builder.append(
+                    listOf(
+                        report.id,
+                        report.assignedLevel,
+                        report.userLevel,
+                        report.timestamp.toString(),
+                        report.messageHash,
+                        original
+                    ).joinToString(",") { csvValue(it) }
+                )
+                builder.append('\n')
+            }
+            onResult(builder.toString())
+        }
+    }
+
+    private fun csvValue(value: String): String {
+        return "\"${value.replace("\"", "\"\"")}\""
     }
 
     fun debeConfirmarReporte(): Boolean {

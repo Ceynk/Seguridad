@@ -84,7 +84,10 @@ class CommunityApiClient(
 
     private fun abrir(ruta: String): HttpURLConnection {
         val base = urlBase.trimEnd('/')
-        return URL("$base$ruta").openConnection() as HttpURLConnection
+        return (URL("$base$ruta").openConnection() as HttpURLConnection).apply {
+            connectTimeout = 5_000
+            readTimeout = 8_000
+        }
     }
 
     private fun leerEntrada(texto: String): CommunityBlacklistEntity? {

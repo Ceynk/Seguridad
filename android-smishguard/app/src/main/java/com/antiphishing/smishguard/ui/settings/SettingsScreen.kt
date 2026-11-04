@@ -1,5 +1,8 @@
 package com.antiphishing.smishguard.ui.settings
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,7 +24,10 @@ import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.VerifiedUser
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +38,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,6 +46,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,6 +61,8 @@ import com.antiphishing.smishguard.ui.components.SectionPanel
 import com.antiphishing.smishguard.ui.components.SemanticTone
 import com.antiphishing.smishguard.ui.components.StatusTag
 import com.antiphishing.smishguard.ui.components.smishGuardSwitchColors
+import com.antiphishing.smishguard.ui.theme.SmishGuardDimensions
+import com.antiphishing.smishguard.ui.theme.SmishGuardSpacing
 import com.antiphishing.smishguard.ui.theme.SmishGuardTheme
 import com.antiphishing.smishguard.data.repository.SecuritySettingsRepository
 import kotlin.math.roundToInt
@@ -69,13 +80,31 @@ fun SettingsScreen(
     val blockPrivateCalls by viewModel.blockPrivateCalls.collectAsState()
     val blockInvalidCalls by viewModel.blockInvalidCalls.collectAsState()
     val internationalPolicy by viewModel.internationalCallPolicy.collectAsState()
+    val communitySyncEnabled by viewModel.communitySyncEnabled.collectAsState()
     val whitelist by viewModel.whitelist.collectAsState()
     val customRules by viewModel.customRules.collectAsState()
     val communityEntries by viewModel.communityEntries.collectAsState()
+    val userReports by viewModel.userReports.collectAsState()
 
     val colors = SmishGuardTheme.colors
+    val context = LocalContext.current
     var sliderValue by remember(threshold) { mutableFloatStateOf(threshold.toFloat()) }
     var clearDialogType by remember { mutableStateOf<String?>(null) }
+    var showPrivacyDialog by remember { mutableStateOf(false) }
+    var showOriginalExportDialog by remember { mutableStateOf(false) }
+    var exportContent by remember { mutableStateOf<String?>(null) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri ->
+        val content = exportContent
+        if (uri != null && content != null) {
+            context.contentResolver.openOutputStream(uri)?.use {
+                it.write(content.toByteArray(Charsets.UTF_8))
+            }
+            Toast.makeText(context, "Reportes exportados.", Toast.LENGTH_SHORT).show()
+        }
+        exportContent = null
+    }
 
     val displayThreshold = sliderValue.roundToInt()
     val sensitivityProfile = when {
@@ -94,7 +123,7 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
             contentPadding = PaddingValues(top = 20.dp, bottom = 28.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(SmishGuardSpacing.md)
         ) {
             item {
                 ScreenHeader(
@@ -104,13 +133,13 @@ fun SettingsScreen(
             }
 
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(SmishGuardSpacing.sm)) {
                     SectionLabel(text = "Motor de detección")
                     SectionPanel {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                                .padding(horizontal = SmishGuardSpacing.md, vertical = SmishGuardSpacing.sm),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Row(
@@ -212,12 +241,22 @@ fun SettingsScreen(
                                 viewModel.setInternationalCallPolicy(next)
                             }
                         )
+
+                        PanelDivider()
+
+                        SettingToggleItem(
+                            title = "Sincronización comunitaria",
+                            subtitle = "Comparte solo indicadores normalizados cuando la activas.",
+                            checked = communitySyncEnabled,
+                            onCheckedChange = viewModel::setCommunitySyncEnabled
+                        )
                     }
+
                 }
             }
 
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(SmishGuardSpacing.sm)) {
                     SectionLabel(text = "Listas y reglas")
                     SectionPanel {
                         NavigationSettingItem(
@@ -252,7 +291,7 @@ fun SettingsScreen(
             }
 
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(SmishGuardSpacing.sm)) {
                     SectionLabel(text = "Datos locales")
                     SectionPanel {
                         MaintenanceActionItem(
@@ -274,6 +313,93 @@ fun SettingsScreen(
                         )
                     }
                 }
+            }
+
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(SmishGuardSpacing.sm)) {
+                    SectionLabel(text = "Reportes enviados")
+                    SectionPanel {
+                        if (userReports.isEmpty()) {
+                            Text(
+                                text = "Todavía no has enviado reportes.",
+                                modifier = Modifier.padding(SmishGuardSpacing.md),
+                                color = colors.textSecondary
+                            )
+                        } else {
+                            userReports.forEachIndexed { index, report ->
+                                if (index > 0) {
+                                    PanelDivider()
+                                }
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(SmishGuardSpacing.md),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(SmishGuardSpacing.sm)
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "${report.assignedLevel} → ${report.userLevel}",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            color = colors.textPrimary
+                                        )
+                                        Text(
+                                            text = "Huella: ${report.messageHash.take(12)}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = colors.textSecondary
+                                        )
+                                    }
+                                    Icon(
+                                        imageVector = Icons.Outlined.Delete,
+                                        contentDescription = "Borrar reporte",
+                                        tint = colors.danger,
+                                        modifier = Modifier
+                                            .size(SmishGuardDimensions.minTouchTarget)
+                                            .clickable {
+                                                viewModel.deleteUserReport(report.id)
+                                            }
+                                    )
+                                }
+                            }
+                        }
+
+                        PanelDivider()
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(SmishGuardSpacing.md),
+                            horizontalArrangement = Arrangement.spacedBy(SmishGuardSpacing.sm)
+                        ) {
+                            OutlinedButton(
+                                onClick = { showOriginalExportDialog = true },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(Icons.Outlined.FileDownload, null)
+                                Spacer(Modifier.width(6.dp))
+                                Text("Exportar CSV")
+                            }
+                            TextButton(
+                                onClick = {
+                                    userReports.forEach { viewModel.deleteUserReport(it.id) }
+                                },
+                                enabled = userReports.isNotEmpty(),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Borrar todo")
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                NavigationSettingItem(
+                    icon = Icons.Outlined.PrivacyTip,
+                    title = "Privacidad y datos",
+                    subtitle = "Qué se procesa, dónde se guarda y cuánto tiempo",
+                    countText = null,
+                    onClick = { showPrivacyDialog = true }
+                )
             }
 
             item {
@@ -337,7 +463,8 @@ fun SettingsScreen(
                         containerColor = colors.danger,
                         contentColor = Color.White
                     ),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.heightIn(min = SmishGuardDimensions.minTouchTarget)
                 ) {
                     Text("Eliminar")
                 }
@@ -348,7 +475,68 @@ fun SettingsScreen(
                 }
             },
             containerColor = colors.surface,
-            shape = RoundedCornerShape(12.dp)
+            shape = MaterialTheme.shapes.medium
+        )
+    }
+
+    if (showPrivacyDialog) {
+        AlertDialog(
+            onDismissRequest = { showPrivacyDialog = false },
+            title = { Text("Privacidad y datos") },
+            text = {
+                Text(
+                    "El texto de los SMS se analiza en este dispositivo. " +
+                        "Los registros se guardan en el almacenamiento privado de la app. " +
+                        "Los mensajes en cuarentena se conservan hasta que los borres o hasta " +
+                        "la purga configurada; los demás registros se purgan automáticamente " +
+                        "después de 30 días. La sincronización comunitaria está desactivada " +
+                        "hasta que la actives y no envía el texto completo del SMS."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showPrivacyDialog = false }) {
+                    Text("Cerrar")
+                }
+
+                if (showOriginalExportDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showOriginalExportDialog = false },
+                        title = { Text("Exportar reportes") },
+                        text = {
+                            Text(
+                                "Puedes exportar las huellas sin texto. El texto original solo se incluirá " +
+                                    "si lo conservaste con consentimiento al crear el reporte."
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showOriginalExportDialog = false
+                                    viewModel.exportUserReports(false) {
+                                        exportContent = it
+                                        exportLauncher.launch("smishguard-reportes.csv")
+                                    }
+                                }
+                            ) {
+                                Text("Solo huellas")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = {
+                                    showOriginalExportDialog = false
+                                    viewModel.exportUserReports(true) {
+                                        exportContent = it
+                                        exportLauncher.launch("smishguard-reportes-con-texto.csv")
+                                    }
+                                }
+                            ) {
+                                Text("Incluir texto")
+                            }
+                        }
+                    )
+                }
+            }
         )
     }
 }
@@ -365,15 +553,15 @@ private fun SettingToggleItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = SmishGuardSpacing.md, vertical = SmishGuardSpacing.sm),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(end = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+                .padding(end = SmishGuardSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(SmishGuardSpacing.xs)
         ) {
             Text(
                 text = title,
@@ -407,9 +595,9 @@ private fun NavigationSettingItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = SmishGuardSpacing.md, vertical = SmishGuardSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(SmishGuardSpacing.sm)
     ) {
         Icon(
             imageVector = icon,
@@ -419,7 +607,7 @@ private fun NavigationSettingItem(
         )
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+            verticalArrangement = Arrangement.spacedBy(SmishGuardSpacing.xs)
         ) {
             Text(
                 text = title,
@@ -440,7 +628,7 @@ private fun NavigationSettingItem(
             imageVector = Icons.Outlined.ChevronRight,
             contentDescription = null,
             tint = colors.textMuted,
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(SmishGuardDimensions.minTouchTarget)
         )
     }
 }
@@ -458,9 +646,9 @@ private fun MaintenanceActionItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = SmishGuardSpacing.md, vertical = SmishGuardSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(SmishGuardSpacing.sm)
     ) {
         Icon(
             imageVector = icon,
@@ -470,7 +658,7 @@ private fun MaintenanceActionItem(
         )
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+            verticalArrangement = Arrangement.spacedBy(SmishGuardSpacing.xs)
         ) {
             Text(
                 text = title,
@@ -487,7 +675,7 @@ private fun MaintenanceActionItem(
             imageVector = Icons.Outlined.ChevronRight,
             contentDescription = null,
             tint = colors.textMuted,
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(SmishGuardDimensions.minTouchTarget)
         )
     }
 }

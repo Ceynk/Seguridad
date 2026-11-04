@@ -57,11 +57,13 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
 
         receiverScope.launch {
             try {
+                val identity = SmsRepository.identityFor(sender, fullBody, firstMessage.timestampMillis)
+                val cachedAnalysis = smsRepo.getCachedAnalysis(identity)
                 val isWhitelisted = smsRepo.isSenderWhitelisted(sender)
                 val customPatterns = smsRepo.getActiveCustomRegexes()
                 val communityEntries = smsRepo.getCommunityEntriesByIndicator()
 
-                val analysis = SmishDetectorEngine.analyze(
+                val analysis = cachedAnalysis ?: SmishDetectorEngine.analyze(
                     sender = sender,
                     body = fullBody,
                     isWhitelisted = isWhitelisted,
@@ -69,9 +71,8 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
                     quarantineThreshold = settingsRepo.quarantineThreshold,
                     aggressiveMode = settingsRepo.isAggressiveModeEnabled,
                     communityEntries = communityEntries
-                )
+                ).also { smsRepo.cacheAnalysis(identity, it) }
 
-                val identity = SmsRepository.identityFor(sender, fullBody, firstMessage.timestampMillis)
                 val recordId = smsRepo.saveAnalysis(
                     sender = sender,
                     rawBody = fullBody,
