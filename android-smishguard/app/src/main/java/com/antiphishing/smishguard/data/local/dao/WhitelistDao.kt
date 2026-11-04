@@ -1,7 +1,6 @@
 package com.antiphishing.smishguard.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -22,9 +21,6 @@ interface WhitelistDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWhitelist(entry: WhitelistEntity)
-
-    @Delete
-    suspend fun deleteWhitelist(entry: WhitelistEntity)
 
     @Query("DELETE FROM whitelist_entries WHERE senderOrNumber = :sender")
     suspend fun deleteBySender(sender: String)

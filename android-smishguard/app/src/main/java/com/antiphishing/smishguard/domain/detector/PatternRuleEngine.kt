@@ -147,10 +147,6 @@ object PatternRuleEngine {
         """(?i)\b(?:(?<!no\s)(?<!nunca\s)(?<!jam[aá]s\s)(?:reenv[ií][eé]|respond[ae]|entregu[eé]|env[ií][eé]|digite|ingrese)\b.*\b(?:clave|c[oó]digo|otp|token|pin|credenciales)|(?:\+?57\s*)?3\d{9}|whatsapp)\b"""
     )
 
-    fun evaluatePatterns(text: String): List<ThreatFactor> {
-        return evaluarPatrones(text)
-    }
-
     fun evaluarPatrones(texto: String): List<ThreatFactor> {
         val factores = ArrayList<ThreatFactor>()
         for (regla in REGLAS_DE_ATAQUE) {
@@ -169,10 +165,6 @@ object PatternRuleEngine {
         return factores
     }
 
-    fun isLegitimateOtpNotification(text: String, hasMaliciousUrls: Boolean): Boolean {
-        return esNotificacionOtpLegitima(text, hasMaliciousUrls)
-    }
-
     fun esNotificacionOtpLegitima(texto: String, tieneEnlacesMaliciosos: Boolean): Boolean {
         if (tieneEnlacesMaliciosos) {
             return false
@@ -180,10 +172,6 @@ object PatternRuleEngine {
         val tieneInfoOtp = PATRON_INFORMATIVO_OTP.matcher(texto).find()
         val tieneAvisoDefensivo = tieneAdvertenciaDefensiva(texto)
         return tieneInfoOtp || tieneAvisoDefensivo
-    }
-
-    fun hasDefensiveSecurityWarning(text: String): Boolean {
-        return tieneAdvertenciaDefensiva(text)
     }
 
     fun tieneAdvertenciaDefensiva(texto: String): Boolean {

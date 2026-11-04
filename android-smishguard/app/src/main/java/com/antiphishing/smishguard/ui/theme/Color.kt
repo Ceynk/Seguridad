@@ -3,7 +3,6 @@ package com.antiphishing.smishguard.ui.theme
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
-// Light palette
 val LightBackground = Color(0xFFF6F7F9)
 val LightSurface = Color(0xFFFFFFFF)
 val LightSurfaceSubtle = Color(0xFFEEF1F5)
@@ -30,7 +29,6 @@ val LightDanger = Color(0xFFB91C1C)
 val LightDangerContainer = Color(0xFFFEE2E2)
 val LightDangerBorder = Color(0xFFFECACA)
 
-// Dark palette
 val DarkBackground = Color(0xFF0D1117)
 val DarkSurface = Color(0xFF151B23)
 val DarkSurfaceSubtle = Color(0xFF1C2430)

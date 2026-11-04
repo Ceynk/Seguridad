@@ -157,10 +157,6 @@ object UrlThreatAnalyzer {
         mapa
     }
 
-    fun extractUrls(text: String): List<String> {
-        return detectarEnlaces(text)
-    }
-
     fun detectarEnlaces(texto: String): List<String> {
         val enlaces = LinkedHashSet<String>()
 

@@ -5,7 +5,4 @@ enum class ThreatLevel(val label: String, val colorHex: Long) {
     SUSPICIOUS("Sospechoso", 0xFFFFD600),
     PHISHING("Amenaza de Smishing", 0xFFFF1744);
 
-    fun isDangerous(): Boolean {
-        return this == PHISHING || this == SUSPICIOUS
-    }
 }

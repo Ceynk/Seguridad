@@ -201,11 +201,6 @@ object ClasificadorMensajesSms {
         return mapaTerminos.isNotEmpty()
     }
 
-    fun obtenerUmbralSmishing(): Double {
-        cargarModeloSiEsNecesario()
-        return umbralSmishing
-    }
-
     @Synchronized
     private fun cargarModeloSiEsNecesario() {
         if (modeloCargado) {

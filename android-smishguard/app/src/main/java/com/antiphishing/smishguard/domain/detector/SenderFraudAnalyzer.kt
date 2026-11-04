@@ -30,22 +30,6 @@ object SenderFraudAnalyzer {
     private val PATRON_CODIGO_CORTO = Regex("""^[0-9]{4,6}$""")
     private val PATRON_ESPACIOS = Regex("""\s+""")
 
-    fun analyzeSender(
-        sender: String,
-        hasMaliciousUrl: Boolean,
-        hasOfficialUrlOnly: Boolean,
-        mentionsFinancialEntityInBody: Boolean,
-        isLegitimateOtpOrDefensive: Boolean
-    ): List<ThreatFactor> {
-        return analizarRemitente(
-            remitente = sender,
-            tieneEnlaceMalicioso = hasMaliciousUrl,
-            soloEnlacesOficiales = hasOfficialUrlOnly,
-            mencionaEntidadEnTexto = mentionsFinancialEntityInBody,
-            esOtpLegitimoODefensivo = isLegitimateOtpOrDefensive
-        )
-    }
-
     fun analizarRemitente(
         remitente: String,
         tieneEnlaceMalicioso: Boolean,
@@ -139,10 +123,6 @@ object SenderFraudAnalyzer {
         }
 
         return factores
-    }
-
-    fun isCertifiedShortcode(sender: String): Boolean {
-        return esCodigoCortoCertificado(sender)
     }
 
     fun esCodigoCortoCertificado(remitente: String): Boolean {
