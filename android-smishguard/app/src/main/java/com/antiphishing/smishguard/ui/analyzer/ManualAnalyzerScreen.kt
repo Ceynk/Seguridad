@@ -25,8 +25,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.ContentPaste
+import androidx.compose.material.icons.outlined.GppBad
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
@@ -335,6 +337,41 @@ fun ManualAnalyzerScreen(
 }
 
 @Composable
+private fun ClassificationReportButton(
+    text: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentColor: androidx.compose.ui.graphics.Color,
+    containerColor: androidx.compose.ui.graphics.Color,
+    borderColor: androidx.compose.ui.graphics.Color,
+    onClick: () -> Unit
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = SmishGuardDimensions.minTouchTarget),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, borderColor),
+        contentPadding = PaddingValues(horizontal = SmishGuardSpacing.md, vertical = 10.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = containerColor,
+            contentColor = contentColor
+        )
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(SmishGuardSpacing.sm))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge
+        )
+    }
+}
+
+@Composable
 private fun AnalysisResultPanel(
     result: AnalysisResult,
     onOpenUrl: (String) -> Unit,
@@ -389,28 +426,34 @@ private fun AnalysisResultPanel(
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.textSecondary
                         )
-                        Row(
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalArrangement = Arrangement.spacedBy(SmishGuardSpacing.sm)
                         ) {
-                            OutlinedButton(
-                                onClick = { onReport(ThreatLevel.SAFE, keepOriginalForExport) },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Era legítimo")
-                            }
-                            OutlinedButton(
-                                onClick = { onReport(ThreatLevel.SUSPICIOUS, keepOriginalForExport) },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Era sospechoso")
-                            }
-                            OutlinedButton(
-                                onClick = { onReport(ThreatLevel.PHISHING, keepOriginalForExport) },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Era malicioso")
-                            }
+                            ClassificationReportButton(
+                                text = "Era legítimo",
+                                icon = Icons.Outlined.CheckCircle,
+                                contentColor = colors.safe,
+                                containerColor = colors.safeContainer,
+                                borderColor = colors.safeBorder,
+                                onClick = { onReport(ThreatLevel.SAFE, keepOriginalForExport) }
+                            )
+                            ClassificationReportButton(
+                                text = "Era sospechoso",
+                                icon = Icons.Outlined.WarningAmber,
+                                contentColor = colors.warning,
+                                containerColor = colors.warningContainer,
+                                borderColor = colors.warningBorder,
+                                onClick = { onReport(ThreatLevel.SUSPICIOUS, keepOriginalForExport) }
+                            )
+                            ClassificationReportButton(
+                                text = "Era malicioso",
+                                icon = Icons.Outlined.GppBad,
+                                contentColor = colors.danger,
+                                containerColor = colors.dangerContainer,
+                                borderColor = colors.dangerBorder,
+                                onClick = { onReport(ThreatLevel.PHISHING, keepOriginalForExport) }
+                            )
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -425,6 +468,7 @@ private fun AnalysisResultPanel(
                                 color = colors.textSecondary
                             )
                         }
+
                         Text(
                             text = categoryLabel,
                             style = MaterialTheme.typography.bodySmall,
@@ -437,6 +481,7 @@ private fun AnalysisResultPanel(
                         )
                     }
                 }
+
                 ThreatStatusBadge(level = result.level)
             }
 
