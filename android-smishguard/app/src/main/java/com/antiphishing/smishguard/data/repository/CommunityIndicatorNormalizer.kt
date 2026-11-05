@@ -11,11 +11,11 @@ data class CommunityIndicator(
 object CommunityIndicatorNormalizer {
 
     private val numeroRegex = Regex("""\+?\d[\d\s().-]{6,}\d""")
+    private val urlsRegex = Regex("""(?i)(?:https?://|www\.)[^\s<>'"]+|(?:[a-z0-9-]+\.)+[a-z]{2,}(?:/[^\s<>'"]*)?""")
 
     fun obtener(texto: String): List<CommunityIndicator> {
         val resultado = LinkedHashMap<String, CommunityIndicator>()
-        val urls = Regex("""(?i)(?:https?://|www\.)[^\s<>'"]+|(?:[a-z0-9-]+\.)+[a-z]{2,}(?:/[^\s<>'"]*)?""")
-            .findAll(texto)
+        val urls = urlsRegex.findAll(texto)
 
         for (coincidencia in urls) {
             val indicador = normalizarUrl(coincidencia.value)

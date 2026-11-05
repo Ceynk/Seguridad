@@ -48,6 +48,7 @@ object HomographDetector {
     private val PUNYCODE_PATTERN = Pattern.compile("(?i)xn--[a-z0-9]+")
 
     private val ARTIFICIAL_SPACING_REGEX = Regex("""(?i)\b([a-z0-9])\s+([a-z0-9])\s+([a-z0-9])\s+([a-z0-9])(?:\s+([a-z0-9]))*\b""")
+    private val WHITESPACE_REGEX = Regex("""\s+""")
 
     private val LEET_REPLACEMENTS = listOf(
         Regex("""(?i)\bb4nc0\b""") to "banco",
@@ -114,10 +115,9 @@ object HomographDetector {
             detected.add("Ofuscación alfanumérica (Leetspeak) detectada en palabras sensibles")
         }
 
-        val whitespaceRegex = "\\s+".toRegex()
         for (matchResult in ARTIFICIAL_SPACING_REGEX.findAll(text)) {
             val match = matchResult.value
-            val collapsed = match.replace(whitespaceRegex, "")
+            val collapsed = match.replace(WHITESPACE_REGEX, "")
             if (isSensitiveKeyword(collapsed.lowercase())) {
                 detected.add("Espaciado artificial detectado para eludir filtros ($match)")
                 break
@@ -137,9 +137,8 @@ object HomographDetector {
         }
         var processed = cleanText
 
-        val whitespaceRegex = "\\s+".toRegex()
         processed = ARTIFICIAL_SPACING_REGEX.replace(processed) { matchResult ->
-            val candidate = matchResult.value.replace(whitespaceRegex, "")
+            val candidate = matchResult.value.replace(WHITESPACE_REGEX, "")
             if (isSensitiveKeyword(candidate.lowercase())) {
                 candidate
             } else {

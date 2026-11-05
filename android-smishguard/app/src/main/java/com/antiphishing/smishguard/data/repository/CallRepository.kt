@@ -77,9 +77,10 @@ class CallRepository(
     companion object {
         private const val DUPLICATE_WINDOW_MILLIS = 30_000L
         private val recentCallIdentities = ConcurrentHashMap<String, Long>()
+        private val PHONE_FORMATTING_CHARS = Regex("[\\s\\-().]")
 
         private fun identityFor(number: String): String {
-            return number.trim().replace(Regex("[\\s\\-().]"), "").ifBlank { "hidden" }
+            return number.trim().replace(PHONE_FORMATTING_CHARS, "").ifBlank { "hidden" }
         }
     }
 
