@@ -1,12 +1,12 @@
 package com.antiphishing.smishguard.ui.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FindInPage
-import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material.icons.outlined.FindInPage
-import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.AdminPanelSettings
+import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -19,7 +19,7 @@ sealed class Screen(
 ) {
     data object Dashboard : Screen(
         route = "dashboard",
-        title = "Inicio",
+        title = "Estado",
         selectedIcon = Icons.Filled.Shield,
         unselectedIcon = Icons.Outlined.Shield
     )
@@ -27,20 +27,20 @@ sealed class Screen(
     data object Quarantine : Screen(
         route = "quarantine",
         title = "Cuarentena",
-        selectedIcon = Icons.Filled.Inventory2,
-        unselectedIcon = Icons.Outlined.Inventory2
+        selectedIcon = Icons.Filled.AdminPanelSettings,
+        unselectedIcon = Icons.Outlined.AdminPanelSettings
     )
 
     data object ManualAnalyzer : Screen(
         route = "analyzer",
-        title = "Analizador",
-        selectedIcon = Icons.Filled.FindInPage,
-        unselectedIcon = Icons.Outlined.FindInPage
+        title = "Inspector",
+        selectedIcon = Icons.Filled.Policy,
+        unselectedIcon = Icons.Outlined.Policy
     )
 
     data object Settings : Screen(
         route = "settings",
-        title = "Ajustes",
+        title = "Sistema",
         selectedIcon = Icons.Filled.Tune,
         unselectedIcon = Icons.Outlined.Tune
     )

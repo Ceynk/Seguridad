@@ -25,8 +25,15 @@ object CommunityIndicatorNormalizer {
         }
 
         for (coincidencia in numeroRegex.findAll(texto)) {
-            val numero = coincidencia.value.filter { it.isDigit() }
-            if (numero.length >= 8) {
+            val limpio = coincidencia.value.trim()
+            val digitos = limpio.filter { it.isDigit() }
+            if (digitos.length >= 8) {
+                val numero = when {
+                    digitos.length == 10 && (digitos.startsWith("3") || digitos.startsWith("6")) -> "+57$digitos"
+                    digitos.length == 12 && digitos.startsWith("57") -> "+$digitos"
+                    limpio.startsWith("+") -> "+$digitos"
+                    else -> digitos
+                }
                 resultado[numero] = CommunityIndicator(numero, "numero")
             }
         }

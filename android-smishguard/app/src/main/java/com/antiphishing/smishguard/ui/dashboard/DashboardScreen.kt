@@ -13,6 +13,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,25 +34,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.PhoneCallback
+import androidx.compose.material.icons.outlined.AdminPanelSettings
 import androidx.compose.material.icons.outlined.CallEnd
 import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.FindInPage
-import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.MarkEmailUnread
 import androidx.compose.material.icons.outlined.NotificationsActive
+import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Sms
 import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -63,14 +65,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.app.NotificationManagerCompat
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -79,11 +85,12 @@ import com.antiphishing.smishguard.domain.model.SmsMessageData
 import com.antiphishing.smishguard.ui.components.DateTimeFormats
 import com.antiphishing.smishguard.ui.components.EmptyStateView
 import com.antiphishing.smishguard.ui.components.PanelDivider
+import com.antiphishing.smishguard.ui.components.PanelHeaderBand
 import com.antiphishing.smishguard.ui.components.ResponsiveContentBox
-import com.antiphishing.smishguard.ui.components.ScreenHeader
 import com.antiphishing.smishguard.ui.components.SectionLabel
 import com.antiphishing.smishguard.ui.components.SectionPanel
 import com.antiphishing.smishguard.ui.components.SemanticTone
+import com.antiphishing.smishguard.ui.components.SeverityBars
 import com.antiphishing.smishguard.ui.components.StatusTag
 import com.antiphishing.smishguard.ui.components.scoreToSemanticTone
 import com.antiphishing.smishguard.ui.components.smishGuardSwitchColors
@@ -202,34 +209,19 @@ fun DashboardScreen(
         buildList {
             recentQuarantined.take(4).forEach { add(RecentIncidentItem.SmsIncident(it)) }
             recentFlaggedCalls.take(4).forEach { add(RecentIncidentItem.CallIncident(it)) }
-        }.sortedByDescending { it.timestamp }.take(4)
+        }.sortedByDescending { it.timestamp }.take(5)
     }
 
     val totalThreatsDetected = phishingCount + blockedCallsCount
 
     ResponsiveContentBox {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(top = 20.dp, bottom = 24.dp),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                ScreenHeader(
-                    title = "SmishGuard",
-                    subtitle = "Protección local contra smishing y llamadas fraudulentas",
-                    trailing = {
-                        StatusTag(
-                            text = if (uiState.isProtectionActive) "Activo" else "Pausado",
-                            tone = if (uiState.isProtectionActive) SemanticTone.SAFE else SemanticTone.WARNING
-                        )
-                    }
-                )
-            }
-
-            item {
-                ProtectionControlPanel(
+                OperationalPostureConsole(
                     isActive = uiState.isProtectionActive,
                     isSilentDismissEnabled = uiState.isSilentDismissEnabled,
                     coverage = coverage,
@@ -249,9 +241,7 @@ fun DashboardScreen(
                             }
                         } else {
                             permissionLauncher.launch(
-                                arrayOf(
-                                    Manifest.permission.READ_PHONE_STATE
-                                )
+                                arrayOf(Manifest.permission.READ_PHONE_STATE)
                             )
                         }
                     },
@@ -266,119 +256,98 @@ fun DashboardScreen(
             }
 
             item {
-                TelemetryStrip(
-                    totalScanned = totalScanned,
-                    threatsDetected = totalThreatsDetected,
-                    quarantinedCount = quarantinedCount,
-                    blockedCallsCount = blockedCallsCount,
-                    onQuarantineClick = { onNavigateToQuarantine(0) },
-                    onCallsClick = { onNavigateToQuarantine(1) }
-                )
-            }
-
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Button(
-                        onClick = onNavigateToAnalyzer,
-                        modifier = Modifier
-                            .weight(1f)
-                            .heightIn(min = 46.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colors.accent,
-                            contentColor = colors.onAccent
-                        ),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.FindInPage,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Analizar texto",
-                            style = MaterialTheme.typography.labelLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
-                    OutlinedButton(
-                        onClick = { onNavigateToQuarantine(0) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .heightIn(min = 46.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        border = BorderStroke(1.dp, colors.border),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = colors.surface,
-                            contentColor = colors.textPrimary
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Inventory2,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = if (quarantinedCount > 0) colors.warning else colors.textSecondary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = if (quarantinedCount > 0) "Cuarentena ($quarantinedCount)" else "Cuarentena",
-                            style = MaterialTheme.typography.labelLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-            }
-
-            item {
-                SectionLabel(
-                    text = "Actividad reciente",
-                    trailing = if (recentIncidents.isNotEmpty()) {
-                        {
-                            Text(
-                                text = "Ver registro",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = colors.accent,
-                                modifier = Modifier.clickable { onNavigateToQuarantine(0) }
-                            )
-                        }
-                    } else null
-                )
-            }
-
-            if (recentIncidents.isEmpty()) {
-                item {
-                    EmptyStateView(
-                        icon = Icons.Outlined.VerifiedUser,
-                        title = "Sin incidentes registrados",
-                        subtitle = "No hay mensajes en cuarentena ni llamadas maliciosas recientes."
+                    SectionLabel(text = "Telemetría y aislamiento")
+                    TelemetryMatrix(
+                        totalScanned = totalScanned,
+                        threatsDetected = totalThreatsDetected,
+                        phishingSmsCount = phishingCount,
+                        quarantinedCount = quarantinedCount,
+                        blockedCallsCount = blockedCallsCount,
+                        onQuarantineClick = { onNavigateToQuarantine(0) },
+                        onCallsClick = { onNavigateToQuarantine(1) }
                     )
                 }
-            } else {
-                item {
-                    SectionPanel {
-                        recentIncidents.forEachIndexed { index, incident ->
-                            if (index > 0) {
-                                PanelDivider()
-                            }
-                            when (incident) {
-                                is RecentIncidentItem.SmsIncident -> {
-                                    RecentSmsIncidentRow(
-                                        threat = incident.data,
-                                        onClick = { onNavigateToQuarantine(0) }
+            }
+
+            item {
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    QuickInspectorLaunchStrip(onClick = onNavigateToAnalyzer)
+                }
+            }
+
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    SectionLabel(
+                        text = "Últimas intercepciones",
+                        trailing = if (recentIncidents.isNotEmpty()) {
+                            {
+                                Row(
+                                    modifier = Modifier.clickable { onNavigateToQuarantine(0) },
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = "Ver cuarentena",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = colors.accent
+                                    )
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                                        contentDescription = null,
+                                        tint = colors.accent,
+                                        modifier = Modifier.size(13.dp)
                                     )
                                 }
-                                is RecentIncidentItem.CallIncident -> {
-                                    RecentCallIncidentRow(
-                                        call = incident.data,
-                                        onClick = { onNavigateToQuarantine(1) }
+                            }
+                        } else null
+                    )
+
+                    if (recentIncidents.isEmpty()) {
+                        EmptyStateView(
+                            icon = Icons.Outlined.VerifiedUser,
+                            title = "Sin incidentes recientes",
+                            subtitle = "Tráfico de SMS y llamadas libre de amenazas activas."
+                        )
+                    } else {
+                        SectionPanel {
+                            PanelHeaderBand(
+                                title = "Canal · Origen",
+                                trailing = {
+                                    Text(
+                                        text = "RIESGO",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = colors.textMuted
                                     )
+                                }
+                            )
+                            recentIncidents.forEachIndexed { index, incident ->
+                                if (index > 0) {
+                                    PanelDivider()
+                                }
+                                when (incident) {
+                                    is RecentIncidentItem.SmsIncident -> {
+                                        RecentSmsIncidentRow(
+                                            threat = incident.data,
+                                            onClick = { onNavigateToQuarantine(0) }
+                                        )
+                                    }
+                                    is RecentIncidentItem.CallIncident -> {
+                                        RecentCallIncidentRow(
+                                            call = incident.data,
+                                            onClick = { onNavigateToQuarantine(1) }
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -390,7 +359,7 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun ProtectionControlPanel(
+private fun OperationalPostureConsole(
     isActive: Boolean,
     isSilentDismissEnabled: Boolean,
     coverage: SystemCoverageStatus,
@@ -400,16 +369,477 @@ private fun ProtectionControlPanel(
     onOpenNotificationAccess: () -> Unit
 ) {
     val colors = SmishGuardTheme.colors
-    val borderColor = when {
-        !isActive -> colors.dangerBorder
-        else -> colors.border
+    val notifReady = !isSilentDismissEnabled || coverage.notifListenerEnabled
+    val allChannelsReady = coverage.smsGranted && coverage.callReady && notifReady
+
+    val topStripeColor = when {
+        !isActive -> colors.danger
+        !allChannelsReady -> colors.warning
+        else -> colors.safe
     }
 
-    SectionPanel(borderColor = borderColor) {
-        Row(
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colors.surface)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(3.dp)
+                .background(topStripeColor)
+        )
+
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .background(
+                                color = if (isActive) colors.safeContainer else colors.dangerContainer,
+                                shape = RoundedCornerShape(6.dp)
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = if (isActive) colors.safeBorder else colors.dangerBorder,
+                                shape = RoundedCornerShape(6.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (isActive) Icons.Outlined.Shield else Icons.Outlined.WarningAmber,
+                            contentDescription = null,
+                            tint = if (isActive) colors.safe else colors.danger,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+
+                    Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "SmishGuard",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = colors.textPrimary
+                            )
+                            StatusTag(
+                                text = "LOCAL",
+                                tone = SemanticTone.NEUTRAL
+                            )
+                        }
+                        Text(
+                            text = if (!isActive) {
+                                "Inspección automática desactivada"
+                            } else if (allChannelsReady) {
+                                "Escudo activo en todos los canales"
+                            } else {
+                                "Escudo activo · Requiere permisos de canal"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (!isActive) colors.danger else colors.textSecondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    StatusTag(
+                        text = if (isActive) "ACTIVO" else "PAUSADO",
+                        tone = if (isActive) SemanticTone.SAFE else SemanticTone.DANGER,
+                        showDot = true
+                    )
+                    Switch(
+                        checked = isActive,
+                        onCheckedChange = onToggle,
+                        colors = smishGuardSwitchColors()
+                    )
+                }
+            }
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(6.dp),
+                color = colors.surfaceRecessed,
+                border = BorderStroke(1.dp, colors.border)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                ) {
+                    ChannelStatusCell(
+                        icon = Icons.Outlined.Sms,
+                        label = "Canal SMS",
+                        isActive = isActive && coverage.smsGranted,
+                        actionText = if (!isActive) "Pausado" else if (coverage.smsGranted) "Operativo" else "Conceder",
+                        needsAction = isActive && !coverage.smsGranted,
+                        onClick = if (isActive && !coverage.smsGranted) onRequestSmsPermission else null,
+                        modifier = Modifier.weight(1f)
+                    )
+                    VerticalDivider(
+                        modifier = Modifier.fillMaxHeight(),
+                        thickness = 1.dp,
+                        color = colors.divider
+                    )
+                    ChannelStatusCell(
+                        icon = Icons.AutoMirrored.Outlined.PhoneCallback,
+                        label = "Llamadas",
+                        isActive = isActive && coverage.callReady,
+                        actionText = if (!isActive) "Pausado" else if (coverage.callReady) "Operativo" else "Activar",
+                        needsAction = isActive && !coverage.callReady,
+                        onClick = if (isActive && !coverage.callReady) onRequestCallProtection else null,
+                        modifier = Modifier.weight(1f)
+                    )
+                    VerticalDivider(
+                        modifier = Modifier.fillMaxHeight(),
+                        thickness = 1.dp,
+                        color = colors.divider
+                    )
+                    ChannelStatusCell(
+                        icon = Icons.Outlined.NotificationsActive,
+                        label = "Avisos",
+                        isActive = isActive && notifReady,
+                        actionText = when {
+                            !isActive -> "Pausado"
+                            !isSilentDismissEnabled -> "Opcional"
+                            coverage.notifListenerEnabled -> "Operativo"
+                            else -> "Configurar"
+                        },
+                        needsAction = isActive && !notifReady,
+                        onClick = if (isActive && !notifReady) onOpenNotificationAccess else null,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+
+        HorizontalDivider(thickness = 1.dp, color = colors.border)
+    }
+}
+
+@Composable
+private fun ChannelStatusCell(
+    icon: ImageVector,
+    label: String,
+    isActive: Boolean,
+    actionText: String,
+    needsAction: Boolean,
+    onClick: (() -> Unit)?,
+    modifier: Modifier = Modifier
+) {
+    val colors = SmishGuardTheme.colors
+    val dotColor = when {
+        isActive -> colors.safe
+        needsAction -> colors.warning
+        else -> colors.textMuted
+    }
+    val statusColor = when {
+        needsAction -> colors.accent
+        isActive -> colors.safe
+        else -> colors.textMuted
+    }
+
+    Column(
+        modifier = modifier
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 10.dp, vertical = 9.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (needsAction) colors.warning else colors.textSecondary,
+                    modifier = Modifier.size(14.dp)
+                )
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .background(dotColor, CircleShape)
+            )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            Text(
+                text = actionText,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = if (needsAction) FontWeight.Bold else FontWeight.SemiBold,
+                color = statusColor,
+                maxLines = 1
+            )
+            if (needsAction) {
+                Icon(
+                    imageVector = Icons.Outlined.ChevronRight,
+                    contentDescription = null,
+                    tint = colors.accent,
+                    modifier = Modifier.size(12.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TelemetryMatrix(
+    totalScanned: Int,
+    threatsDetected: Int,
+    phishingSmsCount: Int,
+    quarantinedCount: Int,
+    blockedCallsCount: Int,
+    onQuarantineClick: () -> Unit,
+    onCallsClick: () -> Unit
+) {
+    val colors = SmishGuardTheme.colors
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        SectionPanel {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
+                    Text(
+                        text = "TRÁFICO INSPECCIONADO",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.textMuted
+                    )
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = totalScanned.toString(),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            color = colors.textPrimary
+                        )
+                        Text(
+                            text = "eventos",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.textSecondary
+                        )
+                    }
+                }
+
+                VerticalDivider(
+                    modifier = Modifier.fillMaxHeight(),
+                    thickness = 1.dp,
+                    color = colors.divider
+                )
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "AMENAZAS DETECTADAS",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = colors.textMuted
+                        )
+                        SeverityBars(
+                            activeBars = when {
+                                threatsDetected >= 5 -> 3
+                                threatsDetected >= 1 -> 2
+                                else -> 1
+                            },
+                            activeColor = if (threatsDetected > 0) colors.danger else colors.safe
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = threatsDetected.toString(),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            color = if (threatsDetected > 0) colors.danger else colors.textPrimary
+                        )
+                        Text(
+                            text = "$phishingSmsCount SMS · $blockedCallsCount voz",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.textSecondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            InteractiveTelemetryTile(
+                icon = Icons.Outlined.AdminPanelSettings,
+                label = "SMS EN CUARENTENA",
+                value = quarantinedCount.toString(),
+                actionLabel = "Abrir bóveda",
+                accentColor = if (quarantinedCount > 0) colors.warning else colors.safe,
+                onClick = onQuarantineClick,
+                modifier = Modifier.weight(1f)
+            )
+
+            InteractiveTelemetryTile(
+                icon = Icons.Outlined.CallEnd,
+                label = "LLAMADAS BLOQUEADAS",
+                value = blockedCallsCount.toString(),
+                actionLabel = "Ver registro",
+                accentColor = if (blockedCallsCount > 0) colors.danger else colors.safe,
+                onClick = onCallsClick,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun InteractiveTelemetryTile(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    actionLabel: String,
+    accentColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = SmishGuardTheme.colors
+    Surface(
+        modifier = modifier.clickable(onClick = onClick),
+        shape = MaterialTheme.shapes.medium,
+        color = colors.surface,
+        border = BorderStroke(1.dp, colors.border)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.textMuted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.textPrimary
+                )
+            }
+            PanelDivider()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(colors.surfaceSubtle)
+                    .padding(horizontal = 12.dp, vertical = 7.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = actionLabel,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = colors.accent
+                )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                    contentDescription = null,
+                    tint = colors.accent,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickInspectorLaunchStrip(
+    onClick: () -> Unit
+) {
+    val colors = SmishGuardTheme.colors
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = MaterialTheme.shapes.medium,
+        color = colors.surface,
+        border = BorderStroke(1.dp, colors.borderStrong)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -422,243 +852,50 @@ private fun ProtectionControlPanel(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            color = if (isActive) colors.safeContainer else colors.dangerContainer,
-                            shape = RoundedCornerShape(8.dp)
-                        ),
+                        .size(36.dp)
+                        .background(colors.accentContainer, RoundedCornerShape(6.dp))
+                        .border(1.dp, colors.accent.copy(alpha = 0.3f), RoundedCornerShape(6.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = if (isActive) Icons.Outlined.Shield else Icons.Outlined.WarningAmber,
+                        imageVector = Icons.Outlined.Policy,
                         contentDescription = null,
-                        tint = if (isActive) colors.safe else colors.danger,
-                        modifier = Modifier.size(22.dp)
+                        tint = colors.accent,
+                        modifier = Modifier.size(19.dp)
                     )
                 }
-
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
                     Text(
-                        text = if (isActive) "Escudo en tiempo real" else "Protección en pausa",
-                        style = MaterialTheme.typography.titleMedium,
+                        text = "Inspección manual de SMS o enlace",
+                        style = MaterialTheme.typography.titleSmall,
                         color = colors.textPrimary
                     )
                     Text(
-                        text = if (isActive) {
-                            "Inspección automática en el dispositivo"
-                        } else {
-                            "El filtrado automático de SMS y llamadas está desactivado"
-                        },
+                        text = "Evalúa remitentes, texto o direcciones URL antes de abrirlos",
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (isActive) colors.textSecondary else colors.danger
+                        color = colors.textSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
 
-            Switch(
-                checked = isActive,
-                onCheckedChange = onToggle,
-                colors = smishGuardSwitchColors()
-            )
-        }
-
-        if (isActive) {
-            val missingSms = !coverage.smsGranted
-            val missingCalls = !coverage.callReady
-            val missingNotif = isSilentDismissEnabled && !coverage.notifListenerEnabled
-
-            PanelDivider()
-
-            if (!missingSms && !missingCalls && !missingNotif) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(7.dp)
-                            .background(colors.safe, CircleShape)
-                    )
-                    Text(
-                        text = "Canales activos: SMS · Llamadas · Notificaciones",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colors.textSecondary
-                    )
-                }
-            } else {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    if (missingSms) {
-                        CoverageActionRow(
-                            icon = Icons.Outlined.Sms,
-                            title = "Permiso de lectura de SMS pendiente",
-                            actionLabel = "Conceder",
-                            onClick = onRequestSmsPermission
-                        )
-                    }
-                    if (missingCalls) {
-                        if (missingSms) PanelDivider()
-                        CoverageActionRow(
-                            icon = Icons.AutoMirrored.Outlined.PhoneCallback,
-                            title = "Identificador de llamadas fraudulentas inactivo",
-                            actionLabel = "Activar",
-                            onClick = onRequestCallProtection
-                        )
-                    }
-                    if (missingNotif) {
-                        if (missingSms || missingCalls) PanelDivider()
-                        CoverageActionRow(
-                            icon = Icons.Outlined.NotificationsActive,
-                            title = "Filtro silencioso de notificaciones sin acceso",
-                            actionLabel = "Configurar",
-                            onClick = onOpenNotificationAccess
-                        )
-                    }
-                }
+            Button(
+                onClick = onClick,
+                shape = RoundedCornerShape(6.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colors.accent,
+                    contentColor = colors.onAccent
+                ),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                modifier = Modifier.heightIn(min = 38.dp)
+            ) {
+                Text(
+                    text = "Analizar",
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
-        }
-    }
-}
-
-@Composable
-private fun CoverageActionRow(
-    icon: ImageVector,
-    title: String,
-    actionLabel: String,
-    onClick: () -> Unit
-) {
-    val colors = SmishGuardTheme.colors
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = colors.warning,
-                modifier = Modifier.size(18.dp)
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.textSecondary
-            )
-        }
-        TextButton(
-            onClick = onClick,
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
-        ) {
-            Text(
-                text = actionLabel,
-                style = MaterialTheme.typography.labelMedium,
-                color = colors.accent
-            )
-        }
-    }
-}
-
-@Composable
-private fun TelemetryStrip(
-    totalScanned: Int,
-    threatsDetected: Int,
-    quarantinedCount: Int,
-    blockedCallsCount: Int,
-    onQuarantineClick: () -> Unit,
-    onCallsClick: () -> Unit
-) {
-    val colors = SmishGuardTheme.colors
-    SectionPanel {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-        ) {
-            TelemetryCell(
-                label = "Analizados",
-                value = totalScanned.toString(),
-                valueColor = colors.textPrimary,
-                modifier = Modifier.weight(1f)
-            )
-            VerticalDivider(
-                modifier = Modifier.fillMaxHeight(),
-                thickness = 1.dp,
-                color = colors.border
-            )
-            TelemetryCell(
-                label = "Amenazas",
-                value = threatsDetected.toString(),
-                valueColor = if (threatsDetected > 0) colors.danger else colors.textPrimary,
-                subtitle = if (blockedCallsCount > 0) "$blockedCallsCount llamada(s)" else null,
-                onClick = if (blockedCallsCount > 0) onCallsClick else null,
-                modifier = Modifier.weight(1f)
-            )
-            VerticalDivider(
-                modifier = Modifier.fillMaxHeight(),
-                thickness = 1.dp,
-                color = colors.border
-            )
-            TelemetryCell(
-                label = "Cuarentena",
-                value = quarantinedCount.toString(),
-                valueColor = if (quarantinedCount > 0) colors.warning else colors.textPrimary,
-                onClick = onQuarantineClick,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
-
-@Composable
-private fun TelemetryCell(
-    label: String,
-    value: String,
-    valueColor: androidx.compose.ui.graphics.Color,
-    modifier: Modifier = Modifier,
-    subtitle: String? = null,
-    onClick: (() -> Unit)? = null
-) {
-    val colors = SmishGuardTheme.colors
-    val clickableMod = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
-    Column(
-        modifier = modifier
-            .then(clickableMod)
-            .padding(horizontal = 12.dp, vertical = 14.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = colors.textMuted,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = valueColor
-        )
-        if (!subtitle.isNullOrBlank()) {
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.labelSmall,
-                color = colors.textSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }
@@ -669,66 +906,96 @@ private fun RecentSmsIncidentRow(
     onClick: () -> Unit
 ) {
     val colors = SmishGuardTheme.colors
+    val tone = scoreToSemanticTone(threat.threatScore)
+    val edgeColor = when (tone) {
+        SemanticTone.DANGER -> colors.danger
+        SemanticTone.WARNING -> colors.warning
+        else -> colors.safe
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+            .height(IntrinsicSize.Min)
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = Icons.Outlined.MarkEmailUnread,
-            contentDescription = null,
-            tint = colors.danger,
-            modifier = Modifier.size(20.dp)
+        Box(
+            modifier = Modifier
+                .width(3.dp)
+                .fillMaxHeight()
+                .background(edgeColor)
         )
 
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 12.dp, vertical = 11.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier
+                    .background(colors.surfaceRecessed, RoundedCornerShape(4.dp))
+                    .border(1.dp, colors.border, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 6.dp, vertical = 3.dp)
             ) {
                 Text(
-                    text = threat.sender,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colors.textPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = DateTimeFormats.formatShort(threat.timestamp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.textMuted
+                    text = "SMS",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontFamily = FontFamily.Monospace,
+                    color = colors.textSecondary
                 )
             }
-            Text(
-                text = threat.body,
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.textSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = threat.sender,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.SemiBold,
+                        color = colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = DateTimeFormats.formatShort(threat.timestamp),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 11.sp,
+                        color = colors.textMuted
+                    )
+                }
+                Text(
+                    text = threat.body,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            StatusTag(
+                text = "${threat.threatScore}%",
+                tone = tone
+            )
+
+            Icon(
+                imageVector = Icons.Outlined.ChevronRight,
+                contentDescription = null,
+                tint = colors.textMuted,
+                modifier = Modifier.size(16.dp)
             )
         }
-
-        StatusTag(
-            text = "${threat.threatScore}%",
-            tone = scoreToSemanticTone(threat.threatScore)
-        )
-
-        Icon(
-            imageVector = Icons.Outlined.ChevronRight,
-            contentDescription = null,
-            tint = colors.textMuted,
-            modifier = Modifier.size(18.dp)
-        )
     }
 }
 
@@ -739,67 +1006,91 @@ private fun RecentCallIncidentRow(
 ) {
     val colors = SmishGuardTheme.colors
     val tone = if (call.isBlocked) SemanticTone.DANGER else SemanticTone.WARNING
+    val edgeColor = if (call.isBlocked) colors.danger else colors.warning
     val displayNumber = call.phoneNumber.ifBlank { "Número oculto" }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+            .height(IntrinsicSize.Min)
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = Icons.Outlined.CallEnd,
-            contentDescription = null,
-            tint = if (call.isBlocked) colors.danger else colors.warning,
-            modifier = Modifier.size(20.dp)
+        Box(
+            modifier = Modifier
+                .width(3.dp)
+                .fillMaxHeight()
+                .background(edgeColor)
         )
 
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 12.dp, vertical = 11.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier
+                    .background(colors.surfaceRecessed, RoundedCornerShape(4.dp))
+                    .border(1.dp, colors.border, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 6.dp, vertical = 3.dp)
             ) {
                 Text(
-                    text = displayNumber,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colors.textPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = DateTimeFormats.formatShort(call.timestamp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.textMuted
+                    text = "VOZ",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontFamily = FontFamily.Monospace,
+                    color = colors.textSecondary
                 )
             }
-            Text(
-                text = call.summaryReason,
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.textSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = displayNumber,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.SemiBold,
+                        color = colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = DateTimeFormats.formatShort(call.timestamp),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 11.sp,
+                        color = colors.textMuted
+                    )
+                }
+                Text(
+                    text = call.summaryReason,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            StatusTag(
+                text = if (call.isBlocked) "Bloqueada" else "${call.threatScore}%",
+                tone = tone
+            )
+
+            Icon(
+                imageVector = Icons.Outlined.ChevronRight,
+                contentDescription = null,
+                tint = colors.textMuted,
+                modifier = Modifier.size(16.dp)
             )
         }
-
-        StatusTag(
-            text = if (call.isBlocked) "Bloqueada" else "${call.threatScore}%",
-            tone = tone
-        )
-
-        Icon(
-            imageVector = Icons.Outlined.ChevronRight,
-            contentDescription = null,
-            tint = colors.textMuted,
-            modifier = Modifier.size(18.dp)
-        )
     }
 }

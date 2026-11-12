@@ -42,6 +42,11 @@ const obtenerDireccion = (solicitud) => {
 
 const permitirSolicitud = (solicitud) => {
   const ahora = Date.now();
+  for (const [clave, valor] of ventanas.entries()) {
+    if (ahora - valor.inicio >= limiteVentana) {
+      ventanas.delete(clave);
+    }
+  }
   const direccion = obtenerDireccion(solicitud);
   const ventana = ventanas.get(direccion);
   if (!ventana || ahora - ventana.inicio >= limiteVentana) {
@@ -126,11 +131,12 @@ const CATEGORIAS = new Set([
 ]);
 
 const normalizarNumeroColombiano = (valor) => {
-  const normalizado = normalizarIndicador(valor, "numero");
-  if (!normalizado || !normalizado.indicador.startsWith("+57")) {
-    return null;
+  const limpio = String(valor || "").trim().replace(/[().\s-]/g, "");
+  const sinCeros = limpio.startsWith("00") ? `+${limpio.slice(2)}` : limpio;
+  if (/^[36][0-9]{9}$/.test(sinCeros)) {
+    return `+57${sinCeros}`;
   }
-  const numeroE164 = `+${normalizado.indicador.replace(/^\+/, "")}`;
+  const numeroE164 = sinCeros.startsWith("+") ? sinCeros : `+${sinCeros}`;
   if (!/^\+57[0-9]{10}$/.test(numeroE164)) {
     return null;
   }
@@ -162,11 +168,15 @@ const actualizarInteligencia = (datos, numeroE164, categoria, fuente) => {
   const antes = entrada ? { ...entrada, fuentes: [...entrada.fuentes] } : null;
   if (!entrada) {
     entrada = {
+      indicador: numeroE164,
+      tipo: "numero",
       numeroE164,
       indicativoInternacional: "+57",
       pais: "CO",
       categoria,
+      reportes: 0,
       reportesIndependientes: 0,
+      esMalicioso: false,
       primerReporte: ahora,
       ultimoReporte: ahora,
       fuentes: [],
@@ -177,7 +187,10 @@ const actualizarInteligencia = (datos, numeroE164, categoria, fuente) => {
     };
     datos.inteligencia.push(entrada);
   }
+  entrada.indicador = numeroE164;
+  entrada.tipo = "numero";
   entrada.reportesIndependientes += 1;
+  entrada.reportes = entrada.reportesIndependientes;
   entrada.ultimoReporte = ahora;
   if (fuente && !entrada.fuentes.includes(fuente)) {
     entrada.fuentes.push(fuente);
@@ -185,9 +198,10 @@ const actualizarInteligencia = (datos, numeroE164, categoria, fuente) => {
   entrada.categoria = categoria;
   entrada.nivelConfianza = calcularConfianza(entrada);
   entrada.estadoVerificacion =
-    entrada.reportesIndependientes >= 5 && entrada.nivelConfianza >= 50
+    entrada.reportesIndependientes >= 1
       ? "confirmado"
       : "sospecha";
+  entrada.esMalicioso = entrada.estadoVerificacion === "confirmado";
   entrada.activo = true;
   entrada.actualizadoEn = ahora;
   registrarCambio(datos, numeroE164, "reporte", antes, entrada);
@@ -232,28 +246,33 @@ const crearReporte = async (solicitud, respuesta) => {
     const entrada = await ejecutarEscrituraExclusiva(async () => {
       const datos = await cargarDatos();
       const fuente = String(cuerpo.fuente || "comunidad").slice(0, 80);
-      const categoria = String(cuerpo.categoria || "sospechoso").trim().toLowerCase();
-      const huella = String(
-        cuerpo.idempotencyKey || `${numeroE164}|${categoria}|${fuente}|${new Date().toISOString().slice(0, 10)}`
-      ).slice(0, 160);
-      const reporteExistente = datos.reportes.find((reporte) => reporte.huella === huella);
-      if (reporteExistente) {
-        return datos.inteligencia.find((item) => item.numeroE164 === numeroE164);
+      const claveIdempotencia = String(cuerpo.idempotencyKey || "").trim().slice(0, 160);
+      if (claveIdempotencia) {
+        const reporteExistente = datos.reportes.find((reporte) => reporte.huella === claveIdempotencia);
+        if (reporteExistente) {
+          return datos.inteligencia.find((item) => item.numeroE164 === numeroE164);
+        }
       }
-      datos.reportes.push({
-        tipo: "numero",
-        indicador: numeroE164,
-        categoria,
-        fuente,
-        huella,
-        recibidoEn: new Date().toISOString()
-      });
+      const ahora = new Date().toISOString();
+      const huella =
+        claveIdempotencia || `${numeroE164}|${categoria}|${fuente}|${ahora}|${datos.reportes.length + 1}`;
       const resultado = actualizarInteligencia(
         datos,
         numeroE164,
         categoria,
         fuente
       );
+      datos.reportes.push({
+        tipo: "numero",
+        indicador: numeroE164,
+        categoria,
+        fuente,
+        huella,
+        reportes: resultado.reportesIndependientes,
+        esMalicioso: resultado.esMalicioso,
+        recibidoEn: ahora,
+        actualizadoEn: resultado.actualizadoEn
+      });
       await guardarDatos(datos);
       return resultado;
     });
@@ -267,13 +286,13 @@ const crearReporte = async (solicitud, respuesta) => {
     );
     if (existente) {
       existente.reportes = Number.isInteger(existente.reportes) ? existente.reportes + 1 : 1;
-      existente.esMalicioso = existente.reportes >= 5;
+      existente.esMalicioso = existente.reportes >= 1;
       existente.actualizadoEn = new Date().toISOString();
     } else {
       datos.reportes.push({
         ...indicador,
         reportes: 1,
-        esMalicioso: false,
+        esMalicioso: true,
         actualizadoEn: new Date().toISOString()
       });
     }
@@ -283,6 +302,18 @@ const crearReporte = async (solicitud, respuesta) => {
     );
   });
   respuestaJson(respuesta, 201, entrada);
+};
+
+const obtenerListaNegraConsolidada = (estado) => {
+  const dominios = estado.reportes.filter((elemento) => elemento.tipo === "dominio");
+  const numeros = estado.inteligencia.map((item) => ({
+    indicador: item.numeroE164,
+    tipo: "numero",
+    reportes: item.reportesIndependientes,
+    esMalicioso: item.estadoVerificacion === "confirmado",
+    actualizadoEn: item.actualizadoEn
+  }));
+  return [...dominios, ...numeros];
 };
 
 const servidor = createServer(async (solicitud, respuesta) => {
@@ -300,7 +331,7 @@ const servidor = createServer(async (solicitud, respuesta) => {
     if (solicitud.method === "GET" && ruta === "/v1/lista-negra") {
       const desde = Number(url.searchParams.get("desde") || 0);
       const estado = await cargarDatos();
-      const datos = estado.reportes;
+      const datos = obtenerListaNegraConsolidada(estado);
       const filtrados = Number.isFinite(desde) && desde > 0
         ? datos.filter((elemento) => Date.parse(elemento.actualizadoEn) > desde)
         : datos;
@@ -341,6 +372,11 @@ const servidor = createServer(async (solicitud, respuesta) => {
   }
 });
 
-servidor.listen(puerto, "0.0.0.0", () => {
-  console.log(`Servidor comunitario escuchando en el puerto ${puerto}`);
-});
+const rutaEjecutada = process.argv[1] ? resolve(process.argv[1]) : "";
+if (rutaEjecutada === fileURLToPath(import.meta.url)) {
+  servidor.listen(puerto, "0.0.0.0", () => {
+    console.log(`Servidor comunitario escuchando en el puerto ${puerto}`);
+  });
+}
+
+export { servidor, normalizarIndicador, normalizarNumeroColombiano, calcularConfianza };

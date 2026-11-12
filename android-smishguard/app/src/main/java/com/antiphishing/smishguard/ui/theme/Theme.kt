@@ -64,7 +64,7 @@ private val DarkColorScheme = darkColorScheme(
     onErrorContainer = DarkDanger
 )
 
-val SmishGuardCornerRadius = 8.dp
+val SmishGuardCornerRadius = 6.dp
 
 object SmishGuardSpacing {
     val xs = 4.dp
@@ -78,14 +78,12 @@ object SmishGuardDimensions {
     val minTouchTarget: Dp = 48.dp
 }
 
-private val SmishGuardShape = RoundedCornerShape(SmishGuardCornerRadius)
-
 val SmishGuardShapes = Shapes(
-    extraSmall = SmishGuardShape,
-    small = SmishGuardShape,
-    medium = SmishGuardShape,
-    large = SmishGuardShape,
-    extraLarge = SmishGuardShape
+    extraSmall = RoundedCornerShape(4.dp),
+    small = RoundedCornerShape(6.dp),
+    medium = RoundedCornerShape(8.dp),
+    large = RoundedCornerShape(10.dp),
+    extraLarge = RoundedCornerShape(10.dp)
 )
 
 val LocalSmishGuardColors = staticCompositionLocalOf { LightSmishGuardColors }
@@ -112,7 +110,7 @@ fun SmishGuardTheme(
             if (context is Activity) {
                 val window = context.window
                 @Suppress("DEPRECATION")
-                window.statusBarColor = extendedColors.background.toArgb()
+                window.statusBarColor = extendedColors.surface.toArgb()
                 @Suppress("DEPRECATION")
                 window.navigationBarColor = extendedColors.surface.toArgb()
                 val insetsController = WindowCompat.getInsetsController(window, view)

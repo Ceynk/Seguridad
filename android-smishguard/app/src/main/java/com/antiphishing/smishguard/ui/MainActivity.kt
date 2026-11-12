@@ -8,12 +8,17 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.app.AlertDialog
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +42,8 @@ private data class LaunchRouting(
 class MainActivity : ComponentActivity() {
 
     private var pendingRouting by mutableStateOf<LaunchRouting?>(null)
+    private var pendingPermissionList by mutableStateOf<Array<String>?>(null)
+    private var showDeniedPermissionModal by mutableStateOf(false)
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -47,7 +54,7 @@ class MainActivity : ComponentActivity() {
         if (deniedPermissions.isNotEmpty() && deniedPermissions.all {
                 !shouldShowRequestPermissionRationale(it)
             }) {
-            showPermissionSettingsDialog()
+            showDeniedPermissionModal = true
         }
         if (phoneStateGranted || receiveSmsGranted) {
             requestCallScreeningRole()
@@ -67,9 +74,10 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SmishGuardTheme {
+                val colors = SmishGuardTheme.colors
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = SmishGuardTheme.colors.background
+                    color = colors.background
                 ) {
                     val navController = rememberNavController()
                     val latestRouting = pendingRouting
@@ -92,6 +100,96 @@ class MainActivity : ComponentActivity() {
                         initialSharedSender = latestRouting?.sharedSender ?: initialRouting.sharedSender,
                         initialSharedBody = latestRouting?.sharedBody ?: initialRouting.sharedBody
                     )
+
+                    val permissionsToLaunch = pendingPermissionList
+                    if (permissionsToLaunch != null) {
+                        AlertDialog(
+                            onDismissRequest = { pendingPermissionList = null },
+                            title = {
+                                Text(
+                                    text = "Permisos de protección",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = colors.textPrimary
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = "SmishGuard requiere permiso de recepción de SMS y estado telefónico para interceptar amenazas en tiempo real. El análisis se ejecuta localmente sin leer tu historial previo.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = colors.textSecondary
+                                )
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        val list = permissionsToLaunch
+                                        pendingPermissionList = null
+                                        permissionLauncher.launch(list)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = colors.accent,
+                                        contentColor = colors.onAccent
+                                    ),
+                                    shape = MaterialTheme.shapes.small
+                                ) {
+                                    Text("Continuar")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { pendingPermissionList = null }) {
+                                    Text("Ahora no", color = colors.textSecondary)
+                                }
+                            },
+                            containerColor = colors.surface,
+                            shape = MaterialTheme.shapes.large
+                        )
+                    }
+
+                    if (showDeniedPermissionModal) {
+                        AlertDialog(
+                            onDismissRequest = { showDeniedPermissionModal = false },
+                            title = {
+                                Text(
+                                    text = "Permiso desactivado",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = colors.textPrimary
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = "El canal asociado al permiso rechazado permanece inactivo. Puedes habilitarlo desde los ajustes del sistema.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = colors.textSecondary
+                                )
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        showDeniedPermissionModal = false
+                                        val settingsIntent = Intent(
+                                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                            Uri.parse("package:$packageName")
+                                        )
+                                        startActivity(settingsIntent)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = colors.accent,
+                                        contentColor = colors.onAccent
+                                    ),
+                                    shape = MaterialTheme.shapes.small
+                                ) {
+                                    Text("Abrir ajustes")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDeniedPermissionModal = false }) {
+                                    Text("Cerrar", color = colors.textSecondary)
+                                }
+                            },
+                            containerColor = colors.surface,
+                            shape = MaterialTheme.shapes.large
+                        )
+                    }
                 }
             }
         }
@@ -179,39 +277,10 @@ class MainActivity : ComponentActivity() {
         }
 
         if (permissionsToRequest.isNotEmpty()) {
-            AlertDialog.Builder(this)
-                .setTitle("Permisos necesarios")
-                .setMessage(
-                    "SmishGuard necesita recibir SMS para analizarlos en el dispositivo. " +
-                        "También puede pedir acceso al estado del teléfono para filtrar llamadas y " +
-                        "notificaciones para avisarte de amenazas. No se lee el historial completo de SMS."
-                )
-                .setPositiveButton("Continuar") { _, _ ->
-                    permissionLauncher.launch(permissionsToRequest.toTypedArray())
-                }
-                .setNegativeButton("Ahora no", null)
-                .show()
+            pendingPermissionList = permissionsToRequest.toTypedArray()
         } else {
             requestCallScreeningRole()
         }
-    }
-
-    private fun showPermissionSettingsDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Permiso rechazado")
-            .setMessage(
-                "La protección asociada al permiso rechazado está desactivada. " +
-                    "Puedes activarla en Ajustes cuando quieras."
-            )
-            .setPositiveButton("Abrir Ajustes") { _, _ ->
-                val intent = Intent(
-                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    Uri.parse("package:$packageName")
-                )
-                startActivity(intent)
-            }
-            .setNegativeButton("Continuar", null)
-            .show()
     }
 
     private fun requestCallScreeningRole() {

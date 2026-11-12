@@ -1,5 +1,6 @@
 package com.antiphishing.smishguard.ui.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,11 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Rule
@@ -21,7 +22,7 @@ import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,8 +31,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.antiphishing.smishguard.ui.components.EmptyStateView
 import com.antiphishing.smishguard.ui.components.PanelDivider
+import com.antiphishing.smishguard.ui.components.PanelHeaderBand
 import com.antiphishing.smishguard.ui.components.ResponsiveContentBox
 import com.antiphishing.smishguard.ui.components.SectionPanel
 import com.antiphishing.smishguard.ui.components.SemanticTone
@@ -53,7 +53,6 @@ import com.antiphishing.smishguard.ui.components.smishGuardSwitchColors
 import com.antiphishing.smishguard.ui.components.smishGuardTextFieldColors
 import com.antiphishing.smishguard.ui.theme.SmishGuardTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomRulesScreen(
     viewModel: SettingsViewModel,
@@ -68,18 +67,26 @@ fun CustomRulesScreen(
     var isRegex by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
+    val activeCount = remember(customRules) { customRules.count { it.isEnabled } }
+
     Scaffold(
         topBar = {
-            Column {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = "Reglas personalizadas",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = colors.textPrimary
-                        )
-                    },
-                    navigationIcon = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(colors.surface)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
                         IconButton(onClick = onBack) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -87,31 +94,58 @@ fun CustomRulesScreen(
                                 tint = colors.textPrimary
                             )
                         }
-                    },
-                    actions = {
-                        TextButton(
-                            onClick = {
-                                validationError = null
-                                showAddDialog = true
+                        Column {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "Reglas personalizadas",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = colors.textPrimary
+                                )
+                                StatusTag(
+                                    text = "$activeCount/${customRules.size}",
+                                    tone = SemanticTone.ACCENT
+                                )
                             }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Add,
-                                contentDescription = null,
-                                tint = colors.accent,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Crear",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = colors.accent
+                                text = "Patrones locales para forzar el aislamiento de SMS",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.textSecondary
                             )
                         }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.background)
-                )
-                PanelDivider()
+                    }
+
+                    Button(
+                        onClick = {
+                            validationError = null
+                            showAddDialog = true
+                        },
+                        shape = MaterialTheme.shapes.small,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colors.accent,
+                            contentColor = colors.onAccent
+                        ),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .heightIn(min = 36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Crear",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+                HorizontalDivider(thickness = 1.dp, color = colors.border)
             }
         },
         containerColor = colors.background
@@ -124,25 +158,27 @@ fun CustomRulesScreen(
                 contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                item {
-                    Text(
-                        text = "Define frases exactas o patrones Regex para forzar el aislamiento de mensajes.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colors.textSecondary
-                    )
-                }
-
                 if (customRules.isEmpty()) {
                     item {
                         EmptyStateView(
                             icon = Icons.AutoMirrored.Outlined.Rule,
                             title = "Sin reglas definidas",
-                            subtitle = "Pulsa «Crear» para añadir una palabra clave o expresión regular."
+                            subtitle = "Pulsa «Crear» para añadir una frase exacta o expresión regular."
                         )
                     }
                 } else {
                     item {
-                        SectionPanel {
+                        SectionPanel(accentEdgeColor = colors.accent) {
+                            PanelHeaderBand(
+                                title = "Patrón · Tipo",
+                                trailing = {
+                                    Text(
+                                        text = "ESTADO",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = colors.textMuted
+                                    )
+                                }
+                            )
                             customRules.forEachIndexed { index, rule ->
                                 if (index > 0) {
                                     PanelDivider()
@@ -150,7 +186,7 @@ fun CustomRulesScreen(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                                        .padding(horizontal = 14.dp, vertical = 11.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -168,11 +204,11 @@ fun CustomRulesScreen(
                                                 text = rule.pattern,
                                                 style = MaterialTheme.typography.titleSmall,
                                                 fontFamily = FontFamily.Monospace,
-                                                fontWeight = FontWeight.SemiBold,
+                                                fontWeight = FontWeight.Bold,
                                                 color = if (rule.isEnabled) colors.textPrimary else colors.textMuted
                                             )
                                             StatusTag(
-                                                text = if (rule.isRegex) "Regex" else "Texto",
+                                                text = if (rule.isRegex) "REGEX" else "TEXTO",
                                                 tone = if (rule.isEnabled) SemanticTone.ACCENT else SemanticTone.NEUTRAL
                                             )
                                         }
@@ -200,7 +236,7 @@ fun CustomRulesScreen(
                                                 imageVector = Icons.Outlined.DeleteOutline,
                                                 contentDescription = "Eliminar regla",
                                                 tint = colors.danger,
-                                                modifier = Modifier.size(20.dp)
+                                                modifier = Modifier.size(19.dp)
                                             )
                                         }
                                     }
@@ -237,7 +273,7 @@ fun CustomRulesScreen(
                             singleLine = true,
                             isError = validationError != null,
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
+                            shape = MaterialTheme.shapes.small,
                             colors = smishGuardTextFieldColors()
                         )
 
@@ -253,10 +289,10 @@ fun CustomRulesScreen(
                         OutlinedTextField(
                             value = descInput,
                             onValueChange = { descInput = it },
-                            label = { Text("Nota (opcional)") },
+                            label = { Text("Nota descriptiva (opcional)") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
+                            shape = MaterialTheme.shapes.small,
                             colors = smishGuardTextFieldColors()
                         )
 
@@ -278,7 +314,7 @@ fun CustomRulesScreen(
                                     color = colors.textPrimary
                                 )
                                 Text(
-                                    text = "Validado contra patrones costosos (ReDoS)",
+                                    text = "Verificado contra expresiones vulnerables (ReDoS)",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = colors.textMuted
                                 )
@@ -314,7 +350,7 @@ fun CustomRulesScreen(
                             containerColor = colors.accent,
                             contentColor = colors.onAccent
                         ),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = MaterialTheme.shapes.small
                     ) {
                         Text("Crear regla")
                     }
@@ -325,7 +361,7 @@ fun CustomRulesScreen(
                     }
                 },
                 containerColor = colors.surface,
-                shape = RoundedCornerShape(12.dp)
+                shape = MaterialTheme.shapes.large
             )
         }
     }

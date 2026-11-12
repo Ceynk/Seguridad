@@ -1,13 +1,19 @@
 package com.antiphishing.smishguard.ui.settings
 
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,7 +27,7 @@ import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,9 +35,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.antiphishing.smishguard.ui.components.EmptyStateView
 import com.antiphishing.smishguard.ui.components.PanelDivider
+import com.antiphishing.smishguard.ui.components.PanelHeaderBand
 import com.antiphishing.smishguard.ui.components.ResponsiveContentBox
 import com.antiphishing.smishguard.ui.components.SectionLabel
 import com.antiphishing.smishguard.ui.components.SectionPanel
@@ -55,7 +61,6 @@ import com.antiphishing.smishguard.ui.components.smishGuardTextFieldColors
 import com.antiphishing.smishguard.ui.theme.SmishGuardTheme
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityBlacklistScreen(
     viewModel: SettingsViewModel,
@@ -69,6 +74,10 @@ fun CommunityBlacklistScreen(
     var valor by remember { mutableStateOf("") }
     var mostrarConfirmacion by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        viewModel.sincronizarComunidad {}
+    }
+
     fun enviar() {
         val cleanValue = valor.trim()
         focusManager.clearFocus()
@@ -80,27 +89,47 @@ fun CommunityBlacklistScreen(
 
     Scaffold(
         topBar = {
-            Column {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = "Lista negra comunitaria",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = colors.textPrimary
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(colors.surface)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "Atrás",
+                            tint = colors.textPrimary
                         )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                                contentDescription = "Atrás",
-                                tint = colors.textPrimary
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Lista negra comunitaria",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = colors.textPrimary
+                            )
+                            StatusTag(
+                                text = "${entradas.size}",
+                                tone = SemanticTone.NEUTRAL
                             )
                         }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.background)
-                )
-                PanelDivider()
+                        Text(
+                            text = "Inteligencia colectiva de dominios, enlaces y teléfonos",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.textSecondary
+                        )
+                    }
+                }
+                HorizontalDivider(thickness = 1.dp, color = colors.border)
             }
         },
         containerColor = colors.background
@@ -115,6 +144,15 @@ fun CommunityBlacklistScreen(
             ) {
                 item {
                     SectionPanel {
+                        PanelHeaderBand(
+                            title = "Reportar indicador malicioso",
+                            trailing = {
+                                StatusTag(
+                                    text = "UMBRAL 5/5",
+                                    tone = SemanticTone.ACCENT
+                                )
+                            }
+                        )
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -122,12 +160,7 @@ fun CommunityBlacklistScreen(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
-                                text = "Reportar indicador",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = colors.textPrimary
-                            )
-                            Text(
-                                text = "Solo se transmite el dominio, enlace o número normalizado (sin contenido del SMS ni datos del teléfono). Con 5 confirmaciones se marca como malicioso.",
+                                text = "Solo se transmite el indicador normalizado (sin texto de SMS ni datos personales).",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = colors.textSecondary
                             )
@@ -136,10 +169,10 @@ fun CommunityBlacklistScreen(
                                 value = valor,
                                 onValueChange = { valor = it },
                                 modifier = Modifier.fillMaxWidth(),
-                                label = { Text("Dominio, URL o teléfono") },
+                                label = { Text("Dominio, URL o número telefónico") },
                                 placeholder = { Text("Ej: banco-falso.xyz o +573001112233") },
                                 singleLine = true,
-                                shape = RoundedCornerShape(8.dp),
+                                shape = MaterialTheme.shapes.small,
                                 colors = smishGuardTextFieldColors()
                             )
 
@@ -154,18 +187,18 @@ fun CommunityBlacklistScreen(
                                 enabled = valor.isNotBlank(),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .heightIn(min = 44.dp),
+                                    .heightIn(min = 42.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colors.accent,
                                     contentColor = colors.onAccent
                                 ),
-                                shape = RoundedCornerShape(8.dp),
+                                shape = MaterialTheme.shapes.small,
                                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Outlined.CloudUpload,
                                     contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(17.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
@@ -173,72 +206,122 @@ fun CommunityBlacklistScreen(
                                     style = MaterialTheme.typography.labelLarge
                                 )
                             }
+
+                            TextButton(
+                                onClick = {
+                                    viewModel.sincronizarComunidad { mensaje ->
+                                        Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Sincronizar ahora",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = colors.accent
+                                )
+                            }
                         }
                     }
                 }
 
                 item {
-                    SectionLabel(text = "Indicadores registrados (${entradas.size})")
+                    SectionLabel(text = "Indicadores en caché (${entradas.size})")
                 }
 
                 if (entradas.isEmpty()) {
                     item {
                         EmptyStateView(
                             icon = Icons.Outlined.Public,
-                            title = "Sin indicadores en caché",
-                            subtitle = "Los dominios, enlaces o números reportados se mostrarán aquí."
+                            title = "Sin indicadores almacenados",
+                            subtitle = "Los dominios, enlaces o teléfonos reportados aparecerán aquí."
                         )
                     }
                 } else {
                     item {
                         SectionPanel {
+                            PanelHeaderBand(
+                                title = "Indicador · Tipo",
+                                trailing = {
+                                    Text(
+                                        text = "CONFIRMACIONES",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = colors.textMuted
+                                    )
+                                }
+                            )
                             entradas.forEachIndexed { index, entrada ->
                                 if (index > 0) {
                                     PanelDivider()
                                 }
+                                val edgeColor = when {
+                                    entrada.esMalicioso -> colors.danger
+                                    entrada.pendienteSincronizacion -> colors.accent
+                                    else -> colors.warning
+                                }
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 14.dp, vertical = 12.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                        .height(IntrinsicSize.Min),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Column(
+                                    Box(
+                                        modifier = Modifier
+                                            .width(3.dp)
+                                            .fillMaxHeight()
+                                            .background(edgeColor)
+                                    )
+                                    Row(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .padding(end = 10.dp),
-                                        verticalArrangement = Arrangement.spacedBy(3.dp)
+                                            .padding(horizontal = 12.dp, vertical = 11.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(
-                                            text = entrada.indicador,
-                                            style = MaterialTheme.typography.titleSmall,
-                                            fontFamily = FontFamily.Monospace,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = colors.textPrimary
-                                        )
-                                        val tipoLabel = entrada.tipo.replaceFirstChar {
-                                            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                                        Column(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .padding(end = 10.dp),
+                                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Text(
+                                                text = entrada.indicador,
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontFamily = FontFamily.Monospace,
+                                                fontWeight = FontWeight.Bold,
+                                                color = colors.textPrimary
+                                            )
+                                            val tipoLabel = entrada.tipo.uppercase(Locale.getDefault())
+                                            val syncSuffix = if (entrada.pendienteSincronizacion) " · En cola local" else ""
+                                            Text(
+                                                text = "$tipoLabel · ${entrada.reportes} reporte(s)$syncSuffix",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = colors.textMuted
+                                            )
                                         }
-                                        val syncSuffix = if (entrada.pendienteSincronizacion) " · Pendiente de envío" else ""
-                                        Text(
-                                            text = "$tipoLabel · ${entrada.reportes} reporte(s)$syncSuffix",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = colors.textMuted
-                                        )
-                                    }
 
-                                    StatusTag(
-                                        text = when {
-                                            entrada.esMalicioso -> "Malicioso"
-                                            entrada.pendienteSincronizacion -> "Local"
-                                            else -> "${entrada.reportes}/5"
-                                        },
-                                        tone = when {
-                                            entrada.esMalicioso -> SemanticTone.DANGER
-                                            entrada.pendienteSincronizacion -> SemanticTone.ACCENT
-                                            else -> SemanticTone.WARNING
+                                        Column(
+                                            horizontalAlignment = Alignment.End,
+                                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                                        ) {
+                                            StatusTag(
+                                                text = when {
+                                                    entrada.esMalicioso -> "MALICIOSO"
+                                                    entrada.pendienteSincronizacion -> "LOCAL"
+                                                    else -> "${entrada.reportes}/5"
+                                                },
+                                                tone = when {
+                                                    entrada.esMalicioso -> SemanticTone.DANGER
+                                                    entrada.pendienteSincronizacion -> SemanticTone.ACCENT
+                                                    else -> SemanticTone.WARNING
+                                                }
+                                            )
+                                            ConfirmationStepsBar(
+                                                count = entrada.reportes,
+                                                isMalicious = entrada.esMalicioso
+                                            )
                                         }
-                                    )
+                                    }
                                 }
                             }
                         }
@@ -276,7 +359,7 @@ fun CommunityBlacklistScreen(
                         containerColor = colors.accent,
                         contentColor = colors.onAccent
                     ),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = MaterialTheme.shapes.small
                 ) {
                     Text("Enviar")
                 }
@@ -287,7 +370,35 @@ fun CommunityBlacklistScreen(
                 }
             },
             containerColor = colors.surface,
-            shape = RoundedCornerShape(12.dp)
+            shape = MaterialTheme.shapes.large
         )
+    }
+}
+
+@Composable
+private fun ConfirmationStepsBar(
+    count: Int,
+    isMalicious: Boolean
+) {
+    val colors = SmishGuardTheme.colors
+    val filled = if (isMalicious) 5 else count.coerceIn(0, 5)
+    val activeColor = if (isMalicious || filled >= 5) colors.danger else colors.warning
+    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        for (i in 1..5) {
+            Box(
+                modifier = Modifier
+                    .width(8.dp)
+                    .height(4.dp)
+                    .background(
+                        color = if (i <= filled) activeColor else colors.surfaceRecessed,
+                        shape = RoundedCornerShape(1.dp)
+                    )
+                    .border(
+                        width = 0.5.dp,
+                        color = if (i <= filled) activeColor else colors.border,
+                        shape = RoundedCornerShape(1.dp)
+                    )
+            )
+        }
     }
 }

@@ -210,7 +210,7 @@ class SettingsViewModel(
                     indicador = indicador.valor,
                     tipo = indicador.tipo,
                     reportes = 1,
-                    esMalicioso = false,
+                    esMalicioso = true,
                     pendienteSincronizacion = true
                 )
                 smsRepository.saveCommunityEntry(entrada)
@@ -225,11 +225,45 @@ class SettingsViewModel(
                         indicador = indicador.valor,
                         tipo = indicador.tipo,
                         reportes = 1,
-                        esMalicioso = false,
+                        esMalicioso = true,
                         pendienteSincronizacion = true
                     )
                 )
                 onResult("No se pudo enviar el reporte: ${error.message ?: "error de conexión"}. Se reintentará automáticamente.")
+            }
+        }
+    }
+
+    fun sincronizarComunidad(alTerminar: (String) -> Unit) {
+        viewModelScope.launch {
+            val cliente = communityApiClient
+            if (cliente == null) {
+                alTerminar("El cliente comunitario no está disponible.")
+                return@launch
+            }
+            try {
+                val total = withContext(Dispatchers.IO) {
+                    val pendientes = smsRepository.getPendingCommunityEntries()
+                    for (pendiente in pendientes) {
+                        val sincronizado = cliente.enviar(
+                            com.antiphishing.smishguard.data.repository.CommunityIndicator(
+                                pendiente.indicador,
+                                pendiente.tipo
+                            )
+                        )
+                        if (sincronizado != null) {
+                            smsRepository.saveCommunityEntry(sincronizado)
+                        }
+                    }
+                    val indicadores = cliente.descargar()
+                    val inteligencia = cliente.descargarInteligencia()
+                    val unidos = indicadores + inteligencia
+                    smsRepository.saveCommunityEntries(unidos)
+                    unidos.size
+                }
+                alTerminar("Lista sincronizada ($total registros).")
+            } catch (error: Exception) {
+                alTerminar("Error al sincronizar: ${error.message ?: "sin conexión"}.")
             }
         }
     }

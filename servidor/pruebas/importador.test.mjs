@@ -16,8 +16,28 @@ const fuente = {
 
 test("normaliza solo números móviles colombianos E.164", () => {
   assert.equal(normalizarNumero("300 123"), null);
+  assert.equal(normalizarNumero("310 205 4740"), "+573102054740");
   assert.equal(normalizarNumero("+57 310 205 4740"), "+573102054740");
   assert.equal(normalizarNumero("+573102054740"), "+573102054740");
+});
+
+test("crea el archivo de datos si aún no existe", async () => {
+  const carpeta = await mkdtemp(join(tmpdir(), "smishguard-nuevo-"));
+  const archivo = join(carpeta, "no-existe.json");
+  const fetchImpl = async () => ({
+    ok: true,
+    text: async () => JSON.stringify([{
+      id: "registro-nuevo",
+      numeroE164: "+573102054740",
+      categoria: "fraude",
+      confianza: 75,
+      reportes: 2
+    }])
+  });
+  const resultado = await importarFuentes({ archivoDatos: archivo, fuentes: [fuente], fetchImpl });
+  const datos = JSON.parse(await readFile(archivo, "utf8"));
+  assert.equal(resultado.importados, 1);
+  assert.equal(datos.inteligencia[0].indicador, "+573102054740");
 });
 
 test("importa una vez y conserva procedencia", async () => {

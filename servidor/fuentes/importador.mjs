@@ -14,6 +14,7 @@ const CATEGORIAS = new Set([
 const normalizarNumero = (valor) => {
   const texto = String(valor || "").trim().replace(/[().\s-]/g, "");
   const numero = texto.startsWith("00") ? `+${texto.slice(2)}` : texto;
+  if (/^[36][0-9]{9}$/.test(numero)) return `+57${numero}`;
   if (!/^\+?[0-9]{8,15}$/.test(numero)) return null;
   const e164 = numero.startsWith("+") ? numero : `+${numero}`;
   return /^\+57[0-9]{10}$/.test(e164) ? e164 : null;
@@ -103,24 +104,19 @@ const normalizarRegistro = (fuente, registro, consultadoEn) => {
 const fusionarRegistro = (datos, registro) => {
   const yaImportado = datos.reportes.some((item) => item.huella === registro.huella);
   if (yaImportado) return false;
-  datos.reportes.push({
-    tipo: "numero",
-    indicador: registro.numeroE164,
-    categoria: registro.categoria,
-    fuente: registro.fuente,
-    huella: registro.huella,
-    recibidoEn: registro.consulta,
-    licencia: registro.licencia
-  });
 
   let entrada = datos.inteligencia.find((item) => item.numeroE164 === registro.numeroE164);
   if (!entrada) {
     entrada = {
+      indicador: registro.numeroE164,
+      tipo: "numero",
       numeroE164: registro.numeroE164,
       indicativoInternacional: "+57",
       pais: "CO",
       categoria: registro.categoria,
+      reportes: 0,
       reportesIndependientes: 0,
+      esMalicioso: false,
       primerReporte: registro.consulta,
       ultimoReporte: registro.consulta,
       fuentes: [],
@@ -132,7 +128,10 @@ const fusionarRegistro = (datos, registro) => {
     };
     datos.inteligencia.push(entrada);
   }
+  entrada.indicador = registro.numeroE164;
+  entrada.tipo = "numero";
   entrada.reportesIndependientes += registro.reportes;
+  entrada.reportes = entrada.reportesIndependientes;
   entrada.ultimoReporte = registro.fecha;
   entrada.actualizadoEn = registro.consulta;
   if (!entrada.fuentes.includes(registro.fuente)) entrada.fuentes.push(registro.fuente);
@@ -157,7 +156,32 @@ const fusionarRegistro = (datos, registro) => {
     entrada.reportesIndependientes >= 5 && entrada.nivelConfianza >= 50
       ? "confirmado"
       : "sospecha";
+  entrada.esMalicioso = entrada.estadoVerificacion === "confirmado";
+
+  datos.reportes.push({
+    tipo: "numero",
+    indicador: registro.numeroE164,
+    categoria: registro.categoria,
+    fuente: registro.fuente,
+    huella: registro.huella,
+    reportes: entrada.reportesIndependientes,
+    esMalicioso: entrada.esMalicioso,
+    recibidoEn: registro.consulta,
+    actualizadoEn: registro.consulta,
+    licencia: registro.licencia
+  });
   return true;
+};
+
+const leerDatosExistentes = async (archivoDatos) => {
+  try {
+    return JSON.parse(await readFile(archivoDatos, "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return { version: 1, inteligencia: [], reportes: [], cambios: [], ejecucionesFuentes: [] };
+    }
+    throw error;
+  }
 };
 
 export const importarFuentes = async ({
@@ -166,7 +190,7 @@ export const importarFuentes = async ({
   fetchImpl = fetch,
   ahora = new Date().toISOString()
 }) => {
-  const contenido = JSON.parse(await readFile(archivoDatos, "utf8"));
+  const contenido = await leerDatosExistentes(archivoDatos);
   const datos = Array.isArray(contenido)
     ? { version: 1, inteligencia: [], reportes: contenido, cambios: [], ejecucionesFuentes: [] }
     : {

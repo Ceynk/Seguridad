@@ -21,6 +21,18 @@ class CommunityIndicatorTest {
     }
 
     @Test
+    fun normalizaNumeroColombianoFormatoE164() {
+        val indicadores = CommunityIndicatorNormalizer.obtener(
+            "Llamar al +57 310 205 4740 o al 3001234567"
+        )
+
+        assertEquals("+573102054740", indicadores[0].valor)
+        assertEquals("numero", indicadores[0].tipo)
+        assertEquals("+573001234567", indicadores[1].valor)
+        assertEquals("numero", indicadores[1].tipo)
+    }
+
+    @Test
     fun pocosReportesMuestranAvisoComunitario() {
         val resultado = SmishDetectorEngine.analyze(
             sender = "Alerta",

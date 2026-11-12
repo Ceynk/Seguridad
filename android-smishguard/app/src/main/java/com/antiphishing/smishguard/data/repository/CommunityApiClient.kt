@@ -66,15 +66,15 @@ class CommunityApiClient(
             if (!numero.startsWith("+57") || numero.length !in 12..13) {
                 continue
             }
-            val confianza = objeto.optInt("nivelConfianza", 0)
+            val reportes = objeto.optInt("reportesIndependientes", objeto.optInt("reportes", 0))
             val confirmada = objeto.optString("estadoVerificacion") == "confirmado"
             val actualizado = parseFecha(objeto.optString("actualizadoEn"))
             resultado.add(
                 CommunityBlacklistEntity(
                     indicador = numero,
                     tipo = "numero",
-                    reportes = objeto.optInt("reportesIndependientes", 0),
-                    esMalicioso = confirmada && confianza >= 50,
+                    reportes = reportes,
+                    esMalicioso = confirmada || reportes >= 1,
                     actualizadoEn = actualizado
                 )
             )
@@ -92,18 +92,19 @@ class CommunityApiClient(
 
     private fun leerEntrada(texto: String): CommunityBlacklistEntity? {
         val objeto = JSONObject(texto)
-        val indicador = objeto.optString("indicador").trim()
-        val tipo = objeto.optString("tipo").trim()
+        val indicador = objeto.optString("indicador").ifBlank { objeto.optString("numeroE164") }.trim()
+        val tipo = objeto.optString("tipo").ifBlank { if (indicador.startsWith("+")) "numero" else "" }.trim()
         if (indicador.isBlank() || tipo.isBlank()) {
             return null
         }
-        val reportes = objeto.optInt("reportes", 0)
+        val reportes = objeto.optInt("reportes", objeto.optInt("reportesIndependientes", 0))
+        val confirmada = objeto.optString("estadoVerificacion") == "confirmado"
         val actualizado = parseFecha(objeto.optString("actualizadoEn"))
         return CommunityBlacklistEntity(
             indicador = indicador,
             tipo = tipo,
             reportes = reportes,
-            esMalicioso = objeto.optBoolean("esMalicioso", reportes >= 5),
+            esMalicioso = objeto.optBoolean("esMalicioso", confirmada || reportes >= 1),
             actualizadoEn = actualizado
         )
     }
