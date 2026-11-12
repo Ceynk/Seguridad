@@ -28,11 +28,17 @@ class CommunitySyncWorker(
                 }
             }
             for (pendiente in application.smsRepository.getPendingCommunityEntries()) {
-                val sincronizado = application.communityApiClient.enviar(
-                    CommunityIndicator(pendiente.indicador, pendiente.tipo)
-                )
-                if (sincronizado != null) {
-                    application.smsRepository.saveCommunityEntry(sincronizado)
+                try {
+                    val sincronizado = application.communityApiClient.enviar(
+                        CommunityIndicator(pendiente.indicador, pendiente.tipo)
+                    )
+                    if (sincronizado != null) {
+                        application.smsRepository.saveCommunityEntry(
+                            sincronizado,
+                            indicadorOriginal = pendiente.indicador
+                        )
+                    }
+                } catch (_: Exception) {
                 }
             }
             val entradas = application.communityApiClient.descargar()

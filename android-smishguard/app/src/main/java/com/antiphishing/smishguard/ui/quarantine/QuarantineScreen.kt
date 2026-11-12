@@ -101,6 +101,9 @@ fun QuarantineScreen(
     val colors = SmishGuardTheme.colors
 
     var activeTab by rememberSaveable { mutableIntStateOf(initialTab.coerceIn(0, 1)) }
+    LaunchedEffect(Unit) {
+        viewModel.ensureInitialized()
+    }
     LaunchedEffect(initialTab) {
         activeTab = initialTab.coerceIn(0, 1)
     }

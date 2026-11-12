@@ -129,6 +129,21 @@ class CommunityIndicatorTest {
         assertEquals(1, total)
         assertEquals(listOf("+573162626266"), repository.getCommunityEntries().first().map { it.indicador })
         assertFalse(repository.getCommunityIndicators().contains("+573134304936"))
+
+        // Si el número vuelve a ser reportado en otro dispositivo (actualizadoEn más reciente), sí debe sincronizarse
+        val reporteNuevoOtroDispositivo = listOf(
+            CommunityBlacklistEntity(
+                indicador = "+573134304936",
+                tipo = "numero",
+                reportes = 2,
+                esMalicioso = true,
+                actualizadoEn = servidorEntries[0].actualizadoEn + 5_000L
+            ),
+            servidorEntries[1]
+        )
+        val totalTrasNuevoReporte = repository.saveCommunityEntries(reporteNuevoOtroDispositivo)
+        assertEquals(2, totalTrasNuevoReporte)
+        assertTrue(repository.getCommunityIndicators().contains("+573134304936"))
     }
 
     private class FakeCommunityBlacklistDao : CommunityBlacklistDao {
@@ -153,6 +168,9 @@ class CommunityIndicatorTest {
 
         override suspend fun obtenerEliminados(): List<String> =
             items.values.filter { it.reportes < 0 }.map { it.indicador }
+
+        override suspend fun obtenerEntradasEliminadas(): List<CommunityBlacklistEntity> =
+            items.values.filter { it.reportes < 0 }
 
         override suspend fun obtenerEliminadosPendientes(): List<String> =
             items.values.filter { it.reportes < 0 && it.pendienteSincronizacion }.map { it.indicador }
@@ -205,6 +223,7 @@ class CommunityIndicatorTest {
     private class FakeSmsDao : SmsDao {
         override fun getAllRecords(): Flow<List<SmsRecordEntity>> = MutableStateFlow(emptyList())
         override fun getQuarantinedRecords(): Flow<List<SmsRecordEntity>> = MutableStateFlow(emptyList())
+        override fun getRecentQuarantinedRecords(limit: Int): Flow<List<SmsRecordEntity>> = MutableStateFlow(emptyList())
         override suspend fun getQuarantinedPage(limit: Int, offset: Int): List<SmsRecordEntity> = emptyList()
         override suspend fun getRecordById(id: Long): SmsRecordEntity? = null
         override suspend fun insertRecord(record: SmsRecordEntity): Long = 1L

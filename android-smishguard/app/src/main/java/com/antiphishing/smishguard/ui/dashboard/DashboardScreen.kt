@@ -62,6 +62,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,6 +81,9 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.antiphishing.smishguard.data.local.entity.CallRecordEntity
 import com.antiphishing.smishguard.domain.model.SmsMessageData
 import com.antiphishing.smishguard.ui.components.DateTimeFormats
@@ -168,14 +172,32 @@ fun DashboardScreen(
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val coroutineScope = rememberCoroutineScope()
     val colors = SmishGuardTheme.colors
 
-    var coverage by remember { mutableStateOf(checkSystemCoverage(context)) }
+    var coverage by remember {
+        mutableStateOf(
+            SystemCoverageStatus(
+                smsGranted = true,
+                callReady = true,
+                callRoleAvailable = false,
+                notifListenerEnabled = true
+            )
+        )
+    }
+
+    fun refreshCoverageAsync() {
+        coroutineScope.launch {
+            coverage = withContext(Dispatchers.Default) {
+                checkSystemCoverage(context)
+            }
+        }
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        coverage = checkSystemCoverage(context)
+        refreshCoverageAsync()
         val deniedPermissions = permissions.filterValues { !it }.keys
         if (deniedPermissions.isNotEmpty() && context is Activity && deniedPermissions.all {
                 !ActivityCompat.shouldShowRequestPermissionRationale(context, it)
@@ -191,14 +213,14 @@ fun DashboardScreen(
     val roleLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        coverage = checkSystemCoverage(context)
+        refreshCoverageAsync()
     }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.syncSettings()
-                coverage = checkSystemCoverage(context)
+                refreshCoverageAsync()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

@@ -37,6 +37,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
@@ -437,29 +439,23 @@ fun SectionPanel(
         shadowElevation = 0.dp,
         tonalElevation = 0.dp
     ) {
-        if (accentEdgeColor != null) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .width(4.dp)
-                        .fillMaxHeight()
-                        .background(accentEdgeColor)
-                )
-                Column(
-                    modifier = Modifier.weight(1f),
-                    content = content
-                )
-            }
+        val columnModifier = if (accentEdgeColor != null) {
+            Modifier
+                .fillMaxWidth()
+                .drawBehind {
+                    drawRect(
+                        color = accentEdgeColor,
+                        size = Size(width = 4.dp.toPx(), height = size.height)
+                    )
+                }
+                .padding(start = 4.dp)
         } else {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                content = content
-            )
+            Modifier.fillMaxWidth()
         }
+        Column(
+            modifier = columnModifier,
+            content = content
+        )
     }
 }
 

@@ -16,8 +16,10 @@ import com.antiphishing.smishguard.domain.model.SmsMessageData
 import com.antiphishing.smishguard.domain.model.ThreatFactor
 import com.antiphishing.smishguard.domain.model.ThreatLevel
 import com.antiphishing.smishguard.util.SafeRegex
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.security.MessageDigest
@@ -44,17 +46,26 @@ class SmsRepository(
     fun getAllRecords(): Flow<List<SmsMessageData>> {
         return smsDao.getAllRecords().map { entities ->
             entities.map(::convertEntityToDomain)
-        }
+        }.flowOn(Dispatchers.Default)
     }
 
     fun getQuarantinedRecords(): Flow<List<SmsMessageData>> {
         return smsDao.getQuarantinedRecords().map { entities ->
             entities.map(::convertEntityToDomain)
-        }
+        }.flowOn(Dispatchers.Default)
+    }
+
+    fun getRecentQuarantinedRecords(limit: Int = 5): Flow<List<SmsMessageData>> {
+        return smsDao.getRecentQuarantinedRecords(limit).map { entities ->
+            entities.map(::convertEntityToDomain)
+        }.flowOn(Dispatchers.Default)
     }
 
     suspend fun getQuarantinedPage(limit: Int, offset: Int): List<SmsMessageData> {
-        return smsDao.getQuarantinedPage(limit, offset).map(::convertEntityToDomain)
+        val entities = smsDao.getQuarantinedPage(limit, offset)
+        return kotlinx.coroutines.withContext(Dispatchers.Default) {
+            entities.map(::convertEntityToDomain)
+        }
     }
 
     fun getTotalAnalyzedCount(): Flow<Int> {
@@ -168,28 +179,65 @@ class SmsRepository(
         return communityBlacklistDao.obtenerTodos()
     }
 
-    suspend fun saveCommunityEntry(entry: CommunityBlacklistEntity) {
+    suspend fun saveCommunityEntry(
+        entry: CommunityBlacklistEntity,
+        indicadorOriginal: String? = null
+    ) {
+        val normalizado = CommunityIndicatorNormalizer.obtener(entry.indicador).firstOrNull()?.valor
+        if (normalizado != null && normalizado != entry.indicador) {
+            communityBlacklistDao.eliminarPorIndicador(normalizado)
+        }
+        if (!indicadorOriginal.isNullOrBlank() && indicadorOriginal != entry.indicador) {
+            communityBlacklistDao.eliminarPorIndicador(indicadorOriginal)
+        }
         communityBlacklistDao.guardar(entry)
         ruleCache.invalidateCommunityIndicators()
     }
 
     suspend fun saveCommunityEntries(entries: List<CommunityBlacklistEntity>): Int {
-        val eliminados = communityBlacklistDao.obtenerEliminados().toSet()
+        val eliminadosPorIndicador = communityBlacklistDao.obtenerEntradasEliminadas().associateBy { it.indicador }
         val pendientesLocales = communityBlacklistDao.obtenerPendientes().map { it.indicador }.toSet()
-        communityBlacklistDao.eliminarSincronizados()
-        val filtradas = entries
+        val consolidados = entries
             .filter { it.reportes >= 0 }
+            .groupBy { it.indicador }
+            .map { (_, grupo) ->
+                grupo.maxByOrNull { it.actualizadoEn } ?: grupo.first()
+            }
+        val filtradas = consolidados
             .filterNot { entrada ->
                 val normalizado = CommunityIndicatorNormalizer.obtener(entrada.indicador).firstOrNull()?.valor
-                entrada.indicador in eliminados ||
-                    (normalizado != null && normalizado in eliminados) ||
+                val eliminadoDirecto = eliminadosPorIndicador[entrada.indicador]
+                val eliminadoNormalizado = if (normalizado != null) eliminadosPorIndicador[normalizado] else null
+                val marcaEliminacion = listOfNotNull(eliminadoDirecto, eliminadoNormalizado)
+                    .maxOfOrNull { it.actualizadoEn }
+                (marcaEliminacion != null && entrada.actualizadoEn <= marcaEliminacion) ||
                     entrada.indicador in pendientesLocales
             }
-            .distinctBy { it.indicador }
-        if (filtradas.isNotEmpty()) {
-            communityBlacklistDao.guardarTodos(filtradas)
+        for (entrada in filtradas) {
+            val normalizado = CommunityIndicatorNormalizer.obtener(entrada.indicador).firstOrNull()?.valor
+            if (normalizado != null && normalizado != entrada.indicador && normalizado in eliminadosPorIndicador) {
+                communityBlacklistDao.eliminarPorIndicador(normalizado)
+            }
         }
-        ruleCache.invalidateCommunityIndicators()
+        val actualesSincronizados = communityBlacklistDao.obtenerTodosAhora()
+            .filter { !it.pendienteSincronizacion }
+        val sinCambios = actualesSincronizados.size == filtradas.size &&
+            actualesSincronizados.associateBy { it.indicador }.let { mapaActual ->
+                filtradas.all { nueva ->
+                    val actual = mapaActual[nueva.indicador]
+                    actual != null &&
+                        actual.reportes == nueva.reportes &&
+                        actual.esMalicioso == nueva.esMalicioso &&
+                        actual.tipo == nueva.tipo
+                }
+            }
+        if (!sinCambios) {
+            communityBlacklistDao.eliminarSincronizados()
+            if (filtradas.isNotEmpty()) {
+                communityBlacklistDao.guardarTodos(filtradas)
+            }
+            ruleCache.invalidateCommunityIndicators()
+        }
         return filtradas.size + pendientesLocales.size
     }
 
@@ -205,7 +253,12 @@ class SmsRepository(
                 add(normalizado)
             }
         }
-        val ahora = System.currentTimeMillis()
+        val activas = communityBlacklistDao.obtenerTodosAhora().filter { it.indicador in objetivos }
+        val eliminadas = communityBlacklistDao.obtenerEntradasEliminadas().filter { it.indicador in objetivos }
+        if (!pendienteServidor && activas.isNotEmpty()) {
+            return
+        }
+        val marcaTiempo = (activas + eliminadas).maxOfOrNull { it.actualizadoEn } ?: System.currentTimeMillis()
         for (objetivo in objetivos) {
             communityBlacklistDao.guardar(
                 CommunityBlacklistEntity(
@@ -213,7 +266,7 @@ class SmsRepository(
                     tipo = "eliminado",
                     reportes = -1,
                     esMalicioso = false,
-                    actualizadoEn = ahora,
+                    actualizadoEn = marcaTiempo,
                     pendienteSincronizacion = pendienteServidor
                 )
             )

@@ -227,7 +227,7 @@ class SettingsViewModel(
                     esMalicioso = true,
                     pendienteSincronizacion = true
                 )
-                smsRepository.saveCommunityEntry(entrada)
+                smsRepository.saveCommunityEntry(entrada, indicadorOriginal = indicador.valor)
                 if (respuesta == null) {
                     onResult("Guardado localmente. Se sincronizará cuando el API comunitaria esté configurada.")
                 } else {
@@ -265,10 +265,25 @@ class SettingsViewModel(
         }
     }
 
+    @Volatile
+    private var sincronizandoComunidad: Boolean = false
+
+    fun sincronizarComunidadSiNecesario() {
+        if (sincronizandoComunidad) {
+            return
+        }
+        sincronizarComunidad {}
+    }
+
     fun sincronizarComunidad(alTerminar: (String) -> Unit) {
+        if (sincronizandoComunidad) {
+            return
+        }
+        sincronizandoComunidad = true
         viewModelScope.launch {
             val cliente = communityApiClient
             if (cliente == null) {
+                sincronizandoComunidad = false
                 alTerminar("El cliente comunitario no está disponible.")
                 return@launch
             }
@@ -284,24 +299,29 @@ class SettingsViewModel(
                     }
                     val pendientes = smsRepository.getPendingCommunityEntries()
                     for (pendiente in pendientes) {
-                        val sincronizado = cliente.enviar(
-                            com.antiphishing.smishguard.data.repository.CommunityIndicator(
-                                pendiente.indicador,
-                                pendiente.tipo
+                        try {
+                            val sincronizado = cliente.enviar(
+                                com.antiphishing.smishguard.data.repository.CommunityIndicator(
+                                    pendiente.indicador,
+                                    pendiente.tipo
+                                )
                             )
-                        )
-                        if (sincronizado != null) {
-                            smsRepository.saveCommunityEntry(sincronizado)
+                            if (sincronizado != null) {
+                                smsRepository.saveCommunityEntry(sincronizado, indicadorOriginal = pendiente.indicador)
+                            }
+                        } catch (_: Exception) {
                         }
                     }
                     val indicadores = cliente.descargar()
-                    val inteligencia = cliente.descargarInteligencia()
+                    val inteligencia = runCatching { cliente.descargarInteligencia() }.getOrDefault(emptyList())
                     val unidos = indicadores + inteligencia
                     smsRepository.saveCommunityEntries(unidos)
                 }
                 alTerminar("Lista sincronizada ($total registros).")
             } catch (error: Exception) {
                 alTerminar("Error al sincronizar: ${error.message ?: "sin conexión"}.")
+            } finally {
+                sincronizandoComunidad = false
             }
         }
     }

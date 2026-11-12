@@ -40,11 +40,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontFamily
@@ -74,9 +77,10 @@ fun CommunityBlacklistScreen(
 
     var valor by remember { mutableStateOf("") }
     var mostrarConfirmacion by remember { mutableStateOf(false) }
+    var limiteVisible by remember { mutableIntStateOf(50) }
 
     LaunchedEffect(Unit) {
-        viewModel.sincronizarComunidad {}
+        viewModel.sincronizarComunidadSiNecesario()
     }
 
     fun enviar() {
@@ -251,7 +255,10 @@ fun CommunityBlacklistScreen(
                                     )
                                 }
                             )
-                            entradas.forEachIndexed { index, entrada ->
+                            val visibles = remember(entradas, limiteVisible) {
+                                entradas.take(limiteVisible)
+                            }
+                            visibles.forEachIndexed { index, entrada ->
                                 if (index > 0) {
                                     PanelDivider()
                                 }
@@ -263,86 +270,92 @@ fun CommunityBlacklistScreen(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(IntrinsicSize.Min),
+                                        .drawBehind {
+                                            drawRect(
+                                                color = edgeColor,
+                                                size = Size(width = 3.dp.toPx(), height = size.height)
+                                            )
+                                        }
+                                        .padding(start = 15.dp, end = 12.dp, top = 11.dp, bottom = 11.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .width(3.dp)
-                                            .fillMaxHeight()
-                                            .background(edgeColor)
-                                    )
-                                    Row(
+                                    Column(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .padding(horizontal = 12.dp, vertical = 11.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
+                                            .padding(end = 10.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = entrada.indicador,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold,
+                                            color = colors.textPrimary
+                                        )
+                                        val tipoLabel = entrada.tipo.uppercase(Locale.getDefault())
+                                        val syncSuffix = if (entrada.pendienteSincronizacion) " · En cola local" else ""
+                                        Text(
+                                            text = "$tipoLabel · ${entrada.reportes} reporte(s)$syncSuffix",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = colors.textMuted
+                                        )
+                                    }
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
                                         Column(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .padding(end = 10.dp),
-                                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                                            horizontalAlignment = Alignment.End,
+                                            verticalArrangement = Arrangement.spacedBy(5.dp)
                                         ) {
-                                            Text(
-                                                text = entrada.indicador,
-                                                style = MaterialTheme.typography.titleSmall,
-                                                fontFamily = FontFamily.Monospace,
-                                                fontWeight = FontWeight.Bold,
-                                                color = colors.textPrimary
+                                            StatusTag(
+                                                text = when {
+                                                    entrada.esMalicioso -> "MALICIOSO"
+                                                    entrada.pendienteSincronizacion -> "LOCAL"
+                                                    else -> "${entrada.reportes}/5"
+                                                },
+                                                tone = when {
+                                                    entrada.esMalicioso -> SemanticTone.DANGER
+                                                    entrada.pendienteSincronizacion -> SemanticTone.ACCENT
+                                                    else -> SemanticTone.WARNING
+                                                }
                                             )
-                                            val tipoLabel = entrada.tipo.uppercase(Locale.getDefault())
-                                            val syncSuffix = if (entrada.pendienteSincronizacion) " · En cola local" else ""
-                                            Text(
-                                                text = "$tipoLabel · ${entrada.reportes} reporte(s)$syncSuffix",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = colors.textMuted
+                                            ConfirmationStepsBar(
+                                                count = entrada.reportes,
+                                                isMalicious = entrada.esMalicioso
                                             )
                                         }
-
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        IconButton(
+                                            onClick = {
+                                                viewModel.eliminarDeComunidad(entrada.indicador) { mensaje ->
+                                                    Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
+                                                }
+                                            },
+                                            modifier = Modifier.size(36.dp)
                                         ) {
-                                            Column(
-                                                horizontalAlignment = Alignment.End,
-                                                verticalArrangement = Arrangement.spacedBy(5.dp)
-                                            ) {
-                                                StatusTag(
-                                                    text = when {
-                                                        entrada.esMalicioso -> "MALICIOSO"
-                                                        entrada.pendienteSincronizacion -> "LOCAL"
-                                                        else -> "${entrada.reportes}/5"
-                                                    },
-                                                    tone = when {
-                                                        entrada.esMalicioso -> SemanticTone.DANGER
-                                                        entrada.pendienteSincronizacion -> SemanticTone.ACCENT
-                                                        else -> SemanticTone.WARNING
-                                                    }
-                                                )
-                                                ConfirmationStepsBar(
-                                                    count = entrada.reportes,
-                                                    isMalicious = entrada.esMalicioso
-                                                )
-                                            }
-                                            IconButton(
-                                                onClick = {
-                                                    viewModel.eliminarDeComunidad(entrada.indicador) { mensaje ->
-                                                        Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
-                                                    }
-                                                },
-                                                modifier = Modifier.size(36.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Outlined.DeleteOutline,
-                                                    contentDescription = "Eliminar",
-                                                    tint = colors.danger,
-                                                    modifier = Modifier.size(19.dp)
-                                                )
-                                            }
+                                            Icon(
+                                                imageVector = Icons.Outlined.DeleteOutline,
+                                                contentDescription = "Eliminar",
+                                                tint = colors.danger,
+                                                modifier = Modifier.size(19.dp)
+                                            )
                                         }
                                     }
+                                }
+                            }
+                            if (entradas.size > limiteVisible) {
+                                PanelDivider()
+                                TextButton(
+                                    onClick = { limiteVisible += 50 },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = "Mostrar más (${entradas.size - limiteVisible} restantes)",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = colors.accent
+                                    )
                                 }
                             }
                         }

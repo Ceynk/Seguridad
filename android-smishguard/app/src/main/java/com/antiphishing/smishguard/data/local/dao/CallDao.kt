@@ -17,6 +17,12 @@ interface CallDao {
     @Query("SELECT * FROM call_records WHERE isBlocked = 1 ORDER BY timestamp DESC")
     fun getBlockedCalls(): Flow<List<CallRecordEntity>>
 
+    @Query("SELECT * FROM call_records WHERE isBlocked = 1 OR action != 'ALLOW' ORDER BY timestamp DESC LIMIT :limit")
+    fun getRecentFlaggedCalls(limit: Int = 5): Flow<List<CallRecordEntity>>
+
+    @Query("SELECT * FROM call_records WHERE isBlocked = 1 OR action != 'ALLOW' OR threatScore > 0 ORDER BY timestamp DESC LIMIT :limit")
+    fun getFilteredCallRecords(limit: Int = 200): Flow<List<CallRecordEntity>>
+
     @Query("SELECT COUNT(*) FROM call_records")
     fun getTotalCallsCount(): Flow<Int>
 

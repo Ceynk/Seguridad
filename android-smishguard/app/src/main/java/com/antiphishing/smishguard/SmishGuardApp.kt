@@ -108,7 +108,7 @@ class SmishGuardApp : Application() {
                                 CommunityIndicator(pendiente.indicador, pendiente.tipo)
                             )
                             if (sincronizado != null) {
-                                smsRepository.saveCommunityEntry(sincronizado)
+                                smsRepository.saveCommunityEntry(sincronizado, indicadorOriginal = pendiente.indicador)
                             }
                         } catch (e: Exception) {
                             Log.w(TAG, "No se pudo sincronizar el indicador comunitario", e)

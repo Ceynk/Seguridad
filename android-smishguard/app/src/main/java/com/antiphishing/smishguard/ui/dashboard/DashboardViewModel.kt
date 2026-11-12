@@ -42,16 +42,14 @@ class DashboardViewModel(
     val phishingCount = smsRepository.getPhishingDetectedCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
-    val recentQuarantined = smsRepository.getQuarantinedRecords()
+    val recentQuarantined = smsRepository.getRecentQuarantinedRecords(4)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val blockedCallsCount: StateFlow<Int> = (callRepository?.getBlockedCallsCount() ?: flowOf(0))
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val recentFlaggedCalls: StateFlow<List<CallRecordEntity>> =
-        (callRepository?.getAllCallRecords()?.map { list ->
-            list.filter { it.isBlocked || it.action != "ALLOW" }.take(5)
-        } ?: flowOf(emptyList()))
+        (callRepository?.getRecentFlaggedCalls(5) ?: flowOf(emptyList()))
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun syncSettings() {

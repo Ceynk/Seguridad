@@ -25,6 +25,9 @@ interface CommunityBlacklistDao {
     @Query("SELECT indicador FROM community_blacklist WHERE reportes < 0")
     suspend fun obtenerEliminados(): List<String>
 
+    @Query("SELECT * FROM community_blacklist WHERE reportes < 0")
+    suspend fun obtenerEntradasEliminadas(): List<CommunityBlacklistEntity>
+
     @Query("SELECT indicador FROM community_blacklist WHERE reportes < 0 AND pendienteSincronizacion = 1")
     suspend fun obtenerEliminadosPendientes(): List<String>
 

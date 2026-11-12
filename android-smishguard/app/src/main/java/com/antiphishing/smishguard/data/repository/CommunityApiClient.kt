@@ -16,33 +16,59 @@ class CommunityApiClient(
         if (urlBase.isBlank()) {
             return null
         }
+        val normalizado = CommunityIndicatorNormalizer.obtener(indicador.valor).firstOrNull()
+            ?: indicador
+        val conexion = enviarPostReporte(normalizado.valor, normalizado.tipo)
+        if (conexion.responseCode in 200..299) {
+            return leerEntrada(conexion.inputStream.bufferedReader().use { it.readText() })
+        }
+        if (conexion.responseCode == 400 && normalizado.tipo == "numero") {
+            val aliasDominio = codificarNumeroComoDominio(normalizado.valor)
+            if (aliasDominio != null) {
+                val conexionAlterna = enviarPostReporte(aliasDominio, "dominio")
+                if (conexionAlterna.responseCode in 200..299) {
+                    return leerEntrada(conexionAlterna.inputStream.bufferedReader().use { it.readText() })
+                }
+            }
+        }
+        throw IllegalStateException("El API comunitaria respondió ${conexion.responseCode}")
+    }
+
+    private fun enviarPostReporte(valor: String, tipo: String): HttpURLConnection {
         val conexion = abrir("/v1/reportes")
         conexion.requestMethod = "POST"
         conexion.doOutput = true
         conexion.setRequestProperty("Content-Type", "application/json")
         val cuerpo = JSONObject()
-            .put("indicador", indicador.valor)
-            .put("tipo", indicador.tipo)
+            .put("indicador", valor)
+            .put("tipo", tipo)
             .toString()
         conexion.outputStream.use { it.write(cuerpo.toByteArray(Charsets.UTF_8)) }
-        if (conexion.responseCode !in 200..299) {
-            throw IllegalStateException("El API comunitaria respondió ${conexion.responseCode}")
-        }
-        return leerEntrada(conexion.inputStream.bufferedReader().use { it.readText() })
+        return conexion
     }
 
     fun eliminar(indicador: String): Boolean {
         if (urlBase.isBlank()) {
             return false
         }
-        val codificado = URLEncoder.encode(indicador.trim(), "UTF-8")
+        val limpio = indicador.trim()
+        val codificado = URLEncoder.encode(limpio, "UTF-8")
         val conexion = abrir("/v1/reportes?indicador=$codificado")
         conexion.requestMethod = "DELETE"
         if (conexion.responseCode == 404) {
-            return false
+            return true
         }
         if (conexion.responseCode !in 200..299) {
             throw IllegalStateException("El API comunitaria respondió ${conexion.responseCode}")
+        }
+        val aliasDominio = codificarNumeroComoDominio(limpio)
+        if (aliasDominio != null) {
+            runCatching {
+                val codificadoAlias = URLEncoder.encode(aliasDominio, "UTF-8")
+                val conexionAlias = abrir("/v1/reportes?indicador=$codificadoAlias")
+                conexionAlias.requestMethod = "DELETE"
+                conexionAlias.responseCode
+            }
         }
         return true
     }
@@ -58,9 +84,9 @@ class CommunityApiClient(
             throw IllegalStateException("El API comunitaria respondió ${conexion.responseCode}")
         }
         val arreglo = JSONArray(conexion.inputStream.bufferedReader().use { it.readText() })
-        val resultado = mutableListOf<CommunityBlacklistEntity>()
+        val resultado = ArrayList<CommunityBlacklistEntity>(arreglo.length())
         for (indice in 0 until arreglo.length()) {
-            leerEntrada(arreglo.getJSONObject(indice).toString())?.let { resultado.add(it) }
+            leerEntradaObjeto(arreglo.getJSONObject(indice))?.let { resultado.add(it) }
         }
         return resultado
     }
@@ -79,8 +105,8 @@ class CommunityApiClient(
         val resultado = mutableListOf<CommunityBlacklistEntity>()
         for (indice in 0 until arreglo.length()) {
             val objeto = arreglo.getJSONObject(indice)
-            val numero = objeto.optString("numeroE164").trim()
-            if (!numero.startsWith("+57") || numero.length !in 12..13) {
+            val numero = objeto.optString("numeroE164").ifBlank { objeto.optString("indicador") }.trim()
+            if (numero.isBlank()) {
                 continue
             }
             val reportes = objeto.optInt("reportesIndependientes", objeto.optInt("reportes", 0))
@@ -108,9 +134,18 @@ class CommunityApiClient(
     }
 
     private fun leerEntrada(texto: String): CommunityBlacklistEntity? {
-        val objeto = JSONObject(texto)
-        val indicador = objeto.optString("indicador").ifBlank { objeto.optString("numeroE164") }.trim()
-        val tipo = objeto.optString("tipo").ifBlank { if (indicador.startsWith("+")) "numero" else "" }.trim()
+        return leerEntradaObjeto(JSONObject(texto))
+    }
+
+    private fun leerEntradaObjeto(objeto: JSONObject): CommunityBlacklistEntity? {
+        val indicadorCrudo = objeto.optString("indicador").ifBlank { objeto.optString("numeroE164") }.trim()
+        val numeroDecodificado = decodificarNumeroDesdeDominio(indicadorCrudo)
+        val indicador = numeroDecodificado ?: indicadorCrudo
+        val tipo = if (numeroDecodificado != null) {
+            "numero"
+        } else {
+            objeto.optString("tipo").ifBlank { if (indicador.startsWith("+")) "numero" else "" }.trim()
+        }
         if (indicador.isBlank() || tipo.isBlank()) {
             return null
         }
@@ -124,6 +159,34 @@ class CommunityApiClient(
             esMalicioso = objeto.optBoolean("esMalicioso", confirmada || reportes >= 1),
             actualizadoEn = actualizado
         )
+    }
+
+    private fun codificarNumeroComoDominio(valor: String): String? {
+        val limpio = valor.trim()
+        val tieneMas = limpio.startsWith("+")
+        val digitos = limpio.filter { it.isDigit() }
+        if (digitos.length !in 8..15) {
+            return null
+        }
+        val prefijo = if (tieneMas) "plus$digitos" else digitos
+        return "$prefijo.tel"
+    }
+
+    private fun decodificarNumeroDesdeDominio(valor: String): String? {
+        val limpio = valor.trim().lowercase()
+        if (!limpio.endsWith(".tel")) {
+            return null
+        }
+        val etiqueta = limpio.removeSuffix(".tel")
+        if (etiqueta.startsWith("plus")) {
+            val digitos = etiqueta.removePrefix("plus")
+            if (digitos.length in 8..15 && digitos.all { it.isDigit() }) {
+                return "+$digitos"
+            }
+        } else if (etiqueta.length in 8..15 && etiqueta.all { it.isDigit() }) {
+            return etiqueta
+        }
+        return null
     }
 
     private fun parseFecha(valor: String): Long {

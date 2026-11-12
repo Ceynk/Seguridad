@@ -25,6 +25,14 @@ class CallRepository(
         return callDao.getBlockedCalls()
     }
 
+    fun getRecentFlaggedCalls(limit: Int = 5): Flow<List<CallRecordEntity>> {
+        return callDao.getRecentFlaggedCalls(limit)
+    }
+
+    fun getFilteredCallRecords(limit: Int = 200): Flow<List<CallRecordEntity>> {
+        return callDao.getFilteredCallRecords(limit)
+    }
+
     fun getTotalCallsCount(): Flow<Int> {
         return callDao.getTotalCallsCount()
     }

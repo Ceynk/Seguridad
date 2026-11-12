@@ -48,33 +48,36 @@ class QuarantineViewModel(
     val hasMoreMessages: StateFlow<Boolean> = _hasMoreMessages
 
     val callRecords: StateFlow<List<CallLogUiItem>> =
-        (callRepository?.getAllCallRecords()?.map { records ->
-            records
-                .filter { it.isBlocked || it.action != "ALLOW" || it.threatScore > 0 }
-                .map { record ->
-                    val parsedLevel = try {
-                        ThreatLevel.valueOf(record.threatLevel)
-                    } catch (_: Exception) {
-                        ThreatLevel.SAFE
-                    }
-                    CallLogUiItem(
-                        id = record.id,
-                        phoneNumber = record.phoneNumber.ifBlank { "Número oculto" },
-                        timestamp = record.timestamp,
-                        threatScore = record.threatScore,
-                        threatLevel = parsedLevel,
-                        isBlocked = record.isBlocked,
-                        action = record.action,
-                        countryOrOrigin = record.countryOrOrigin,
-                        summaryReason = record.summaryReason,
-                        factors = callRepository.deserializeFactors(record.factorsJson)
-                    )
+        (callRepository?.getFilteredCallRecords()?.map { records ->
+            records.map { record ->
+                val parsedLevel = try {
+                    ThreatLevel.valueOf(record.threatLevel)
+                } catch (_: Exception) {
+                    ThreatLevel.SAFE
                 }
+                CallLogUiItem(
+                    id = record.id,
+                    phoneNumber = record.phoneNumber.ifBlank { "Número oculto" },
+                    timestamp = record.timestamp,
+                    threatScore = record.threatScore,
+                    threatLevel = parsedLevel,
+                    isBlocked = record.isBlocked,
+                    action = record.action,
+                    countryOrOrigin = record.countryOrOrigin,
+                    summaryReason = record.summaryReason,
+                    factors = callRepository.deserializeFactors(record.factorsJson)
+                )
+            }
         }?.flowOn(Dispatchers.Default) ?: flowOf(emptyList()))
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    init {
-        loadMoreMessages()
+    private var initialized = false
+
+    fun ensureInitialized() {
+        if (!initialized) {
+            initialized = true
+            loadMoreMessages()
+        }
     }
 
     fun loadMoreMessages() {

@@ -41,7 +41,9 @@ object DetectorMarcas {
         }
         for (marca in MARCAS_CON_TOLERANCIA) {
             val tolerancia = if (marca.length >= 9) 2 else 1
+            val minLen = marca.length - 1
             for (palabra in palabras) {
+                if (palabra.length < minLen) continue
                 if (contieneParecido(palabra, marca, tolerancia)) {
                     return MarcaDetectada(marca, false)
                 }
@@ -51,16 +53,44 @@ object DetectorMarcas {
     }
 
     private fun contieneParecido(palabra: String, marca: String, tolerancia: Int): Boolean {
+        val anterior = IntArray(marca.length + 1)
+        val actual = IntArray(marca.length + 1)
         for (tamano in (marca.length - 1)..(marca.length + 1)) {
             if (tamano > palabra.length) continue
             for (inicio in 0..(palabra.length - tamano)) {
-                val ventana = palabra.substring(inicio, inicio + tamano)
-                if (distanciaEdicion(ventana, marca) <= tolerancia) {
+                if (distanciaEdicionVentana(palabra, inicio, tamano, marca, tolerancia, anterior, actual)) {
                     return true
                 }
             }
         }
         return false
+    }
+
+    private fun distanciaEdicionVentana(
+        palabra: String,
+        inicio: Int,
+        tamano: Int,
+        marca: String,
+        tolerancia: Int,
+        anterior: IntArray,
+        actual: IntArray
+    ): Boolean {
+        val mLen = marca.length
+        for (j in 0..mLen) anterior[j] = j
+        for (i in 1..tamano) {
+            actual[0] = i
+            var minFila = i
+            val charA = palabra[inicio + i - 1]
+            for (j in 1..mLen) {
+                val costo = if (charA == marca[j - 1]) 0 else 1
+                val valor = minOf(actual[j - 1] + 1, anterior[j] + 1, anterior[j - 1] + costo)
+                actual[j] = valor
+                if (valor < minFila) minFila = valor
+            }
+            if (minFila > tolerancia) return false
+            for (j in 0..mLen) anterior[j] = actual[j]
+        }
+        return anterior[mLen] <= tolerancia
     }
 
     fun distanciaEdicion(a: String, b: String): Int {

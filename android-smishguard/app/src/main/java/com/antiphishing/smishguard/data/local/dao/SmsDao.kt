@@ -18,6 +18,9 @@ interface SmsDao {
     @Query("SELECT * FROM sms_records WHERE isQuarantined = 1 AND wasRestored = 0 ORDER BY timestamp DESC")
     fun getQuarantinedRecords(): Flow<List<SmsRecordEntity>>
 
+    @Query("SELECT * FROM sms_records WHERE isQuarantined = 1 AND wasRestored = 0 ORDER BY timestamp DESC LIMIT :limit")
+    fun getRecentQuarantinedRecords(limit: Int = 5): Flow<List<SmsRecordEntity>>
+
     @Query(
         "SELECT * FROM sms_records " +
             "WHERE isQuarantined = 1 AND wasRestored = 0 " +
