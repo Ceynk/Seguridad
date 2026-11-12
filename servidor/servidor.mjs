@@ -27,7 +27,7 @@ const respuestaJson = (respuesta, estado, cuerpo) => {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store",
     "Access-Control-Allow-Origin": process.env.ALLOW_ORIGIN || "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
   });
   respuesta.end(JSON.stringify(cuerpo));
@@ -304,6 +304,42 @@ const crearReporte = async (solicitud, respuesta) => {
   respuestaJson(respuesta, 201, entrada);
 };
 
+const eliminarReporte = async (solicitud, respuesta, url) => {
+  let cuerpo = {};
+  if (solicitud.headers["content-length"]) {
+    try {
+      cuerpo = await leerCuerpo(solicitud);
+    } catch (error) {
+      respuestaJson(respuesta, 400, { error: error.message });
+      return;
+    }
+  }
+  const valor = String(url.searchParams.get("indicador") || cuerpo.indicador || "").trim();
+  if (!valor) {
+    respuestaJson(respuesta, 400, { error: "Indicador requerido" });
+    return;
+  }
+  const numero = normalizarNumeroColombiano(valor);
+  const dominio = normalizarIndicador(valor, "dominio")?.indicador;
+  const objetivo = numero || dominio || valor.toLowerCase();
+  const eliminado = await ejecutarEscrituraExclusiva(async () => {
+    const datos = await cargarDatos();
+    const totalAntes = datos.reportes.length + datos.inteligencia.length;
+    datos.reportes = datos.reportes.filter(
+      (item) => item.indicador !== objetivo && item.indicador !== valor
+    );
+    datos.inteligencia = datos.inteligencia.filter(
+      (item) => item.numeroE164 !== objetivo && item.indicador !== objetivo && item.indicador !== valor
+    );
+    const totalDespues = datos.reportes.length + datos.inteligencia.length;
+    if (totalAntes !== totalDespues) {
+      await guardarDatos(datos);
+    }
+    return totalAntes !== totalDespues;
+  });
+  respuestaJson(respuesta, 200, { eliminado, indicador: objetivo });
+};
+
 const obtenerListaNegraConsolidada = (estado) => {
   const dominios = estado.reportes.filter((elemento) => elemento.tipo === "dominio");
   const numeros = estado.inteligencia.map((item) => ({
@@ -363,6 +399,10 @@ const servidor = createServer(async (solicitud, respuesta) => {
     }
     if (solicitud.method === "POST" && ruta === "/v1/reportes") {
       await crearReporte(solicitud, respuesta);
+      return;
+    }
+    if (solicitud.method === "DELETE" && (ruta === "/v1/reportes" || ruta === "/v1/lista-negra")) {
+      await eliminarReporte(solicitud, respuesta, url);
       return;
     }
     respuestaJson(respuesta, 404, { error: "Ruta no encontrada" });

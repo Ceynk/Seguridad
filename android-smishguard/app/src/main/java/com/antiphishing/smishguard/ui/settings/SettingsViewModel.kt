@@ -248,6 +248,21 @@ class SettingsViewModel(
         }
     }
 
+    fun eliminarDeComunidad(indicador: String, alTerminar: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    communityApiClient?.eliminar(indicador)
+                }
+                smsRepository.eliminarEntradaComunidad(indicador)
+                alTerminar("Indicador eliminado.")
+            } catch (error: Exception) {
+                smsRepository.eliminarEntradaComunidad(indicador)
+                alTerminar("Eliminado localmente. Error en el servidor: ${error.message ?: "sin conexión"}.")
+            }
+        }
+    }
+
     fun sincronizarComunidad(alTerminar: (String) -> Unit) {
         viewModelScope.launch {
             val cliente = communityApiClient

@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CloudUpload
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -300,26 +301,46 @@ fun CommunityBlacklistScreen(
                                             )
                                         }
 
-                                        Column(
-                                            horizontalAlignment = Alignment.End,
-                                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                                         ) {
-                                            StatusTag(
-                                                text = when {
-                                                    entrada.esMalicioso -> "MALICIOSO"
-                                                    entrada.pendienteSincronizacion -> "LOCAL"
-                                                    else -> "${entrada.reportes}/5"
+                                            Column(
+                                                horizontalAlignment = Alignment.End,
+                                                verticalArrangement = Arrangement.spacedBy(5.dp)
+                                            ) {
+                                                StatusTag(
+                                                    text = when {
+                                                        entrada.esMalicioso -> "MALICIOSO"
+                                                        entrada.pendienteSincronizacion -> "LOCAL"
+                                                        else -> "${entrada.reportes}/5"
+                                                    },
+                                                    tone = when {
+                                                        entrada.esMalicioso -> SemanticTone.DANGER
+                                                        entrada.pendienteSincronizacion -> SemanticTone.ACCENT
+                                                        else -> SemanticTone.WARNING
+                                                    }
+                                                )
+                                                ConfirmationStepsBar(
+                                                    count = entrada.reportes,
+                                                    isMalicious = entrada.esMalicioso
+                                                )
+                                            }
+                                            IconButton(
+                                                onClick = {
+                                                    viewModel.eliminarDeComunidad(entrada.indicador) { mensaje ->
+                                                        Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
+                                                    }
                                                 },
-                                                tone = when {
-                                                    entrada.esMalicioso -> SemanticTone.DANGER
-                                                    entrada.pendienteSincronizacion -> SemanticTone.ACCENT
-                                                    else -> SemanticTone.WARNING
-                                                }
-                                            )
-                                            ConfirmationStepsBar(
-                                                count = entrada.reportes,
-                                                isMalicious = entrada.esMalicioso
-                                            )
+                                                modifier = Modifier.size(36.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Outlined.DeleteOutline,
+                                                    contentDescription = "Eliminar",
+                                                    tint = colors.danger,
+                                                    modifier = Modifier.size(19.dp)
+                                                )
+                                            }
                                         }
                                     }
                                 }

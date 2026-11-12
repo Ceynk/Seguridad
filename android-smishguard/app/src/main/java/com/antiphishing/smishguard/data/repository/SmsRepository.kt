@@ -174,10 +174,16 @@ class SmsRepository(
     }
 
     suspend fun saveCommunityEntries(entries: List<CommunityBlacklistEntity>) {
+        communityBlacklistDao.eliminarSincronizados()
         if (entries.isNotEmpty()) {
             communityBlacklistDao.guardarTodos(entries)
-            ruleCache.invalidateCommunityIndicators()
         }
+        ruleCache.invalidateCommunityIndicators()
+    }
+
+    suspend fun eliminarEntradaComunidad(indicador: String) {
+        communityBlacklistDao.eliminarPorIndicador(indicador)
+        ruleCache.invalidateCommunityIndicators()
     }
 
     suspend fun getPendingCommunityEntries(): List<CommunityBlacklistEntity> {

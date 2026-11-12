@@ -27,4 +27,10 @@ interface CommunityBlacklistDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun guardarTodos(entradas: List<CommunityBlacklistEntity>)
+
+    @Query("DELETE FROM community_blacklist WHERE indicador = :indicador")
+    suspend fun eliminarPorIndicador(indicador: String)
+
+    @Query("DELETE FROM community_blacklist WHERE pendienteSincronizacion = 0")
+    suspend fun eliminarSincronizados()
 }

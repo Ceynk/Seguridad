@@ -27,12 +27,8 @@ class CommunitySyncWorker(
                     application.smsRepository.saveCommunityEntry(sincronizado)
                 }
             }
-            val entradas = application.communityApiClient.descargar(
-                application.settingsRepository.communitySyncCursor
-            )
-            val inteligencia = application.communityApiClient.descargarInteligencia(
-                application.settingsRepository.communitySyncCursor
-            )
+            val entradas = application.communityApiClient.descargar()
+            val inteligencia = application.communityApiClient.descargarInteligencia()
             application.smsRepository.saveCommunityEntries(entradas + inteligencia)
             (entradas + inteligencia).maxOfOrNull { it.actualizadoEn }?.let {
                 application.settingsRepository.communitySyncCursor = it

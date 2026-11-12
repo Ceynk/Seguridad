@@ -6,6 +6,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 
 class CommunityApiClient(
     private val urlBase: String = obtenerUrlPredeterminada()
@@ -28,6 +29,19 @@ class CommunityApiClient(
             throw IllegalStateException("El API comunitaria respondió ${conexion.responseCode}")
         }
         return leerEntrada(conexion.inputStream.bufferedReader().use { it.readText() })
+    }
+
+    fun eliminar(indicador: String): Boolean {
+        if (urlBase.isBlank()) {
+            return false
+        }
+        val codificado = URLEncoder.encode(indicador.trim(), "UTF-8")
+        val conexion = abrir("/v1/reportes?indicador=$codificado")
+        conexion.requestMethod = "DELETE"
+        if (conexion.responseCode !in 200..299) {
+            throw IllegalStateException("El API comunitaria respondió ${conexion.responseCode}")
+        }
+        return true
     }
 
     fun descargar(desde: Long = 0L): List<CommunityBlacklistEntity> {

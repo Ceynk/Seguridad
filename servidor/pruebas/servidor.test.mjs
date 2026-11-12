@@ -67,6 +67,19 @@ test("registra reportes de dominios y números y consolida lista negra", async (
     const entradaNumero = listaNegra.find((item) => item.indicador === "+573102054740");
     assert.equal(entradaNumero.reportes, 1);
     assert.equal(entradaNumero.esMalicioso, true);
+
+    const respEliminar = await fetch(
+      `http://localhost:${puerto}/v1/reportes?indicador=${encodeURIComponent("+573102054740")}`,
+      { method: "DELETE" }
+    );
+    const datosEliminar = await respEliminar.json();
+    assert.equal(respEliminar.status, 200);
+    assert.equal(datosEliminar.eliminado, true);
+
+    const respListaDespues = await fetch(`http://localhost:${puerto}/v1/lista-negra`);
+    const listaDespues = await respListaDespues.json();
+    assert.equal(listaDespues.length, 1);
+    assert.equal(listaDespues[0].indicador, "phishingbanco.com");
   } finally {
     proceso.kill();
     await rm(carpeta, { recursive: true, force: true });
