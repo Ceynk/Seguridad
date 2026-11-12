@@ -115,6 +115,20 @@ class SettingsViewModel(
     ) {
         viewModelScope.launch {
             val error = smsRepository.addCustomRule(pattern, isRegex, description)
+            if (error == null && !isRegex) {
+                val indicador = CommunityIndicatorNormalizer.obtener(pattern).firstOrNull()
+                if (indicador != null) {
+                    try {
+                        val respuesta = withContext(Dispatchers.IO) {
+                            communityApiClient?.enviar(indicador)
+                        }
+                        if (respuesta != null) {
+                            smsRepository.saveCommunityEntry(respuesta)
+                        }
+                    } catch (_: Exception) {
+                    }
+                }
+            }
             if (onResult != null) {
                 onResult(error)
             }

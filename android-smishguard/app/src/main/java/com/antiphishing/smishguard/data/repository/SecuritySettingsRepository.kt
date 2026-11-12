@@ -71,6 +71,6 @@ class SecuritySettingsRepository(context: Context) {
         set(value) = prefs.edit().putLong(KEY_COMMUNITY_CURSOR, value).apply()
 
     var isCommunitySyncEnabled: Boolean
-        get() = prefs.getBoolean(KEY_COMMUNITY_SYNC_ENABLED, false)
+        get() = prefs.getBoolean(KEY_COMMUNITY_SYNC_ENABLED, true)
         set(value) = prefs.edit().putBoolean(KEY_COMMUNITY_SYNC_ENABLED, value).apply()
 }

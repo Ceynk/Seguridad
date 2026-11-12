@@ -8,7 +8,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class CommunityApiClient(
-    private val urlBase: String = BuildConfig.COMMUNITY_API_URL
+    private val urlBase: String = obtenerUrlPredeterminada()
 ) {
 
     fun enviar(indicador: CommunityIndicator): CommunityBlacklistEntity? {
@@ -85,8 +85,8 @@ class CommunityApiClient(
     private fun abrir(ruta: String): HttpURLConnection {
         val base = urlBase.trimEnd('/')
         return (URL("$base$ruta").openConnection() as HttpURLConnection).apply {
-            connectTimeout = 5_000
-            readTimeout = 8_000
+            connectTimeout = 20_000
+            readTimeout = 20_000
         }
     }
 
@@ -113,5 +113,17 @@ class CommunityApiClient(
         return valor.toLongOrNull() ?: runCatching {
             java.time.Instant.parse(valor).toEpochMilli()
         }.getOrDefault(System.currentTimeMillis())
+    }
+
+    companion object {
+        private const val URL_RENDER = "https://smishguard-servidor.onrender.com"
+
+        private fun obtenerUrlPredeterminada(): String {
+            val configurada = BuildConfig.COMMUNITY_API_URL.trim()
+            if (configurada.isBlank() || configurada.indexOf("http", 4) != -1) {
+                return URL_RENDER
+            }
+            return configurada
+        }
     }
 }
