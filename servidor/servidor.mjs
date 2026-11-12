@@ -164,6 +164,7 @@ const registrarCambio = (datos, numeroE164, tipo, antes, despues) => {
 
 const actualizarInteligencia = (datos, numeroE164, categoria, fuente) => {
   const ahora = new Date().toISOString();
+  const esColombiano = numeroE164.startsWith("+57");
   let entrada = datos.inteligencia.find((item) => item.numeroE164 === numeroE164);
   const antes = entrada ? { ...entrada, fuentes: [...entrada.fuentes] } : null;
   if (!entrada) {
@@ -171,8 +172,8 @@ const actualizarInteligencia = (datos, numeroE164, categoria, fuente) => {
       indicador: numeroE164,
       tipo: "numero",
       numeroE164,
-      indicativoInternacional: "+57",
-      pais: "CO",
+      indicativoInternacional: esColombiano ? "+57" : "",
+      pais: esColombiano ? "CO" : "INT",
       categoria,
       reportes: 0,
       reportesIndependientes: 0,
@@ -233,11 +234,7 @@ const crearReporte = async (solicitud, respuesta) => {
     return;
   }
   if (indicador.tipo === "numero") {
-    const numeroE164 = normalizarNumeroColombiano(indicador.indicador);
-    if (!numeroE164) {
-      respuestaJson(respuesta, 400, { error: "Solo se aceptan números colombianos válidos en formato E.164" });
-      return;
-    }
+    const numeroE164 = normalizarNumeroColombiano(indicador.indicador) || indicador.indicador;
     const categoria = String(cuerpo.categoria || "sospechoso").trim().toLowerCase();
     if (!CATEGORIAS.has(categoria)) {
       respuestaJson(respuesta, 400, { error: "Categoría no válida" });
@@ -319,7 +316,7 @@ const eliminarReporte = async (solicitud, respuesta, url) => {
     respuestaJson(respuesta, 400, { error: "Indicador requerido" });
     return;
   }
-  const numero = normalizarNumeroColombiano(valor);
+  const numero = normalizarNumeroColombiano(valor) || normalizarIndicador(valor, "numero")?.indicador;
   const dominio = normalizarIndicador(valor, "dominio")?.indicador;
   const objetivo = numero || dominio || valor.toLowerCase();
   const eliminado = await ejecutarEscrituraExclusiva(async () => {
