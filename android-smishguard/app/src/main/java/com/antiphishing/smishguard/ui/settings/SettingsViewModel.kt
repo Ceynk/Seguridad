@@ -250,15 +250,17 @@ class SettingsViewModel(
 
     fun eliminarDeComunidad(indicador: String, alTerminar: (String) -> Unit) {
         viewModelScope.launch {
-            try {
+            smsRepository.eliminarEntradaComunidad(indicador, pendienteServidor = true)
+            alTerminar("Indicador eliminado.")
+            val eliminadoRemoto = try {
                 withContext(Dispatchers.IO) {
-                    communityApiClient?.eliminar(indicador)
+                    communityApiClient?.eliminar(indicador) == true
                 }
-                smsRepository.eliminarEntradaComunidad(indicador)
-                alTerminar("Indicador eliminado.")
-            } catch (error: Exception) {
-                smsRepository.eliminarEntradaComunidad(indicador)
-                alTerminar("Eliminado localmente. Error en el servidor: ${error.message ?: "sin conexión"}.")
+            } catch (_: Exception) {
+                false
+            }
+            if (eliminadoRemoto) {
+                smsRepository.eliminarEntradaComunidad(indicador, pendienteServidor = false)
             }
         }
     }
@@ -272,6 +274,14 @@ class SettingsViewModel(
             }
             try {
                 val total = withContext(Dispatchers.IO) {
+                    for (eliminado in smsRepository.getPendingDeletedCommunityIndicators()) {
+                        try {
+                            if (cliente.eliminar(eliminado)) {
+                                smsRepository.eliminarEntradaComunidad(eliminado, pendienteServidor = false)
+                            }
+                        } catch (_: Exception) {
+                        }
+                    }
                     val pendientes = smsRepository.getPendingCommunityEntries()
                     for (pendiente in pendientes) {
                         val sincronizado = cliente.enviar(
@@ -288,7 +298,6 @@ class SettingsViewModel(
                     val inteligencia = cliente.descargarInteligencia()
                     val unidos = indicadores + inteligencia
                     smsRepository.saveCommunityEntries(unidos)
-                    unidos.size
                 }
                 alTerminar("Lista sincronizada ($total registros).")
             } catch (error: Exception) {

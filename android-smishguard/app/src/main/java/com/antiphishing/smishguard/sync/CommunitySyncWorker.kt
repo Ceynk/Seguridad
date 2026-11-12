@@ -19,6 +19,14 @@ class CommunitySyncWorker(
             return@withContext Result.success()
         }
         return@withContext try {
+            for (eliminado in application.smsRepository.getPendingDeletedCommunityIndicators()) {
+                try {
+                    if (application.communityApiClient.eliminar(eliminado)) {
+                        application.smsRepository.eliminarEntradaComunidad(eliminado, pendienteServidor = false)
+                    }
+                } catch (_: Exception) {
+                }
+            }
             for (pendiente in application.smsRepository.getPendingCommunityEntries()) {
                 val sincronizado = application.communityApiClient.enviar(
                     CommunityIndicator(pendiente.indicador, pendiente.tipo)

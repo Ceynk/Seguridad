@@ -10,17 +10,23 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CommunityBlacklistDao {
 
-    @Query("SELECT * FROM community_blacklist ORDER BY actualizadoEn DESC")
+    @Query("SELECT * FROM community_blacklist WHERE reportes >= 0 ORDER BY actualizadoEn DESC")
     fun obtenerTodos(): Flow<List<CommunityBlacklistEntity>>
 
-    @Query("SELECT indicador FROM community_blacklist")
+    @Query("SELECT indicador FROM community_blacklist WHERE reportes >= 0")
     suspend fun obtenerIndicadores(): List<String>
 
-    @Query("SELECT * FROM community_blacklist")
+    @Query("SELECT * FROM community_blacklist WHERE reportes >= 0")
     suspend fun obtenerTodosAhora(): List<CommunityBlacklistEntity>
 
-    @Query("SELECT * FROM community_blacklist WHERE pendienteSincronizacion = 1")
+    @Query("SELECT * FROM community_blacklist WHERE pendienteSincronizacion = 1 AND reportes >= 0")
     suspend fun obtenerPendientes(): List<CommunityBlacklistEntity>
+
+    @Query("SELECT indicador FROM community_blacklist WHERE reportes < 0")
+    suspend fun obtenerEliminados(): List<String>
+
+    @Query("SELECT indicador FROM community_blacklist WHERE reportes < 0 AND pendienteSincronizacion = 1")
+    suspend fun obtenerEliminadosPendientes(): List<String>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun guardar(entrada: CommunityBlacklistEntity)
@@ -31,6 +37,6 @@ interface CommunityBlacklistDao {
     @Query("DELETE FROM community_blacklist WHERE indicador = :indicador")
     suspend fun eliminarPorIndicador(indicador: String)
 
-    @Query("DELETE FROM community_blacklist WHERE pendienteSincronizacion = 0")
+    @Query("DELETE FROM community_blacklist WHERE pendienteSincronizacion = 0 AND reportes >= 0")
     suspend fun eliminarSincronizados()
 }

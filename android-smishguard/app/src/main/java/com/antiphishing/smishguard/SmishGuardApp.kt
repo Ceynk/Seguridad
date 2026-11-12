@@ -93,6 +93,15 @@ class SmishGuardApp : Application() {
                 smsRepository.purgeExpiredRecords(30)
                 callRepository.purgeExpiredRecords(30)
                 if (settingsRepository.isCommunitySyncEnabled) {
+                    for (eliminado in smsRepository.getPendingDeletedCommunityIndicators()) {
+                        try {
+                            if (communityApiClient.eliminar(eliminado)) {
+                                smsRepository.eliminarEntradaComunidad(eliminado, pendienteServidor = false)
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "No se pudo sincronizar la eliminación del indicador comunitario", e)
+                        }
+                    }
                     for (pendiente in smsRepository.getPendingCommunityEntries()) {
                         try {
                             val sincronizado = communityApiClient.enviar(

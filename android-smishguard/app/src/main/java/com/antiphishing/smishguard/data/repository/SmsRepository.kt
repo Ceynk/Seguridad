@@ -173,17 +173,56 @@ class SmsRepository(
         ruleCache.invalidateCommunityIndicators()
     }
 
-    suspend fun saveCommunityEntries(entries: List<CommunityBlacklistEntity>) {
+    suspend fun saveCommunityEntries(entries: List<CommunityBlacklistEntity>): Int {
+        val eliminados = communityBlacklistDao.obtenerEliminados().toSet()
+        val pendientesLocales = communityBlacklistDao.obtenerPendientes().map { it.indicador }.toSet()
         communityBlacklistDao.eliminarSincronizados()
-        if (entries.isNotEmpty()) {
-            communityBlacklistDao.guardarTodos(entries)
+        val filtradas = entries
+            .filter { it.reportes >= 0 }
+            .filterNot { entrada ->
+                val normalizado = CommunityIndicatorNormalizer.obtener(entrada.indicador).firstOrNull()?.valor
+                entrada.indicador in eliminados ||
+                    (normalizado != null && normalizado in eliminados) ||
+                    entrada.indicador in pendientesLocales
+            }
+            .distinctBy { it.indicador }
+        if (filtradas.isNotEmpty()) {
+            communityBlacklistDao.guardarTodos(filtradas)
+        }
+        ruleCache.invalidateCommunityIndicators()
+        return filtradas.size + pendientesLocales.size
+    }
+
+    suspend fun eliminarEntradaComunidad(indicador: String, pendienteServidor: Boolean = true) {
+        val limpio = indicador.trim()
+        if (limpio.isBlank()) {
+            return
+        }
+        val normalizado = CommunityIndicatorNormalizer.obtener(limpio).firstOrNull()?.valor
+        val objetivos = buildSet {
+            add(limpio)
+            if (!normalizado.isNullOrBlank()) {
+                add(normalizado)
+            }
+        }
+        val ahora = System.currentTimeMillis()
+        for (objetivo in objetivos) {
+            communityBlacklistDao.guardar(
+                CommunityBlacklistEntity(
+                    indicador = objetivo,
+                    tipo = "eliminado",
+                    reportes = -1,
+                    esMalicioso = false,
+                    actualizadoEn = ahora,
+                    pendienteSincronizacion = pendienteServidor
+                )
+            )
         }
         ruleCache.invalidateCommunityIndicators()
     }
 
-    suspend fun eliminarEntradaComunidad(indicador: String) {
-        communityBlacklistDao.eliminarPorIndicador(indicador)
-        ruleCache.invalidateCommunityIndicators()
+    suspend fun getPendingDeletedCommunityIndicators(): List<String> {
+        return communityBlacklistDao.obtenerEliminadosPendientes()
     }
 
     suspend fun getPendingCommunityEntries(): List<CommunityBlacklistEntity> {

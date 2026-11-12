@@ -38,6 +38,9 @@ class CommunityApiClient(
         val codificado = URLEncoder.encode(indicador.trim(), "UTF-8")
         val conexion = abrir("/v1/reportes?indicador=$codificado")
         conexion.requestMethod = "DELETE"
+        if (conexion.responseCode == 404) {
+            return false
+        }
         if (conexion.responseCode !in 200..299) {
             throw IllegalStateException("El API comunitaria respondió ${conexion.responseCode}")
         }
