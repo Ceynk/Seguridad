@@ -36,7 +36,7 @@ android {
             buildConfigField(
                 "String",
                 "COMMUNITY_API_URL",
-                "\"${System.getenv("COMMUNITY_API_URL") ?: ""}\""
+                "\"${providers.environmentVariable("COMMUNITY_API_URL").orElse("").get()}\""
             )
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -49,7 +49,7 @@ android {
             buildConfigField(
                 "String",
                 "COMMUNITY_API_URL",
-                "\"${System.getenv("COMMUNITY_API_URL") ?: ""}\""
+                "\"${providers.environmentVariable("COMMUNITY_API_URL").orElse("").get()}\""
             )
             signingConfig = signingConfigs.getByName("debug")
         }
