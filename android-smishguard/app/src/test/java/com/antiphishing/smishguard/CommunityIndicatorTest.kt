@@ -144,6 +144,23 @@ class CommunityIndicatorTest {
         val totalTrasNuevoReporte = repository.saveCommunityEntries(reporteNuevoOtroDispositivo)
         assertEquals(2, totalTrasNuevoReporte)
         assertTrue(repository.getCommunityIndicators().contains("+573134304936"))
+
+        // Si se elimina en otro dispositivo (tombstone remoto reportes = -1 con actualizadoEn más reciente), desaparece automáticamente aquí
+        val eliminacionRemota = listOf(
+            reporteNuevoOtroDispositivo[0],
+            CommunityBlacklistEntity(
+                indicador = "+573134304936",
+                tipo = "eliminado",
+                reportes = -1,
+                esMalicioso = false,
+                actualizadoEn = servidorEntries[0].actualizadoEn + 10_000L
+            ),
+            servidorEntries[1]
+        )
+        val totalTrasEliminacionRemota = repository.saveCommunityEntries(eliminacionRemota)
+        assertEquals(1, totalTrasEliminacionRemota)
+        assertEquals(listOf("+573162626266"), repository.getCommunityEntries().first().map { it.indicador })
+        assertFalse(repository.getCommunityIndicators().contains("+573134304936"))
     }
 
     private class FakeCommunityBlacklistDao : CommunityBlacklistDao {

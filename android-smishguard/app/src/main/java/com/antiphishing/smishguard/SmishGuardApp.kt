@@ -21,6 +21,7 @@ import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
@@ -72,12 +73,11 @@ class SmishGuardApp : Application() {
         if (settingsRepository.isCommunitySyncEnabled) {
             WorkManager.getInstance(this).enqueueUniquePeriodicWork(
                 "community-blacklist-sync",
-                ExistingPeriodicWorkPolicy.KEEP,
-                PeriodicWorkRequestBuilder<CommunitySyncWorker>(6, TimeUnit.HOURS)
+                ExistingPeriodicWorkPolicy.UPDATE,
+                PeriodicWorkRequestBuilder<CommunitySyncWorker>(15, TimeUnit.MINUTES)
                     .setConstraints(
                         Constraints.Builder()
                             .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .setRequiresBatteryNotLow(true)
                             .build()
                     )
                     .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.MINUTES)
@@ -92,34 +92,18 @@ class SmishGuardApp : Application() {
             try {
                 smsRepository.purgeExpiredRecords(30)
                 callRepository.purgeExpiredRecords(30)
-                if (settingsRepository.isCommunitySyncEnabled) {
-                    for (eliminado in smsRepository.getPendingDeletedCommunityIndicators()) {
-                        try {
-                            if (communityApiClient.eliminar(eliminado)) {
-                                smsRepository.eliminarEntradaComunidad(eliminado, pendienteServidor = false)
-                            }
-                        } catch (e: Exception) {
-                            Log.w(TAG, "No se pudo sincronizar la eliminación del indicador comunitario", e)
-                        }
-                    }
-                    for (pendiente in smsRepository.getPendingCommunityEntries()) {
-                        try {
-                            val sincronizado = communityApiClient.enviar(
-                                CommunityIndicator(pendiente.indicador, pendiente.tipo)
-                            )
-                            if (sincronizado != null) {
-                                smsRepository.saveCommunityEntry(sincronizado, indicadorOriginal = pendiente.indicador)
-                            }
-                        } catch (e: Exception) {
-                            Log.w(TAG, "No se pudo sincronizar el indicador comunitario", e)
-                        }
-                    }
-                    val indicadores = communityApiClient.descargar()
-                    val inteligencia = communityApiClient.descargarInteligencia()
-                    smsRepository.saveCommunityEntries(indicadores + inteligencia)
-                }
             } catch (e: Exception) {
                 Log.e(TAG, "No se pudieron purgar los registros expirados", e)
+            }
+            while (true) {
+                if (settingsRepository.isCommunitySyncEnabled) {
+                    try {
+                        smsRepository.sincronizarConServidor(communityApiClient)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "No se pudo sincronizar la lista comunitaria automáticamente", e)
+                    }
+                }
+                delay(6_000L)
             }
         }
     }

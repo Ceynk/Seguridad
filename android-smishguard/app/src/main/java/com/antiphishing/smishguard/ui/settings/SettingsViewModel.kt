@@ -93,6 +93,9 @@ class SettingsViewModel(
     fun setCommunitySyncEnabled(enabled: Boolean) {
         settingsRepository.isCommunitySyncEnabled = enabled
         _communitySyncEnabled.value = enabled
+        if (enabled) {
+            sincronizarComunidadSiNecesario()
+        }
     }
 
     fun addWhitelistEntry(sender: String, name: String?) {
@@ -276,46 +279,16 @@ class SettingsViewModel(
     }
 
     fun sincronizarComunidad(alTerminar: (String) -> Unit) {
-        if (sincronizandoComunidad) {
-            return
-        }
-        sincronizandoComunidad = true
         viewModelScope.launch {
             val cliente = communityApiClient
             if (cliente == null) {
-                sincronizandoComunidad = false
                 alTerminar("El cliente comunitario no está disponible.")
                 return@launch
             }
+            sincronizandoComunidad = true
             try {
                 val total = withContext(Dispatchers.IO) {
-                    for (eliminado in smsRepository.getPendingDeletedCommunityIndicators()) {
-                        try {
-                            if (cliente.eliminar(eliminado)) {
-                                smsRepository.eliminarEntradaComunidad(eliminado, pendienteServidor = false)
-                            }
-                        } catch (_: Exception) {
-                        }
-                    }
-                    val pendientes = smsRepository.getPendingCommunityEntries()
-                    for (pendiente in pendientes) {
-                        try {
-                            val sincronizado = cliente.enviar(
-                                com.antiphishing.smishguard.data.repository.CommunityIndicator(
-                                    pendiente.indicador,
-                                    pendiente.tipo
-                                )
-                            )
-                            if (sincronizado != null) {
-                                smsRepository.saveCommunityEntry(sincronizado, indicadorOriginal = pendiente.indicador)
-                            }
-                        } catch (_: Exception) {
-                        }
-                    }
-                    val indicadores = cliente.descargar()
-                    val inteligencia = runCatching { cliente.descargarInteligencia() }.getOrDefault(emptyList())
-                    val unidos = indicadores + inteligencia
-                    smsRepository.saveCommunityEntries(unidos)
+                    smsRepository.sincronizarConServidor(cliente)
                 }
                 alTerminar("Lista sincronizada ($total registros).")
             } catch (error: Exception) {

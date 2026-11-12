@@ -118,6 +118,13 @@ fun SettingsScreen(
     }
 
     val displayThreshold = sliderValue.roundToInt()
+
+    androidx.compose.runtime.LaunchedEffect(communitySyncEnabled) {
+        while (communitySyncEnabled) {
+            viewModel.sincronizarComunidadSiNecesario()
+            kotlinx.coroutines.delay(5_000L)
+        }
+    }
     val sensitivityProfile = when {
         displayThreshold <= 35 -> "Estricto"
         displayThreshold <= 55 -> "Equilibrado"

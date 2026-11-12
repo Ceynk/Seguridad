@@ -56,6 +56,13 @@ class CommunityApiClient(
         val conexion = abrir("/v1/reportes?indicador=$codificado")
         conexion.requestMethod = "DELETE"
         if (conexion.responseCode == 404) {
+            val aliasEliminacion = codificarEliminacionComoDominio(limpio)
+            if (aliasEliminacion != null) {
+                val conexionPost = enviarPostReporte(aliasEliminacion, "dominio")
+                if (conexionPost.responseCode !in 200..299) {
+                    throw IllegalStateException("El API comunitaria respondió ${conexionPost.responseCode}")
+                }
+            }
             return true
         }
         if (conexion.responseCode !in 200..299) {
@@ -139,6 +146,16 @@ class CommunityApiClient(
 
     private fun leerEntradaObjeto(objeto: JSONObject): CommunityBlacklistEntity? {
         val indicadorCrudo = objeto.optString("indicador").ifBlank { objeto.optString("numeroE164") }.trim()
+        val eliminacionDecodificada = decodificarEliminacionDesdeDominio(indicadorCrudo)
+        if (eliminacionDecodificada != null) {
+            return CommunityBlacklistEntity(
+                indicador = eliminacionDecodificada,
+                tipo = "eliminado",
+                reportes = -1,
+                esMalicioso = false,
+                actualizadoEn = parseFecha(objeto.optString("actualizadoEn"))
+            )
+        }
         val numeroDecodificado = decodificarNumeroDesdeDominio(indicadorCrudo)
         val indicador = numeroDecodificado ?: indicadorCrudo
         val tipo = if (numeroDecodificado != null) {
@@ -159,6 +176,33 @@ class CommunityApiClient(
             esMalicioso = objeto.optBoolean("esMalicioso", confirmada || reportes >= 1),
             actualizadoEn = actualizado
         )
+    }
+
+    private fun codificarEliminacionComoDominio(valor: String): String? {
+        val limpio = valor.trim()
+        val normalizado = CommunityIndicatorNormalizer.obtener(limpio).firstOrNull()
+        val tipo = normalizado?.tipo ?: if (limpio.contains('.') && !limpio.startsWith("+")) "dominio" else "numero"
+        val objetivo = normalizado?.valor ?: limpio
+        return if (tipo == "dominio") {
+            val host = objetivo.lowercase()
+            if (host.isBlank()) null else "del.dom.$host"
+        } else {
+            val aliasNumero = codificarNumeroComoDominio(objetivo) ?: return null
+            "del.$aliasNumero"
+        }
+    }
+
+    private fun decodificarEliminacionDesdeDominio(valor: String): String? {
+        val limpio = valor.trim().lowercase()
+        if (!limpio.startsWith("del.")) {
+            return null
+        }
+        val resto = limpio.removePrefix("del.")
+        if (resto.startsWith("dom.")) {
+            val host = resto.removePrefix("dom.")
+            return host.ifBlank { null }
+        }
+        return decodificarNumeroDesdeDominio(resto)
     }
 
     private fun codificarNumeroComoDominio(valor: String): String? {

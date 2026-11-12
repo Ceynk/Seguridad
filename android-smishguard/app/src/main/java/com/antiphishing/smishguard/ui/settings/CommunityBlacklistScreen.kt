@@ -80,7 +80,10 @@ fun CommunityBlacklistScreen(
     var limiteVisible by remember { mutableIntStateOf(50) }
 
     LaunchedEffect(Unit) {
-        viewModel.sincronizarComunidadSiNecesario()
+        while (true) {
+            viewModel.sincronizarComunidadSiNecesario()
+            kotlinx.coroutines.delay(3_000L)
+        }
     }
 
     fun enviar() {

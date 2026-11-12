@@ -20,11 +20,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.security.MessageDigest
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
 class SmsRepository(
     private val smsDao: SmsDao,
@@ -42,6 +45,9 @@ class SmsRepository(
 
     private val analysisCache = ConcurrentHashMap<String, CachedAnalysis>()
     private val analysisCacheDurationMs = 5 * 60 * 1000L
+    private val syncMutex = Mutex()
+    private val dbMutex = Mutex()
+    private val modificacionesLocales = AtomicInteger(0)
 
     fun getAllRecords(): Flow<List<SmsMessageData>> {
         return smsDao.getAllRecords().map { entities ->
@@ -182,7 +188,8 @@ class SmsRepository(
     suspend fun saveCommunityEntry(
         entry: CommunityBlacklistEntity,
         indicadorOriginal: String? = null
-    ) {
+    ) = dbMutex.withLock {
+        modificacionesLocales.incrementAndGet()
         val normalizado = CommunityIndicatorNormalizer.obtener(entry.indicador).firstOrNull()?.valor
         if (normalizado != null && normalizado != entry.indicador) {
             communityBlacklistDao.eliminarPorIndicador(normalizado)
@@ -194,16 +201,37 @@ class SmsRepository(
         ruleCache.invalidateCommunityIndicators()
     }
 
-    suspend fun saveCommunityEntries(entries: List<CommunityBlacklistEntity>): Int {
-        val eliminadosPorIndicador = communityBlacklistDao.obtenerEntradasEliminadas().associateBy { it.indicador }
-        val pendientesLocales = communityBlacklistDao.obtenerPendientes().map { it.indicador }.toSet()
+    suspend fun saveCommunityEntries(entries: List<CommunityBlacklistEntity>): Int = dbMutex.withLock {
+        val actuales = communityBlacklistDao.obtenerTodosAhora()
+        val actualesSincronizados = actuales.filter { !it.pendienteSincronizacion }
+        val pendientesLocales = actuales.filter { it.pendienteSincronizacion }.map { it.indicador }.toSet()
+        val eliminadosPrevios = communityBlacklistDao.obtenerEntradasEliminadas().associateBy { it.indicador }
         val consolidados = entries
             .filter { it.reportes >= 0 }
             .groupBy { it.indicador }
-            .map { (_, grupo) ->
+            .mapValues { (_, grupo) ->
                 grupo.maxByOrNull { it.actualizadoEn } ?: grupo.first()
             }
-        val filtradas = consolidados
+        val eliminacionesRemotas = entries
+            .filter { it.reportes < 0 }
+            .groupBy { it.indicador }
+            .mapValues { (_, grupo) ->
+                grupo.maxByOrNull { it.actualizadoEn } ?: grupo.first()
+            }
+        for ((indicador, eliminacionRemota) in eliminacionesRemotas) {
+            val activaServidor = consolidados[indicador]
+            val previoEliminado = eliminadosPrevios[indicador]
+            if (indicador !in pendientesLocales &&
+                (activaServidor == null || activaServidor.actualizadoEn <= eliminacionRemota.actualizadoEn) &&
+                (previoEliminado == null || previoEliminado.actualizadoEn < eliminacionRemota.actualizadoEn || previoEliminado.pendienteSincronizacion)
+            ) {
+                communityBlacklistDao.guardar(
+                    eliminacionRemota.copy(pendienteSincronizacion = false)
+                )
+            }
+        }
+        val eliminadosPorIndicador = communityBlacklistDao.obtenerEntradasEliminadas().associateBy { it.indicador }
+        val filtradas = consolidados.values
             .filterNot { entrada ->
                 val normalizado = CommunityIndicatorNormalizer.obtener(entrada.indicador).firstOrNull()?.valor
                 val eliminadoDirecto = eliminadosPorIndicador[entrada.indicador]
@@ -214,13 +242,14 @@ class SmsRepository(
                     entrada.indicador in pendientesLocales
             }
         for (entrada in filtradas) {
+            if (entrada.indicador in eliminadosPorIndicador) {
+                communityBlacklistDao.eliminarPorIndicador(entrada.indicador)
+            }
             val normalizado = CommunityIndicatorNormalizer.obtener(entrada.indicador).firstOrNull()?.valor
             if (normalizado != null && normalizado != entrada.indicador && normalizado in eliminadosPorIndicador) {
                 communityBlacklistDao.eliminarPorIndicador(normalizado)
             }
         }
-        val actualesSincronizados = communityBlacklistDao.obtenerTodosAhora()
-            .filter { !it.pendienteSincronizacion }
         val sinCambios = actualesSincronizados.size == filtradas.size &&
             actualesSincronizados.associateBy { it.indicador }.let { mapaActual ->
                 filtradas.all { nueva ->
@@ -228,7 +257,8 @@ class SmsRepository(
                     actual != null &&
                         actual.reportes == nueva.reportes &&
                         actual.esMalicioso == nueva.esMalicioso &&
-                        actual.tipo == nueva.tipo
+                        actual.tipo == nueva.tipo &&
+                        actual.actualizadoEn == nueva.actualizadoEn
                 }
             }
         if (!sinCambios) {
@@ -241,10 +271,41 @@ class SmsRepository(
         return filtradas.size + pendientesLocales.size
     }
 
-    suspend fun eliminarEntradaComunidad(indicador: String, pendienteServidor: Boolean = true) {
+    suspend fun sincronizarConServidor(cliente: CommunityApiClient): Int = syncMutex.withLock {
+        for (eliminado in getPendingDeletedCommunityIndicators()) {
+            try {
+                if (cliente.eliminar(eliminado)) {
+                    eliminarEntradaComunidad(eliminado, pendienteServidor = false)
+                }
+            } catch (_: Exception) {
+            }
+        }
+        for (pendiente in getPendingCommunityEntries()) {
+            try {
+                val sincronizado = cliente.enviar(
+                    CommunityIndicator(pendiente.indicador, pendiente.tipo)
+                )
+                if (sincronizado != null) {
+                    saveCommunityEntry(sincronizado, indicadorOriginal = pendiente.indicador)
+                }
+            } catch (_: Exception) {
+            }
+        }
+        val versionAntes = modificacionesLocales.get()
+        var indicadores = cliente.descargar()
+        var inteligencia = runCatching { cliente.descargarInteligencia() }.getOrDefault(emptyList())
+        if (modificacionesLocales.get() != versionAntes) {
+            indicadores = cliente.descargar()
+            inteligencia = runCatching { cliente.descargarInteligencia() }.getOrDefault(emptyList())
+        }
+        return saveCommunityEntries(indicadores + inteligencia)
+    }
+
+    suspend fun eliminarEntradaComunidad(indicador: String, pendienteServidor: Boolean = true) = dbMutex.withLock {
+        modificacionesLocales.incrementAndGet()
         val limpio = indicador.trim()
         if (limpio.isBlank()) {
-            return
+            return@withLock
         }
         val normalizado = CommunityIndicatorNormalizer.obtener(limpio).firstOrNull()?.valor
         val objetivos = buildSet {
@@ -256,7 +317,7 @@ class SmsRepository(
         val activas = communityBlacklistDao.obtenerTodosAhora().filter { it.indicador in objetivos }
         val eliminadas = communityBlacklistDao.obtenerEntradasEliminadas().filter { it.indicador in objetivos }
         if (!pendienteServidor && activas.isNotEmpty()) {
-            return
+            return@withLock
         }
         val marcaTiempo = (activas + eliminadas).maxOfOrNull { it.actualizadoEn } ?: System.currentTimeMillis()
         for (objetivo in objetivos) {

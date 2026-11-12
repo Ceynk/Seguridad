@@ -19,32 +19,8 @@ class CommunitySyncWorker(
             return@withContext Result.success()
         }
         return@withContext try {
-            for (eliminado in application.smsRepository.getPendingDeletedCommunityIndicators()) {
-                try {
-                    if (application.communityApiClient.eliminar(eliminado)) {
-                        application.smsRepository.eliminarEntradaComunidad(eliminado, pendienteServidor = false)
-                    }
-                } catch (_: Exception) {
-                }
-            }
-            for (pendiente in application.smsRepository.getPendingCommunityEntries()) {
-                try {
-                    val sincronizado = application.communityApiClient.enviar(
-                        CommunityIndicator(pendiente.indicador, pendiente.tipo)
-                    )
-                    if (sincronizado != null) {
-                        application.smsRepository.saveCommunityEntry(
-                            sincronizado,
-                            indicadorOriginal = pendiente.indicador
-                        )
-                    }
-                } catch (_: Exception) {
-                }
-            }
-            val entradas = application.communityApiClient.descargar()
-            val inteligencia = application.communityApiClient.descargarInteligencia()
-            application.smsRepository.saveCommunityEntries(entradas + inteligencia)
-            (entradas + inteligencia).maxOfOrNull { it.actualizadoEn }?.let {
+            application.smsRepository.sincronizarConServidor(application.communityApiClient)
+            application.smsRepository.getCommunityEntriesByIndicator().values.maxOfOrNull { it.actualizadoEn }?.let {
                 application.settingsRepository.communitySyncCursor = it
             }
             Result.success()
