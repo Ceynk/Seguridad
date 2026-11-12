@@ -1,6 +1,7 @@
 package com.antiphishing.smishguard
 
 import android.app.Application
+import android.os.Looper
 import android.util.Log
 import com.antiphishing.smishguard.data.local.AppDatabase
 import com.antiphishing.smishguard.data.repository.CallRepository
@@ -49,6 +50,7 @@ class SmishGuardApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        instalarProtectorHoverCompose()
         database = AppDatabase.getInstance(this)
         ruleCache = RuleCache(
             whitelistDao = database.whitelistDao(),
@@ -104,6 +106,34 @@ class SmishGuardApp : Application() {
                     }
                 }
                 delay(6_000L)
+            }
+        }
+    }
+
+    private fun instalarProtectorHoverCompose() {
+        val manejadorAnterior = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { hilo, error ->
+            if (error is IllegalStateException &&
+                error.message?.contains("ACTION_HOVER_EXIT") == true &&
+                hilo == Looper.getMainLooper().thread
+            ) {
+                Log.w(TAG, "Ignorando evento ACTION_HOVER_EXIT duplicado de Compose", error)
+                while (true) {
+                    try {
+                        Looper.loop()
+                    } catch (nuevoError: Throwable) {
+                        if (nuevoError is IllegalStateException &&
+                            nuevoError.message?.contains("ACTION_HOVER_EXIT") == true
+                        ) {
+                            Log.w(TAG, "Ignorando evento ACTION_HOVER_EXIT duplicado de Compose", nuevoError)
+                            continue
+                        }
+                        manejadorAnterior?.uncaughtException(hilo, nuevoError)
+                        break
+                    }
+                }
+            } else {
+                manejadorAnterior?.uncaughtException(hilo, error)
             }
         }
     }

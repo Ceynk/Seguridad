@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.MotionEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -201,6 +202,22 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         pendingRouting = parseRoutingFromIntent(intent)
+    }
+
+    override fun dispatchGenericMotionEvent(ev: MotionEvent?): Boolean {
+        if (ev != null && (
+                ev.actionMasked == MotionEvent.ACTION_HOVER_ENTER ||
+                    ev.actionMasked == MotionEvent.ACTION_HOVER_MOVE ||
+                    ev.actionMasked == MotionEvent.ACTION_HOVER_EXIT
+                )
+        ) {
+            return true
+        }
+        return try {
+            super.dispatchGenericMotionEvent(ev)
+        } catch (_: IllegalStateException) {
+            true
+        }
     }
 
     private fun parseRoutingFromIntent(incomingIntent: Intent?): LaunchRouting {
