@@ -30,13 +30,18 @@ android {
         }
     }
 
+    val urlComunidad = providers.gradleProperty("COMMUNITY_API_URL")
+        .orElse(providers.environmentVariable("COMMUNITY_API_URL"))
+        .orElse("")
+        .get()
+
     buildTypes {
         release {
             isMinifyEnabled = true
             buildConfigField(
                 "String",
                 "COMMUNITY_API_URL",
-                "\"${providers.environmentVariable("COMMUNITY_API_URL").orElse("").get()}\""
+                "\"$urlComunidad\""
             )
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -49,7 +54,7 @@ android {
             buildConfigField(
                 "String",
                 "COMMUNITY_API_URL",
-                "\"${providers.environmentVariable("COMMUNITY_API_URL").orElse("").get()}\""
+                "\"$urlComunidad\""
             )
             signingConfig = signingConfigs.getByName("debug")
         }
